@@ -21,7 +21,7 @@ shinyServer(function(input, output, session) {
       reacval$oldList <- isolate(reacval$fileList)
       reacval$fileList <- curFileList
       reacval$dataTables <- rbind(isolate(reacval$dataTables), get_covid19_data(diff))
-      reacval$dateRange <- c(isolate(reacval$dateRange), as.Date(gsub(".*/.*-(\\d{,8}).txt$", "\\1", diff), format="%Y%m%d"))
+      reacval$dateRange <- c(isolate(reacval$dateRange), as.Date(gsub(".*/.*-(\\d{,8}).csv$", "\\1", diff), format="%Y%m%d"))
     }
   })
 

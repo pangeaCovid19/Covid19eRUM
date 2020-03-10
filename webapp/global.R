@@ -30,7 +30,7 @@ colnames(pop_file) <- c("codice_provincia", "provincia", "pop_m", "pop_f", "pop"
 
 data_files <- list.files("www/pcm_data", full.names=T)
 data_files <- data_files[grepl(".csv$", data_files) | grepl(".txt$", data_files)]
-date_range <- as.Date(gsub(".*/.*-(\\d{,8}).txt$", "\\1", data_files), format="%Y%m%d")
+date_range <- as.Date(gsub(".*/.*-(\\d{,8}).csv$", "\\1", data_files), format="%Y%m%d")
 date0 <- min(date_range)
 
 get_covid19_data <- function(flist) {
