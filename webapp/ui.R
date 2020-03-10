@@ -3,41 +3,44 @@ source("dashboardPangea.R")
 
 regTab <- tabItem(tabName = "regPlots", h1("Diffusione del virus nelle regioni italiane"), br(), br(),
               fluidRow(
-                box(width=12, title = tagList(shiny::icon("globe-europe"), "Mappa dei casi confermati (ultima data)"), status = "primary", solidHeader = F,
-                    collapsible = T, leafletOutput(outputId="mapRegion")
+                box(width=12, uiOutput("updateRegUI")
                 )
               ),
               fluidRow(
-                box(width=12, title = tagList(shiny::icon("table"), "Tabella con casi confermati (ultima data)"), status = "primary", solidHeader = F,
-                    collapsible = T, dataTableOutput(outputId="tabRegion")
+                box(width=12, title = tagList(shiny::icon("globe-europe"), "Mappa dei casi confermati"), status = "primary", solidHeader = F,
+                    collapsible = T, spiegaMappa, leafletOutput(outputId="mapRegion")
+                )
+              ),
+              fluidRow(
+                box(width=12, title = tagList(shiny::icon("table"), "Tabella con casi confermati"), status = "primary", solidHeader = F,
+                    collapsible = T, spiegaTabella, DTOutput(outputId="tabRegion")
                 )
               ),
               fluidRow(
                 box(width=12, title = tagList(shiny::icon("analytics"), "Andamento dei casi confermati"), status = "primary", solidHeader = F,
-                    collapsible = T, plotlyOutput(outputId="lineRegion")
+                    collapsible = T, spiegaLinePlot, plotlyOutput(outputId="lineRegion")
                 )
               )
           )
 
 prvTab <- tabItem(tabName = "prvPlots", h1("Diffusione del virus nelle province italiane"), br(), br(),
-              #fluidRow(
-              #  box(width=12, title = tagList(shiny::icon("filter"), "Seleziona regione"), status = "primary", solidHeader = F,
-              #      collapsible = T, selectInput("regionSel", label="Regione", choices=regioniList, selected = "Lazio")
-              #  )
-              #),
               fluidRow(
-                box(width=12, title = tagList(shiny::icon("globe-europe"), "Mappa dei casi confermati (ultima data)"), status = "primary", solidHeader = F,
-                    collapsible = T, leafletOutput(outputId="mapProvince")
+                box(width=12, uiOutput("updatePrvUI")
                 )
               ),
               fluidRow(
-                box(width=12, title = tagList(shiny::icon("table"), "Tabella con casi confermati (ultima data)"), status = "primary", solidHeader = F,
-                    collapsible = T, DTOutput(outputId="tabProvince")
+                box(width=12, title = tagList(shiny::icon("globe-europe"), "Mappa dei casi confermati"), status = "primary", solidHeader = F,
+                    collapsible = T, spiegaMappa, leafletOutput(outputId="mapProvince")
+                )
+              ),
+              fluidRow(
+                box(width=12, title = tagList(shiny::icon("table"), "Tabella con casi confermati"), status = "primary", solidHeader = F,
+                    collapsible = T, spiegaTabella, DTOutput(outputId="tabProvince")
                 )
               ),
               fluidRow(
                 box(width=12, title = tagList(shiny::icon("analytics"), "Andamento dei casi confermati"), status = "primary", solidHeader = F,
-                    collapsible = T, plotlyOutput(outputId="lineProvince")
+                    collapsible = T, spiegaLinePlot, plotlyOutput(outputId="lineProvince")
                 )
               )
             )
@@ -58,13 +61,17 @@ dashboardPage(
 
 ## Sidebar content
 	dashboardSidebar(
-        sidebarMenu(id='configs',
-            menuItem2("CoVid-19 per regione", tabName = "regPlots", icon = icon("vials"))
-        ),
-        sidebarMenu(id='configs',
-            menuItem2("CoVid-19 per provincia", tabName = "prvPlots", icon = icon("vials"),
-            selectInput("regionSel", label="Regione", choices=regioniList, selected = "Lazio"))
-        )
+      sidebarMenu(id='regCFG',
+        menuItem2("CoVid-19 per regione", tabName = "regPlots", icon = icon("vials"))
+      ),
+      sidebarMenu(id='prvCFG',
+        menuItem2("CoVid-19 per provincia", tabName = "prvPlots", icon = icon("vials"))
+      ),
+      #uiOutput("drangeUI"),
+      dateRangeInput("drangeSel", label="Periodo di interesse", start = date0, end = Sys.Date(), min = date0,
+        max = Sys.Date(), format = "dd-mm-yyyy", startview = "month", weekstart = 1,
+        language = "it", separator = " a "),
+      selectInput("regionSel", label="Regione", choices=regioniList, selected = "Lombardia")
 	),
 
 	dashboardBody(
