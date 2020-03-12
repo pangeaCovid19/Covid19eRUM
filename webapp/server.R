@@ -109,6 +109,26 @@ output$mapRegion <- renderLeaflet({
 })
 
 
+output$mapRegionGG <- renderPlot({
+  allData <- get_data()
+  if (!is.null(allData)) {
+    allDataConf <- allData[!grepl("aggiornamento", allData$denominazione_provincia),]
+    allDataReg <- aggregate(list(totale_casi=allDataConf$totale_casi, pop=allDataConf$pop),
+                      by=list(data=allDataConf$data, denominazione_regione=allDataConf$denominazione_regione, codice_regione=allDataConf$codice_regione),
+                      FUN=sum)
+    latestDataReg <- allDataReg[allDataReg$data==max(allDataReg$data),]
+    latestDataReg$densita_casi <- round(latestDataReg$totale_casi / latestDataReg$pop * 10000, 3)
+    pltRegioni <- merge(regioni, latestDataReg[,c("codice_regione", "totale_casi", "densita_casi")], by.x="COD_REG", by.y="codice_regione")
+
+    # map_italia è definito una volta sola nel global
+    map_italia +
+      geom_sf(data = pltRegioni, aes(fill = totale_casi), color="black", size=.2) +
+      scale_fill_distiller(palette = "YlOrRd", direction = 1, name="Numero casi", trans = "log10") +
+      geom_text(data = pltRegioni, aes(x=reg_long, y=reg_lat, label=paste(DEN_REG, "\n casi:", totale_casi)), cex=2.5, color="black", fontface = "bold")
+  }
+})
+
+
 ## PROVINCE
 
 output$updatePrvUI <- renderUI({
@@ -177,6 +197,29 @@ output$mapProvince <- renderLeaflet({
         addProviderTiles("CartoDB.Positron") %>% setView(lng=my_frame$reg_long, lat=my_frame$reg_lat, zoom=7)  %>%
         addPolygons(fillColor = ~pal(log10(totale_casi)), weight = 1, stroke = TRUE, color="lightgrey",
                  label = ~paste(DEN_UTS, "- casi:", totale_casi))
+
+  }
+})
+
+
+output$mapProvinceGG <- renderPlot({
+  myReg <- input$regionSel
+  allData <- get_data()
+  if (!is.null(allData)) {
+    allDataConf <- allData[!grepl("aggiornamento", allData$denominazione_provincia),]
+    allDataConf <- allDataConf[allDataConf$denominazione_regione == myReg,]
+    allDataProv <- aggregate(list(totale_casi=allDataConf$totale_casi, pop=allDataConf$pop),
+                      by=list(data=allDataConf$data, denominazione_provincia=allDataConf$denominazione_provincia, codice_provincia=allDataConf$codice_provincia),
+                      FUN=sum)
+    latestDataProv <- allDataProv[allDataProv$data==max(allDataProv$data),]
+    latestDataProv$densita_casi <- round(latestDataProv$totale_casi / latestDataProv$pop * 10000, 3)
+    pltProvince <- merge(province, latestDataProv[,c("codice_provincia", "totale_casi", "densita_casi")], by.x="COD_PROV", by.y="codice_provincia")
+
+    # map_regioni è definita una volta sola nel global
+    map_regioni[[unique(pltProvince$COD_REG)]] +
+      geom_sf(data = pltProvince, aes(fill = totale_casi), color="black", size=.2) +
+      scale_fill_distiller(palette = "YlOrRd", direction = 1, name="Numero casi", trans = "log10") +
+      geom_text(data = pltProvince, aes(x=prv_long, y=prv_lat, label=paste(DEN_UTS, "\n casi:", totale_casi)), cex=2.5, color="black", fontface = "bold")
 
   }
 })
