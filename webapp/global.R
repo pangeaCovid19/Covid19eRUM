@@ -5,9 +5,20 @@ library(leaflet)
 library(data.table)
 library(DT)
 options(bitmapType="cairo")
-dir_prov 	<- "www/pcm_data"
-dir_reg		<- "www/dati-regioni"
+dir_prov 	<- "www/pcm_data/"
+dir_reg		<- "www/dati-regioni/"
 
+provRDS <- "dataProvince.RDS"
+regRDS <- "dataRegioni.RDS"
+provShapeRDS <- "ProvinceShapeF.RDS"
+regShapeRDS <- "RegioniShapeF.RDS"
+
+verbose <- TRUE
+
+pop_file <- read.csv("www/tavola_pop_res01.csv", stringsAsFactors=F, skip=1)
+colnames(pop_file) <- c("codice_provincia", "provincia", "pop_m", "pop_f", "pop")
+
+# Temi dell'applicazione
 d3cols <- "1f77b4ff7f0e2ca02cd627289467bd8c564be377c27f7f7fbcbd2217becf"
 d3hexcols <- paste0("#",regmatches(d3cols, gregexpr(".{6}", d3cols))[[1]])
 d3col1 <- d3hexcols[1]
@@ -25,84 +36,20 @@ my_ggtheme <- function() {
               strip.text = element_text(size = 9))
 }
 
-
-pop_file <- read.csv("www/tavola_pop_res01.csv", stringsAsFactors=F, skip=1)
-colnames(pop_file) <- c("codice_provincia", "provincia", "pop_m", "pop_f", "pop")
-
-
-data_files <- list.files(dir_prov, full.names=T)
-data_files <- data_files[(grepl(".csv$", data_files) | grepl(".txt$", data_files)) & grepl('2020',data_files)]
-date_range <- as.Date(gsub(".*/.*-(\\d{,8}).csv$", "\\1", data_files), format="%Y%m%d")
-date0 <- min(date_range, na.rm=T)
-
-get_covid19_data <- function(flist) {
-  do.call(rbind, lapply(flist, function(ff) {
-    temp <- read.csv(ff, stringsAsFactors=F)
-    temp$data <- as.Date(temp$data)
-		paTrentino <- grep('bolz|trent', temp$denominazione_regione, ignore.case=T)
-		temp$denominazione_regione[paTrentino] <- "Trentino - Alto Adige"
-		#temp$denominazione_regione[temp$denominazione_regione %in% c("Bolzano", "Trento")] <- "Trentino - Alto Adige"
-    temp <- merge(temp, pop_file[,c("codice_provincia", "pop")], by="codice_provincia")
-    temp
-  }))
-}
-
-allData <- get_covid19_data(data_files)
+# dati epidemiolocigi
+allData <- readRDS(paste0(dir_prov,provRDS))
 regioniList <- sort(unique(allData$denominazione_regione))
-
-alld0 <- allData[allData$data==date0, ]
-pop_reg <- aggregate(alld0[, 'pop'], by=list(denominazione_regione=alld0$denominazione_regione), sum)
-setnames(pop_reg, old="x", new="pop")
+allData_reg <- readRDS(paste0(dir_reg, regRDS))
 
 
-data_files_reg <- list.files(dir_reg, full.names=T)
-data_files_reg <- data_files_reg[(grepl(".csv$", data_files_reg) | grepl(".txt$", data_files_reg))  & grepl('2020',data_files_reg)]
-date_range_reg <- as.Date(gsub(".*/.*-(\\d{,8}).csv$", "\\1", data_files_reg), format="%Y%m%d")
+date_range 			<- range(allData$data)
+date_range_reg 	<- range(allData_reg$data)
+
+date0 		<- min(date_range, na.rm=T)
 date0_reg <- min(date_range_reg, na.rm=T)
 
-get_covid19_data_reg <- function(flist) {
-  do.call(rbind, lapply(flist, function(ff) {
-    temp <- read.csv(ff, stringsAsFactors=F)
-    temp$data <- as.Date(temp$data)
-    temp <- merge(temp, pop_reg[,c("denominazione_regione", "pop")], by="denominazione_regione")
-		paTrentino <- grep('bolz|trent', temp$denominazione_regione, ignore.case=T)
-		temp$denominazione_regione[paTrentino] <- "Trentino - Alto Adige"
-    #temp$denominazione_regione[temp$denominazione_regione %in% c("Bolzano", "Trento")] <- "Trentino - Alto Adige"
-    temp
-  }))
-}
-
-allData_reg <- get_covid19_data_reg(data_files_reg)
-
-
-# SHAPE FILES
-
-regioni <- st_read("www/Reg01012019/Reg01012019_WGS84.shp")
-regioni <- st_transform(regioni, crs="+proj=longlat +datum=WGS84 +no_defs")
-hlpr <- st_coordinates(st_centroid(regioni))
-colnames(hlpr) <- c("reg_long", "reg_lat")
-regioni <- cbind(regioni, hlpr)
-
-#map_regioni <- lapply(regioni$COD_REG, function(cod) {
-#                        box_strict <- st_as_sfc(st_bbox(regioni[regioni$COD_REG == cod,]), crs=st_crs(regioni))
-#                       selezionati <- vapply(st_geometry(regioni), function(x) st_intersects(x, st_geometry(box_strict), sparse=F), TRUE)
-#                      reg_to_plot <- st_boundary(regioni[selezionati,])
-#                        reg_to_plot <- st_intersection(reg_to_plot, box_strict)
-#                        ggplot() +
-#                          geom_sf(data = reg_to_plot, color="lightgrey", size=.5) +
-#                          geom_sf(data = regioni[regioni$COD_REG == cod,], color="black", size=.75) +
-#                          labs(title=paste("Casi in", regioni$DEN_REG[regioni$COD_REG == cod]), x="", y="") +
-#                          my_ggtheme()
-#                      })
-#names(map_regioni) <- regioni$COD_REG
-
-
-province <- st_read("www/ProvCM01012019/ProvCM01012019_WGS84.shp")
-province <- st_transform(province, crs="+proj=longlat +datum=WGS84 +no_defs")
-#hlpr <- st_coordinates(st_centroid(province))
-#colnames(hlpr) <- c("prv_long", "prv_lat")
-#province <- cbind.data.frame(province, hlpr)
-
+province <- readRDS(paste0(dir_prov, provShapeRDS))
+regioni <- readRDS(paste0(dir_reg, regShapeRDS))
 
 spiegaMappa <- HTML("<div style='padding-bottom:10px;'>In questa mappa mostriamo la diffusione sul territorio dei casi confermati
 di CoVid19, alla data pi&ugrave; recente del periodo di interesse selezionato nel men&ugrave; (o alla data di aggiornamento dei dati)
@@ -121,6 +68,51 @@ spiegaLinePlot <- HTML("<div style='padding-bottom:10px;'>In questo grafico most
 di CoVid19, nel periodo di interesse selezionato nel men&ugrave; laterale. <br>Ciascuna area territoriale
 &egrave; indicata con un colore diverso. &Egrave; possibile ingrandire aree specifiche del grafico
 e disabilitare (o riabilitare) singoli territori interagendo con la legenda del grafico.</div>")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# DEPRECATE
 
 
 ## shapefile addizionali per rimuovere uso di leaflet e alleggerire il carico della app
@@ -156,3 +148,84 @@ e disabilitare (o riabilitare) singoli territori interagendo con la legenda del 
 #  geom_sf(data = eu_to_plot, color="lightgrey", size=.5) +
 #  geom_sf(data = italy, color="steelblue", size=.75) +
 #  theme_minimal()
+
+
+
+
+
+################################################################## DEPRECATE
+# SHAPE FILES
+if (FALSE){
+regioni <- st_read("www/Reg01012019/Reg01012019_WGS84.shp")
+regioni <- st_transform(regioni, crs="+proj=longlat +datum=WGS84 +no_defs")
+hlpr <- st_coordinates(st_centroid(regioni))
+colnames(hlpr) <- c("reg_long", "reg_lat")
+regioni <- cbind(regioni, hlpr)
+
+#map_regioni <- lapply(regioni$COD_REG, function(cod) {
+#                        box_strict <- st_as_sfc(st_bbox(regioni[regioni$COD_REG == cod,]), crs=st_crs(regioni))
+#                       selezionati <- vapply(st_geometry(regioni), function(x) st_intersects(x, st_geometry(box_strict), sparse=F), TRUE)
+#                      reg_to_plot <- st_boundary(regioni[selezionati,])
+#                        reg_to_plot <- st_intersection(reg_to_plot, box_strict)
+#                        ggplot() +
+#                          geom_sf(data = reg_to_plot, color="lightgrey", size=.5) +
+#                          geom_sf(data = regioni[regioni$COD_REG == cod,], color="black", size=.75) +
+#                          labs(title=paste("Casi in", regioni$DEN_REG[regioni$COD_REG == cod]), x="", y="") +
+#                          my_ggtheme()
+#                      })
+#names(map_regioni) <- regioni$COD_REG
+
+
+province <- st_read("www/ProvCM01012019/ProvCM01012019_WGS84.shp")
+province <- st_transform(province, crs="+proj=longlat +datum=WGS84 +no_defs")
+#hlpr <- st_coordinates(st_centroid(province))
+#colnames(hlpr) <- c("prv_long", "prv_lat")
+#province <- cbind.data.frame(province, hlpr)
+}
+##################################################################
+if(FALSE) {
+	data_files <- list.files(dir_prov, full.names=T)
+	data_files <- data_files[(grepl(".csv$", data_files) | grepl(".txt$", data_files)) & grepl('2020',data_files)]
+	date_range <- as.Date(gsub(".*/.*-(\\d{,8}).csv$", "\\1", data_files), format="%Y%m%d")
+	date0 <- min(date_range, na.rm=T)
+
+
+	get_covid19_data <- function(flist) {
+	  do.call(rbind, lapply(flist, function(ff) {
+	    temp <- read.csv(ff, stringsAsFactors=F)
+	    temp$data <- as.Date(temp$data)
+			paTrentino <- grep('bolz|trent', temp$denominazione_regione, ignore.case=T)
+			temp$denominazione_regione[paTrentino] <- "Trentino - Alto Adige"
+			#temp$denominazione_regione[temp$denominazione_regione %in% c("Bolzano", "Trento")] <- "Trentino - Alto Adige"
+	    temp <- merge(temp, pop_file[,c("codice_provincia", "pop")], by="codice_provincia")
+	    temp
+	  }))
+	}
+
+	allData <- get_covid19_data(data_files)
+	regioniList <- sort(unique(allData$denominazione_regione))
+
+	alld0 <- allData[allData$data==date0, ]
+	pop_reg <- aggregate(alld0[, 'pop'], by=list(denominazione_regione=alld0$denominazione_regione), sum)
+	setnames(pop_reg, old="x", new="pop")
+
+
+	data_files_reg <- list.files(dir_reg, full.names=T)
+	data_files_reg <- data_files_reg[(grepl(".csv$", data_files_reg) | grepl(".txt$", data_files_reg))  & grepl('2020',data_files_reg)]
+	date_range_reg <- as.Date(gsub(".*/.*-(\\d{,8}).csv$", "\\1", data_files_reg), format="%Y%m%d")
+	date0_reg <- min(date_range_reg, na.rm=T)
+
+	get_covid19_data_reg <- function(flist) {
+	  do.call(rbind, lapply(flist, function(ff) {
+	    temp <- read.csv(ff, stringsAsFactors=F)
+	    temp$data <- as.Date(temp$data)
+	    temp <- merge(temp, pop_reg[,c("denominazione_regione", "pop")], by="denominazione_regione")
+			paTrentino <- grep('bolz|trent', temp$denominazione_regione, ignore.case=T)
+			temp$denominazione_regione[paTrentino] <- "Trentino - Alto Adige"
+	    #temp$denominazione_regione[temp$denominazione_regione %in% c("Bolzano", "Trento")] <- "Trentino - Alto Adige"
+	    temp
+	  }))
+	}
+
+	allData_reg <- get_covid19_data_reg(data_files_reg)
+}
