@@ -10,12 +10,14 @@ shinyServer(function(input, output, session) {
             oldList=NULL,
             dataTables=allData,
             dateRange=date_range,
-						mdataProv=file.info(paste0(dir_prov,provRDS))$mtime,
+						mdataProv=mtimeProv,
 						fileList_reg=list.files(dir_reg, full.names=T),
             oldList_reg=NULL,
             dataTables_reg=allData_reg,
             dateRange_reg=date_range_reg,
-						mdataReg=file.info(paste0(dir_reg,regRDS))$mtime
+						mdataReg=mtimeReg,
+						modelliIta=modelliIta,
+						modelliReg=modelliReg
 					)
 
   observe({
@@ -24,39 +26,34 @@ shinyServer(function(input, output, session) {
 		pathProv 	<- paste0(dir_prov,provRDS)
 		pathReg 	<- paste0(dir_reg,regRDS)
 		if( file.info(pathProv)$mtime > isolate(reacval$mdataProv)  ) {
-			reacval$dataTables <- readRDS(pathPRov)
+			dataProv	<- readRDS(pathProv)
+			reacval$dataTables  <- dataProv
+			reacval$mdataProv 	<- file.info(pathProv)$mtime
+			assing("allData",dataProv,envir=.GlobalEnv)
 		}
-
 		if( file.info(pathReg)$mtime > isolate(reacval$mdataReg)  ) {
-			reacval$dataTables_reg <- readRDS(pathReg)
+			regData <- readRDS(pathReg)
+			reacval$dataTables_reg<- regData
+			reacval$mdataReg <- file.info(pathReg)$mtime
+
+			tsReg <- getTimeSeries(regData)
+			modelliIta <- list()
+			for(i in  1:length(campiPrevisioni)){
+				modelliIta<-loglinmodel2(tsReg$Italia, var="totale_casi", rangepesi=c(0,1))
+			}
+			modelliReg <-lapply( tsReg[which(names(tsReg)!='Italia')], loglinmodel2)
+
+			reacval$modelliIta 	<- modelliIta
+			reacval$modelliReg 	<- modelliReg
+			assing("allData_reg",regData,envir=.GlobalEnv)
+			assing("modelliReg",modelliReg,envir=.GlobalEnv)
+			assing("modelliIta",modelliIta,envir=.GlobalEnv)
+
 		}
 
-		assign("resNew", list(reg=reacval$dataTables_reg, prov=reacval$dataTables), envir=.GlobalEnv)
-		if(FALSE){
-	    curFileList <- list.files(dir_prov, full.names=T)
-	    curFileList <- curFileList[(grepl(".csv$", curFileList) | grepl(".txt$", curFileList)) & grepl('2020',curFileList)]
-	    if (any(!(curFileList %in% isolate(reacval$fileList)))) {
-	      diff <- setdiff(curFileList, isolate(reacval$fileList))
-	      reacval$oldList <- isolate(reacval$fileList)
-	      reacval$fileList <- curFileList
-	      reacval$dataTables <- rbind(isolate(reacval$dataTables), get_covid19_data(diff))
-	      reacval$dateRange <- c(isolate(reacval$dateRange), as.Date(gsub(".*/.*-(\\d{,8}).csv$", "\\1", diff), format="%Y%m%d"))
-	    }
-
-			curFileList_reg <- list.files(dir_reg, full.names=T)
-			curFileList_reg <- curFileList_reg[(grepl(".csv$", curFileList_reg) | grepl(".txt$", curFileList_reg)) & grepl('2020',curFileList_reg)]
-			if (any(!(curFileList_reg %in% isolate(reacval$fileList_reg)))) {
-				diff <- setdiff(curFileList_reg, isolate(reacval$fileList_reg))
-				reacval$oldList_reg <- isolate(reacval$fileList_reg)
-				reacval$fileList_reg <- curFileList_reg
-				reacval$dataTables_reg <- rbind(isolate(reacval$dataTables_reg), get_covid19_data_reg(diff))
-				reacval$dateRange_reg <- c(isolate(reacval$dateRange_reg), as.Date(gsub(".*/.*-(\\d{,8}).csv$", "\\1", diff), format="%Y%m%d"))
-			}
-			assign("resOut", list(reg=reacval$dataTables_reg, prov=reacval$dataTables), envir=.GlobalEnv)
-	  }
 
 
-
+		#assign("resNew", list(reg=reacval$dataTables_reg, prov=reacval$dataTables), envir=.GlobalEnv)
   })
 
   get_data <- reactive({
@@ -272,4 +269,17 @@ output$mapProvinceGG <- renderPlot({
 
   }
 })
+
+
+## PREVISIONI
+
+output$updatePrevisioniUI <- renderUI({
+	if(verbose) cat("\n renderUI:updatePrevisioniUI")
+  h3(paste("Dati aggiornati al giorno:", get_last_date()))
+})
+
+
+
+
+
 })
