@@ -7,6 +7,7 @@ library(DT)
 options(bitmapType="cairo")
 dir_prov 	<- "www/pcm_data/"
 dir_reg		<- "www/dati-regioni/"
+dir_data	<- "www/"
 
 provRDS <- "dataProvince.RDS"
 regRDS <- "dataRegioni.RDS"
@@ -50,6 +51,14 @@ date0_reg <- min(date_range_reg, na.rm=T)
 
 province <- readRDS(paste0(dir_prov, provShapeRDS))
 regioni <- readRDS(paste0(dir_reg, regShapeRDS))
+
+eu_to_plot <- readRDS(file=paste0(dir_data, "eu_to_plot.RDS") )
+italy <- readRDS(file=paste0(dir_data, "italy.RDS") )
+
+map_italia <- readRDS(file=paste0(dir_data, "map_italia.RDS"))
+map_regioni <- readRDS(file=paste0(dir_data, "map_regioni.RDS"))
+
+
 
 spiegaMappa <- HTML("<div style='padding-bottom:10px;'>In questa mappa mostriamo la diffusione sul territorio dei casi confermati
 di CoVid19, alla data pi&ugrave; recente del periodo di interesse selezionato nel men&ugrave; (o alla data di aggiornamento dei dati)
@@ -154,7 +163,29 @@ e disabilitare (o riabilitare) singoli territori interagendo con la legenda del 
 
 
 ################################################################## DEPRECATE
-# SHAPE FILES
+##################################################################
+# MAPPE ggplot
+if(FALSE){
+
+	map_italia <- ggplot() +
+		geom_sf(data = eu_to_plot, color="lightgrey", size=.5) +
+		geom_sf(data = italy, color="black", size=.75) +
+		labs(title="Casi in Italia", x="", y="") +
+		my_ggtheme()
+
+	map_regioni <- lapply(regioni$COD_REG, function(cod) {
+	                        box_strict <- st_as_sfc(st_bbox(regioni[regioni$COD_REG == cod,]), crs=st_crs(regioni))
+	                        selezionati <- vapply(st_geometry(regioni), function(x) st_intersects(x, st_geometry(box_strict), sparse=F), TRUE)
+	                        reg_to_plot <- st_boundary(regioni[selezionati,])
+	                        reg_to_plot <- st_intersection(reg_to_plot, box_strict)
+	                        ggplot() +
+	                          geom_sf(data = reg_to_plot, color="lightgrey", size=.5) +
+	                          geom_sf(data = regioni[regioni$COD_REG == cod,], color="black", size=.75) +
+	                          labs(title=paste("Casi in", regioni$DEN_REG[regioni$COD_REG == cod]), x="", y="") +
+	                          my_ggtheme()
+	                      })
+	names(map_regioni) <- regioni$COD_REG
+}# SHAPE FILES
 if (FALSE){
 regioni <- st_read("www/Reg01012019/Reg01012019_WGS84.shp")
 regioni <- st_transform(regioni, crs="+proj=longlat +datum=WGS84 +no_defs")

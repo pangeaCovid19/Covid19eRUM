@@ -9,18 +9,13 @@ regTab <- tabItem(tabName = "regPlots", h1("Diffusione del virus nelle regioni i
 
               fluidRow(
                 box(width=6, title = tagList(shiny::icon("globe-europe"), "Mappa dei casi confermati"), status = "primary", solidHeader = F,
-                    collapsible = T, spiegaMappa, leafletOutput(outputId="mapRegion")
-                    #plotOutput(outputId="mapRegionGG", height = 800)
+                    collapsible = T, spiegaMappa, plotOutput(outputId="mapRegionGG", height = 800)
+                    #leafletOutput(outputId="mapRegion")
                 ),
 								box(width=6, title = tagList(shiny::icon("table"), "Tabella con casi confermati"), status = "primary", solidHeader = F,
                     collapsible = T, spiegaTabella, DTOutput(outputId="tabRegion")
                 )
               ),
-#              fluidRow(
- #               box(width=12, title = tagList(shiny::icon("table"), "Tabella con casi confermati"), status = "primary", solidHeader = F,
-  #                  collapsible = T, spiegaTabella, DTOutput(outputId="tabRegion")
-   #             )
-    #          ),
               fluidRow(
                 box(width=12, title = tagList(shiny::icon("analytics"), "Andamento dei casi confermati"), status = "primary", solidHeader = F,
                     collapsible = T, spiegaLinePlot, plotlyOutput(outputId="lineRegion")
@@ -35,28 +30,19 @@ prvTab <- tabItem(tabName = "prvPlots", h1("Diffusione del virus nelle province 
               ),
               fluidRow(
                 box(width=6, title = tagList(shiny::icon("globe-europe"), "Mappa dei casi confermati"), status = "primary", solidHeader = F,
-                    collapsible = T, spiegaMappa, leafletOutput(outputId="mapProvince")
-                    #plotOutput(outputId="mapProvinceGG", height = 800)
+                    collapsible = T, spiegaMappa, plotOutput(outputId="mapProvinceGG", height = 800)
+                    #leafletOutput(outputId="mapProvince")
                 ),
 								box(width=6, title = tagList(shiny::icon("table"), "Tabella con casi confermati"), status = "primary", solidHeader = F,
-                    collapsible = T, spiegaTabella, DTOutput(outputId="tabProvince")
+                    collapsible = T, spiegaTabella,  DTOutput(outputId="tabProvince")
                 )
               ),
-#              fluidRow(
-#                box(width=12, title = tagList(shiny::icon("table"), "Tabella con casi confermati"), status = "primary", solidHeader = F,
-#                    collapsible = T, spiegaTabella, DTOutput(outputId="tabProvince")
- #               )
-  #            ),
               fluidRow(
                 box(width=12, title = tagList(shiny::icon("analytics"), "Andamento dei casi confermati"), status = "primary", solidHeader = F,
                     collapsible = T, spiegaLinePlot, plotlyOutput(outputId="lineProvince")
                 )
               )
             )
-
-
-
-
 
 ######################################################
 #

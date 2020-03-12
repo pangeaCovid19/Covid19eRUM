@@ -35,7 +35,7 @@ if (!is.na(infofiles$size[2])) {
 	currentreg<-raw(0)
 }
 prov<-try(content(GET(provremotepath),type="raw"))
-if (!inherits(prov,"try-error")) {	
+if (!inherits(prov,"try-error")) {
 	d1<- digest(currentprov)
 	if (length(prov)>=length(currentprov) && (is.na(hashes["Province"]) || d1!=hashes["Province"])) {
 		cat("Scarico Province\n")
@@ -64,11 +64,10 @@ readData<-function(file, popolazione) {
 	} else {
 		res<-merge(tmp,popolazione,by="denominazione_regione",all.x=TRUE)
 		return(res)
-	}	
+	}
 }
 
 uno<-readData(provlocalpathcsv,popolazione)
 due<-readData(reglocalpathcsv,popreg)
 saveRDS(due,"www/dati-regioni/dataRegioni.RDS")
 saveRDS(uno,"www/pcm_data/dataProvince.RDS")
-saveRDS(due,)
