@@ -1,7 +1,7 @@
 library(shinydashboard)
 source("dashboardPangea.R")
 
-regTab <- tabItem(tabName = "regPlots", h1("Diffusione del virus nelle regioni italiane"), br(), br(),
+regTab <- tabItem(tabName = "regPlots", h1("Diffusione nelle regioni italiane"), br(), br(),
               fluidRow(
                 box(width=12, uiOutput("updateRegUI")
                 )
@@ -23,7 +23,7 @@ regTab <- tabItem(tabName = "regPlots", h1("Diffusione del virus nelle regioni i
               )
           )
 
-prvTab <- tabItem(tabName = "prvPlots", h1("Diffusione del virus nelle province italiane"), br(), br(),
+prvTab <- tabItem(tabName = "prvPlots", h1("Diffusione nelle province italiane"), br(), br(),
               fluidRow(
                 box(width=12, uiOutput("updatePrvUI")
                 )
@@ -40,6 +40,21 @@ prvTab <- tabItem(tabName = "prvPlots", h1("Diffusione del virus nelle province 
               fluidRow(
                 box(width=12, title = tagList(shiny::icon("analytics"), "Andamento dei casi confermati"), status = "primary", solidHeader = F,
                     collapsible = T, spiegaLinePlot, plotlyOutput(outputId="lineProvince")
+                )
+              )
+            )
+
+fitTab <- tabItem(tabName = "fitPlots", h1("Analisi previsionale nelle province italiane"), br(), br(),
+              fluidRow(
+                box(width=12, uiOutput("updatePrevisioniUI")
+                )
+              ),
+              fluidRow(
+                box(width=6, title = tagList(shiny::icon("globe-europe"), "Mappa dei casi confermati"), status = "primary", solidHeader = F,
+                    collapsible = T, spiegaMappa, leafletOutput(outputId="mapProvince")
+                ),
+								box(width=6, title = tagList(shiny::icon("table"), "Tabella con casi confermati"), status = "primary", solidHeader = F,
+                    collapsible = T, spiegaTabella,  leafletOutput(outputId="mapRegion")
                 )
               )
             )
@@ -62,6 +77,9 @@ dashboardPage(
       sidebarMenu(id='prvCFG',
         menuItem2("CoVid-19 per provincia", tabName = "prvPlots", icon = icon("vials"))
       ),
+      sidebarMenu(id='fitCFG',
+        menuItem2("CoVid-19 previsioni", tabName = "fitPlots", icon = icon("vials"))
+      ),
       #uiOutput("drangeUI"),
       dateRangeInput("drangeSel", label="Periodo di interesse", start = date0, end = Sys.Date(), min = date0,
         max = Sys.Date(), format = "dd-mm-yyyy", startview = "month", weekstart = 1,
@@ -74,6 +92,7 @@ dashboardPage(
 
     tabItems(
         regTab,
-        prvTab
+        prvTab,
+				fitTab
 	))
 )

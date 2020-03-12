@@ -4,6 +4,7 @@ library(plotly)
 library(leaflet)
 library(data.table)
 library(DT)
+source("funzionifit.R")
 options(bitmapType="cairo")
 dir_prov 	<- "www/pcm_data/"
 dir_reg		<- "www/dati-regioni/"
@@ -13,6 +14,9 @@ provRDS <- "dataProvince.RDS"
 regRDS <- "dataRegioni.RDS"
 provShapeRDS <- "ProvinceShapeF.RDS"
 regShapeRDS <- "RegioniShapeF.RDS"
+
+
+campiPrevisioni <- c("totale_casi", "decessi", "totale_ospedalizzati", "terapia_intensiva")
 
 verbose <- TRUE
 
@@ -41,6 +45,12 @@ my_ggtheme <- function() {
 allData <- readRDS(paste0(dir_prov,provRDS))
 regioniList <- sort(unique(allData$denominazione_regione))
 allData_reg <- readRDS(paste0(dir_reg, regRDS))
+mtimeProv <- file.info(paste0(dir_prov,provRDS))$mtime
+mtimeReg 	<-file.info(paste0(dir_reg,regRDS))$mtime
+
+
+modelliReg <- readRDS("www/modelliReg.RDS")
+modelliIta <-readRDS("www/modelliIta.RDS")
 
 
 date_range 			<- range(allData$data)

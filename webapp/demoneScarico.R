@@ -1,5 +1,9 @@
 require(digest)
 require(httr)
+source("funzionifit.R")
+
+campiPrevisioni <- c("totale_casi", "decessi", "totale_ospedalizzati", "terapia_intensiva")
+
 if (!dir.exists("logs")) dir.create("logs")
 hashpath<-"logs/hashes.log"
 if (file.exists("logs/hashes.log")) {
@@ -69,5 +73,17 @@ readData<-function(file, popolazione) {
 
 uno<-readData(provlocalpathcsv,popolazione)
 due<-readData(reglocalpathcsv,popreg)
+
+tsReg <- getTimeSeries(due)
+modelliIta <- list()
+for(i in  1:length(campiPrevisioni)){
+	modelliIta<-loglinmodel2(tsReg$Italia, var="totale_casi", rangepesi=c(0,1))
+}
+modelliReg <-lapply( tsReg[which(names(tsReg)!='Italia')], loglinmodel2)
+
+
+
 saveRDS(due,"www/dati-regioni/dataRegioni.RDS")
 saveRDS(uno,"www/pcm_data/dataProvince.RDS")
+saveRDS(modelliReg,"www/modelliReg.RDS")
+saveRDS(modelliIta,"www/modelliIta.RDS")
