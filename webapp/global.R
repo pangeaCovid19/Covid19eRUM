@@ -2,9 +2,11 @@ library(ggplot2)
 library(sf)
 library(plotly)
 library(leaflet)
+library(data.table)
 library(DT)
 options(bitmapType="cairo")
-
+dir_prov 	<- "www/pcm_data"
+dir_reg		<- "www/dati-regioni"
 
 d3cols <- "1f77b4ff7f0e2ca02cd627289467bd8c564be377c27f7f7fbcbd2217becf"
 d3hexcols <- paste0("#",regmatches(d3cols, gregexpr(".{6}", d3cols))[[1]])
@@ -28,16 +30,18 @@ pop_file <- read.csv("www/tavola_pop_res01.csv", stringsAsFactors=F, skip=1)
 colnames(pop_file) <- c("codice_provincia", "provincia", "pop_m", "pop_f", "pop")
 
 
-data_files <- list.files("www/pcm_data", full.names=T)
-data_files <- data_files[grepl(".csv$", data_files) | grepl(".txt$", data_files)]
+data_files <- list.files(dir_prov, full.names=T)
+data_files <- data_files[(grepl(".csv$", data_files) | grepl(".txt$", data_files)) & grepl('2020',data_files)]
 date_range <- as.Date(gsub(".*/.*-(\\d{,8}).csv$", "\\1", data_files), format="%Y%m%d")
-date0 <- min(date_range)
+date0 <- min(date_range, na.rm=T)
 
 get_covid19_data <- function(flist) {
   do.call(rbind, lapply(flist, function(ff) {
     temp <- read.csv(ff, stringsAsFactors=F)
     temp$data <- as.Date(temp$data)
-    temp$denominazione_regione[temp$denominazione_regione %in% c("Bolzano", "Trento")] <- "Trentino - Alto Adige"
+		paTrentino <- grep('bolz|trent', temp$denominazione_regione, ignore.case=T)
+		temp$denominazione_regione[paTrentino] <- "Trentino - Alto Adige"
+		#temp$denominazione_regione[temp$denominazione_regione %in% c("Bolzano", "Trento")] <- "Trentino - Alto Adige"
     temp <- merge(temp, pop_file[,c("codice_provincia", "pop")], by="codice_provincia")
     temp
   }))
@@ -46,6 +50,32 @@ get_covid19_data <- function(flist) {
 allData <- get_covid19_data(data_files)
 regioniList <- sort(unique(allData$denominazione_regione))
 
+alld0 <- allData[allData$data==date0, ]
+pop_reg <- aggregate(alld0[, 'pop'], by=list(denominazione_regione=alld0$denominazione_regione), sum)
+setnames(pop_reg, old="x", new="pop")
+
+
+data_files_reg <- list.files(dir_reg, full.names=T)
+data_files_reg <- data_files_reg[(grepl(".csv$", data_files_reg) | grepl(".txt$", data_files_reg))  & grepl('2020',data_files_reg)]
+date_range_reg <- as.Date(gsub(".*/.*-(\\d{,8}).csv$", "\\1", data_files_reg), format="%Y%m%d")
+date0_reg <- min(date_range_reg, na.rm=T)
+
+get_covid19_data_reg <- function(flist) {
+  do.call(rbind, lapply(flist, function(ff) {
+    temp <- read.csv(ff, stringsAsFactors=F)
+    temp$data <- as.Date(temp$data)
+    temp <- merge(temp, pop_reg[,c("denominazione_regione", "pop")], by="denominazione_regione")
+		paTrentino <- grep('bolz|trent', temp$denominazione_regione, ignore.case=T)
+		temp$denominazione_regione[paTrentino] <- "Trentino - Alto Adige"
+    #temp$denominazione_regione[temp$denominazione_regione %in% c("Bolzano", "Trento")] <- "Trentino - Alto Adige"
+    temp
+  }))
+}
+
+allData_reg <- get_covid19_data_reg(data_files_reg)
+
+
+# SHAPE FILES
 
 regioni <- st_read("www/Reg01012019/Reg01012019_WGS84.shp")
 regioni <- st_transform(regioni, crs="+proj=longlat +datum=WGS84 +no_defs")
@@ -53,26 +83,25 @@ hlpr <- st_coordinates(st_centroid(regioni))
 colnames(hlpr) <- c("reg_long", "reg_lat")
 regioni <- cbind(regioni, hlpr)
 
-map_regioni <- lapply(regioni$COD_REG, function(cod) {
-                        box_strict <- st_as_sfc(st_bbox(regioni[regioni$COD_REG == cod,]), crs=st_crs(regioni))
-                        selezionati <- vapply(st_geometry(regioni), function(x) st_intersects(x, st_geometry(box_strict), sparse=F), TRUE)
-                        reg_to_plot <- st_boundary(regioni[selezionati,])
-                        reg_to_plot <- st_intersection(reg_to_plot, box_strict)
-                        ggplot() +
-                          geom_sf(data = reg_to_plot, color="lightgrey", size=.5) +
-                          geom_sf(data = regioni[regioni$COD_REG == cod,], color="black", size=.75) +
-                          labs(title=paste("Casi in", regioni$DEN_REG[regioni$COD_REG == cod]), x="", y="") +
-                          my_ggtheme()
-
-                      })
-names(map_regioni) <- regioni$COD_REG
+#map_regioni <- lapply(regioni$COD_REG, function(cod) {
+#                        box_strict <- st_as_sfc(st_bbox(regioni[regioni$COD_REG == cod,]), crs=st_crs(regioni))
+#                       selezionati <- vapply(st_geometry(regioni), function(x) st_intersects(x, st_geometry(box_strict), sparse=F), TRUE)
+#                      reg_to_plot <- st_boundary(regioni[selezionati,])
+#                        reg_to_plot <- st_intersection(reg_to_plot, box_strict)
+#                        ggplot() +
+#                          geom_sf(data = reg_to_plot, color="lightgrey", size=.5) +
+#                          geom_sf(data = regioni[regioni$COD_REG == cod,], color="black", size=.75) +
+#                          labs(title=paste("Casi in", regioni$DEN_REG[regioni$COD_REG == cod]), x="", y="") +
+#                          my_ggtheme()
+#                      })
+#names(map_regioni) <- regioni$COD_REG
 
 
 province <- st_read("www/ProvCM01012019/ProvCM01012019_WGS84.shp")
 province <- st_transform(province, crs="+proj=longlat +datum=WGS84 +no_defs")
-hlpr <- st_coordinates(st_centroid(province))
-colnames(hlpr) <- c("prv_long", "prv_lat")
-province <- cbind(province, hlpr)
+#hlpr <- st_coordinates(st_centroid(province))
+#colnames(hlpr) <- c("prv_long", "prv_lat")
+#province <- cbind.data.frame(province, hlpr)
 
 
 spiegaMappa <- HTML("<div style='padding-bottom:10px;'>In questa mappa mostriamo la diffusione sul territorio dei casi confermati
@@ -96,29 +125,29 @@ e disabilitare (o riabilitare) singoli territori interagendo con la legenda del 
 
 ## shapefile addizionali per rimuovere uso di leaflet e alleggerire il carico della app
 
-eu_countries <- read_sf("www/EU_countries.shp/CNTR_BN_10M_2016_4326.shp")
-eu_info <- read.csv("www/EU_countries.shp/CNTR_RG_BN_10M_2016.csv")
-eu_info <- eu_info[!is.na(eu_info$CNTR_CODE),]
-eu_countries <- merge(eu_countries, eu_info, by.x="CNTR_BN_ID", by.y="CNTR_BN_CODE")
+#eu_countries <- read_sf("www/EU_countries.shp/CNTR_BN_10M_2016_4326.shp")
+#eu_info <- read.csv("www/EU_countries.shp/CNTR_RG_BN_10M_2016.csv")
+#eu_info <- eu_info[!is.na(eu_info$CNTR_CODE),]
+#eu_countries <- merge(eu_countries, eu_info, by.x="CNTR_BN_ID", by.y="CNTR_BN_CODE")
 
-italy <- eu_countries[eu_countries$CNTR_CODE=="IT",]
-ita_box <- st_as_sfc(st_bbox(italy), crs=st_crs(eu_countries))
-selezionati <- vapply(st_geometry(eu_countries), function(x) st_intersects(x, st_geometry(ita_box), sparse=F), TRUE)
-eu_to_plot <- eu_countries[selezionati,]
-st_agr(eu_to_plot) = "constant"
-eu_to_plot <- st_intersection(eu_to_plot, ita_box)
-eu_to_plot <- st_transform(eu_to_plot, crs="+proj=longlat +datum=WGS84 +no_defs")
+#italy <- eu_countries[eu_countries$CNTR_CODE=="IT",]
+#ita_box <- st_as_sfc(st_bbox(italy), crs=st_crs(eu_countries))
+#selezionati <- vapply(st_geometry(eu_countries), function(x) st_intersects(x, st_geometry(ita_box), sparse=F), TRUE)
+#eu_to_plot <- eu_countries[selezionati,]
+#st_agr(eu_to_plot) = "constant"
+#eu_to_plot <- st_intersection(eu_to_plot, ita_box)
+#eu_to_plot <- st_transform(eu_to_plot, crs="+proj=longlat +datum=WGS84 +no_defs")
 
-map_italia <- ggplot() +
-                  geom_sf(data = eu_to_plot, color="lightgrey", size=.5) +
-                  geom_sf(data = italy, color="black", size=.75) +
-                  labs(title="Casi in Italia", x="", y="") +
-                  my_ggtheme()
+#map_italia <- ggplot() +
+#                  geom_sf(data = eu_to_plot, color="lightgrey", size=.5) +
+#                  geom_sf(data = italy, color="black", size=.75) +
+#                  labs(title="Casi in Italia", x="", y="") +
+#                  my_ggtheme()
 
-rm(eu_countries)
-rm(eu_info)
-rm(ita_box)
-gc()
+#rm(eu_countries)
+#rm(eu_info)
+#rm(ita_box)
+#gc()
 
 ## a questo punto eu_to_plot rappresenta i confini delle nazioni vicino all'Italia
 ## e italy i contorni dell'Italia

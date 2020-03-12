@@ -5,17 +5,22 @@ shinyServer(function(input, output, session) {
 
   autoInvalidate <- reactiveTimer(3600000)
 
-  reacval<-reactiveValues(fileList=list.files("www/pcm_data/", full.names=T),
+  reacval<-reactiveValues(
+						fileList=list.files(dir_prov, full.names=T),
             oldList=NULL,
             dataTables=allData,
-            dateRange=date_range
-            )
+            dateRange=date_range,
+						fileList_reg=list.files(dir_reg, full.names=T),
+            oldList_reg=NULL,
+            dataTables_reg=allData_reg,
+            dateRange_reg=date_range_reg
+					)
 
   observe({
     autoInvalidate()
 
-    curFileList <- list.files("www/pcm_data/", full.names=T)
-    curFileList <- curFileList[grepl(".csv$", curFileList) | grepl(".txt$", curFileList)]
+    curFileList <- list.files(dir_prov, full.names=T)
+    curFileList <- curFileList[(grepl(".csv$", curFileList) | grepl(".txt$", curFileList)) & grepl('2020',curFileList)]
     if (any(!(curFileList %in% isolate(reacval$fileList)))) {
       diff <- setdiff(curFileList, isolate(reacval$fileList))
       reacval$oldList <- isolate(reacval$fileList)
@@ -23,6 +28,20 @@ shinyServer(function(input, output, session) {
       reacval$dataTables <- rbind(isolate(reacval$dataTables), get_covid19_data(diff))
       reacval$dateRange <- c(isolate(reacval$dateRange), as.Date(gsub(".*/.*-(\\d{,8}).csv$", "\\1", diff), format="%Y%m%d"))
     }
+
+		curFileList_reg <- list.files(dir_reg, full.names=T)
+		curFileList_reg <- curFileList_reg[(grepl(".csv$", curFileList_reg) | grepl(".txt$", curFileList_reg)) & grepl('2020',curFileList_reg)]
+		if (any(!(curFileList_reg %in% isolate(reacval$fileList_reg)))) {
+			diff <- setdiff(curFileList_reg, isolate(reacval$fileList_reg))
+			reacval$oldList_reg <- isolate(reacval$fileList_reg)
+			reacval$fileList_reg <- curFileList_reg
+			reacval$dataTables_reg <- rbind(isolate(reacval$dataTables_reg), get_covid19_data_reg(diff))
+			reacval$dateRange_reg <- c(isolate(reacval$dateRange_reg), as.Date(gsub(".*/.*-(\\d{,8}).csv$", "\\1", diff), format="%Y%m%d"))
+		}
+
+
+		assign("resOut", list(reg=reacval$dataTables_reg, prov=reacval$dataTables), envir=.GlobalEnv)
+
   })
 
   get_data <- reactive({
@@ -109,26 +128,6 @@ output$mapRegion <- renderLeaflet({
 })
 
 
-output$mapRegionGG <- renderPlot({
-  allData <- get_data()
-  if (!is.null(allData)) {
-    allDataConf <- allData[!grepl("aggiornamento", allData$denominazione_provincia),]
-    allDataReg <- aggregate(list(totale_casi=allDataConf$totale_casi, pop=allDataConf$pop),
-                      by=list(data=allDataConf$data, denominazione_regione=allDataConf$denominazione_regione, codice_regione=allDataConf$codice_regione),
-                      FUN=sum)
-    latestDataReg <- allDataReg[allDataReg$data==max(allDataReg$data),]
-    latestDataReg$densita_casi <- round(latestDataReg$totale_casi / latestDataReg$pop * 10000, 3)
-    pltRegioni <- merge(regioni, latestDataReg[,c("codice_regione", "totale_casi", "densita_casi")], by.x="COD_REG", by.y="codice_regione")
-
-    # map_italia è definito una volta sola nel global
-    map_italia +
-      geom_sf(data = pltRegioni, aes(fill = totale_casi), color="black", size=.2) +
-      scale_fill_distiller(palette = "YlOrRd", direction = 1, name="Numero casi", trans = "log10") +
-      geom_text(data = pltRegioni, aes(x=reg_long, y=reg_lat, label=paste(DEN_REG, "\n casi:", totale_casi)), cex=2.5, color="black", fontface = "bold")
-  }
-})
-
-
 ## PROVINCE
 
 output$updatePrvUI <- renderUI({
@@ -197,29 +196,6 @@ output$mapProvince <- renderLeaflet({
         addProviderTiles("CartoDB.Positron") %>% setView(lng=my_frame$reg_long, lat=my_frame$reg_lat, zoom=7)  %>%
         addPolygons(fillColor = ~pal(log10(totale_casi)), weight = 1, stroke = TRUE, color="lightgrey",
                  label = ~paste(DEN_UTS, "- casi:", totale_casi))
-
-  }
-})
-
-
-output$mapProvinceGG <- renderPlot({
-  myReg <- input$regionSel
-  allData <- get_data()
-  if (!is.null(allData)) {
-    allDataConf <- allData[!grepl("aggiornamento", allData$denominazione_provincia),]
-    allDataConf <- allDataConf[allDataConf$denominazione_regione == myReg,]
-    allDataProv <- aggregate(list(totale_casi=allDataConf$totale_casi, pop=allDataConf$pop),
-                      by=list(data=allDataConf$data, denominazione_provincia=allDataConf$denominazione_provincia, codice_provincia=allDataConf$codice_provincia),
-                      FUN=sum)
-    latestDataProv <- allDataProv[allDataProv$data==max(allDataProv$data),]
-    latestDataProv$densita_casi <- round(latestDataProv$totale_casi / latestDataProv$pop * 10000, 3)
-    pltProvince <- merge(province, latestDataProv[,c("codice_provincia", "totale_casi", "densita_casi")], by.x="COD_PROV", by.y="codice_provincia")
-
-    # map_regioni è definita una volta sola nel global
-    map_regioni[[unique(pltProvince$COD_REG)]] +
-      geom_sf(data = pltProvince, aes(fill = totale_casi), color="black", size=.2) +
-      scale_fill_distiller(palette = "YlOrRd", direction = 1, name="Numero casi", trans = "log10") +
-      geom_text(data = pltProvince, aes(x=prv_long, y=prv_lat, label=paste(DEN_UTS, "\n casi:", totale_casi)), cex=2.5, color="black", fontface = "bold")
 
   }
 })
