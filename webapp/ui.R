@@ -50,11 +50,11 @@ fitTab <- tabItem(tabName = "fitPlots", h1("Analisi previsionale nelle province 
                 )
               ),
               fluidRow(
-                box(width=6, title = tagList(shiny::icon("globe-europe"), "Mappa dei casi confermati"), status = "primary", solidHeader = F,
-                    collapsible = T, spiegaMappa, leafletOutput(outputId="mapProvince")
+                box(width=6, title = tagList(shiny::icon("globe-europe"), "Previsione a 3 giorni dei casi totali regionali"), status = "primary", solidHeader = F,
+                    collapsible = T, plotlyOutput(outputId="fitRegion")
                 ),
-								box(width=6, title = tagList(shiny::icon("table"), "Tabella con casi confermati"), status = "primary", solidHeader = F,
-                    collapsible = T, spiegaTabella,  leafletOutput(outputId="mapRegion")
+								box(width=6, title = tagList(shiny::icon("table"), "Andamento a livello nazionale"), status = "primary", solidHeader = F,
+                    collapsible = T,  plotlyOutput(outputId="fitIta")
                 )
               )
             )

@@ -2,7 +2,7 @@ require(digest)
 require(httr)
 source("funzionifit.R")
 
-campiPrevisioni <- c("totale_casi", "decessi", "totale_ospedalizzati", "terapia_intensiva")
+campiPrevisioni <- c("totale_casi", "deceduti", "totale_ospedalizzati", "terapia_intensiva")
 
 if (!dir.exists("logs")) dir.create("logs")
 hashpath<-"logs/hashes.log"

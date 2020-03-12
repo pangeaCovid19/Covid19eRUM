@@ -41,6 +41,7 @@ shinyServer(function(input, output, session) {
 			for(i in  1:length(campiPrevisioni)){
 				modelliIta<-loglinmodel2(tsReg$Italia, var="totale_casi", rangepesi=c(0,1))
 			}
+			names(modelliIta) <- campiPrevisioni
 			modelliReg <-lapply( tsReg[which(names(tsReg)!='Italia')], loglinmodel2)
 
 			reacval$modelliIta 	<- modelliIta
@@ -62,6 +63,14 @@ shinyServer(function(input, output, session) {
     if (!is.null(input$drangeSel)) res <- res[res$data >= input$drangeSel[1] & res$data <= input$drangeSel[2],]
     res
   })
+
+
+	  get_data_reg <- reactive({
+			if(verbose) cat("\n REACTIVE:getDATA")
+	    res <- reacval$dataTables_reg
+	    if (!is.null(input$drangeSel)) res <- res[res$data >= input$drangeSel[1] & res$data <= input$drangeSel[2],]
+	    res
+	  })
 
   get_last_date <- reactive({
 		if(verbose) cat("\n REACTIVE:get_last_date")
@@ -278,6 +287,98 @@ output$updatePrevisioniUI <- renderUI({
   h3(paste("Dati aggiornati al giorno:", get_last_date()))
 })
 
+prevRegion <- reactive({
+	if(verbose) cat("\n reactive:prevRegion")
+	allDataReg <- copy( reacval$dataTables_reg)
+	modelliReg <- isolate(reacval$modelliReg)
+	nahead=3
+
+	if (!is.null(allDataReg)) {
+		tsReg <- getTimeSeries(allDataReg)
+		tsReg <- tsReg[which(names(tsReg)!="Italia")]
+		prev <- mapply(FUN=predictNextDays, tsReg, modelliReg, nahead=nahead, SIMPLIFY=F)
+
+		prevDT <- rbindlist(prev)
+		prevDT[, regione:=rep(names(prev), each=nahead)]
+		setDF(prevDT)
+  }
+})
+
+
+output$fitRegion <- renderPlotly({
+	if(verbose) cat("\n renderPlotly:fitRegion")
+  allDataReg <- copy( reacval$dataTables_reg)
+
+  if (!is.null(allDataReg)) {
+		tsReg <- getTimeSeries(allDataReg)
+		tsReg <- tsReg[which(names(tsReg)!="Italia")]
+
+		prevDT <-prevRegion()
+		setnames(prevDT, old=c('Attesi'), new=c('casi totali'))
+
+    setnames(allDataReg, old=c('denominazione_regione', 'totale_casi'), new=c('regione', 'casi totali'))
+		setDF(allDataReg)
+
+		out <- rbind(allDataReg[, c('regione', 'casi totali', "data")], prevDT[, c('regione', 'casi totali', "data")])
+ #   colnames(allDataReg)[2] <- "regione"
+ #   colnames(allDataReg)[3] <- "casi totali"
+    p <- ggplot(out) + my_ggtheme() +
+          geom_line(aes(x=data, y=`casi totali`, color=regione)) +
+          scale_color_manual(values=d3hexcols20)
+    p
+  }
+})
+
+prevIta <- reactive({
+	if(verbose) cat("\n reactive:prevIta")
+	allDataReg <- copy( reacval$dataTables_reg)
+	modelliIta <- isolate(reacval$modelliIta)
+	nahead=3
+
+	if (!is.null(allDataReg)) {
+		tsIta <- getTimeSeries(allDataReg)$Italia
+		prevIta <- lapply(modelliIta, function(modello, dati, nahead){
+			predictNextDays(dati=dati, modello=modello,nahead=nahead)
+		},dati=tsIta, nahead=nahead)
+
+		prevItaDT <- rbindlist(prevIta)
+		prevItaDT[, variabilePrevista:=rep(names(prevIta), each=nahead)]
+		setDF(prevItaDT)
+  }
+})
+
+output$fitIta <- renderPlotly({
+	if(verbose) cat("\n renderPlotly:fitRegion")
+  allDataReg <- copy( reacval$dataTables_reg)
+
+  if (!is.null(allDataReg)) {
+		tsIta <- getTimeSeries(allDataReg)$Italia
+		prevItaDT <-prevIta()
+		#setnames(prevDT, old=c('Attesi'), new=c('casi totali'))
+
+		setDF(allDataReg)
+		varPrev <- unique(prevItaDT$variabilePrevista)
+
+		dataRDX <- allDataReg[, c('data', varPrev)]
+		dataIta <- aggregate(dataRDX[,2:5], sum, by=list(data=dataRDX$data))
+
+		out <- data.frame(
+			data=rep(unique(dataIta$data), times=length(varPrev)),
+			casi=unlist(lapply(2:5, function(x) dataIta[, x])),
+			varPrev=rep(unique(varPrev), each=nrow(dataIta))
+		)
+
+  #  setnames(allDataReg, old=c('denominazione_regione', 'totale_casi'), new=c('regione', 'casi totali'))
+	#	setDF(allDataReg)
+
+#		out <- rbind(allDataReg[, c('regione', 'casi totali', "data")], prevDT[, c('regione', 'casi totali', "data")])
+
+    p <- ggplot(out) + my_ggtheme() +
+          geom_line(aes(x=data, y=`casi`, color=varPrev)) +
+          scale_color_manual(values=d3hexcols20)
+    p
+  }
+})
 
 
 

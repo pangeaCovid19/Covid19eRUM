@@ -16,7 +16,7 @@ provShapeRDS <- "ProvinceShapeF.RDS"
 regShapeRDS <- "RegioniShapeF.RDS"
 
 
-campiPrevisioni <- c("totale_casi", "decessi", "totale_ospedalizzati", "terapia_intensiva")
+campiPrevisioni <- c("totale_casi", "deceduti", "totale_ospedalizzati", "terapia_intensiva")
 
 verbose <- TRUE
 
@@ -47,7 +47,6 @@ regioniList <- sort(unique(allData$denominazione_regione))
 allData_reg <- readRDS(paste0(dir_reg, regRDS))
 mtimeProv <- file.info(paste0(dir_prov,provRDS))$mtime
 mtimeReg 	<-file.info(paste0(dir_reg,regRDS))$mtime
-
 
 modelliReg <- readRDS("www/modelliReg.RDS")
 modelliIta <-readRDS("www/modelliIta.RDS")
