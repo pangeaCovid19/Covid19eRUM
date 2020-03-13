@@ -402,8 +402,8 @@ output$fitRegLog <- renderPlotly({
     p <- ggplot(toplot) + my_ggtheme() +
 					geom_point(aes(x=data, y=`casi totali`, color=regione))+
 #					geom_abline(data=fit, mapping=aes(slope=data, intercept='int')) +
-					geom_abline(slope=fit['Lombardia',2], intercept=fit['Lombardia',1])+
-					geom_abline(slope=fit['Veneto',2], intercept=fit['Veneto',1])+
+#					geom_abline(slope=fit['Lombardia',2], intercept=fit['Lombardia',1])+
+#					geom_abline(slope=fit['Veneto',2], intercept=fit['Veneto',1])+
 #					geom_abline(slope=fit['Emilia Romagna',2], intercept=fit['Emilia Romagna',1])+
 					scale_color_manual(values=d3hexcols20)
     p
