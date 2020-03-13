@@ -55,17 +55,17 @@ shinyServer(function(input, output, session) {
   get_data <- reactive({
 		if(verbose) cat("\n REACTIVE:getDATA")
     res <- reacval$dataTables
-    if (!is.null(input$drangeSel)) res <- res[res$data >= input$drangeSel[1] & res$data <= input$drangeSel[2],]
+    #if (!is.null(input$drangeSel)) res <- res[res$data >= input$drangeSel[1] & res$data <= input$drangeSel[2],]
     res
   })
 
-
-	  get_data_reg <- reactive({
-			if(verbose) cat("\n REACTIVE:getDATA")
-	    res <- reacval$dataTables_reg
-	    if (!is.null(input$drangeSel)) res <- res[res$data >= input$drangeSel[1] & res$data <= input$drangeSel[2],]
-	    res
-	  })
+#DEPRECATA
+#	  get_data_reg <- reactive({
+#			if(verbose) cat("\n REACTIVE:getDATA")
+#	    res <- reacval$dataTables_reg
+	    #if (!is.null(input$drangeSel)) res <- res[res$data >= input$drangeSel[1] & res$data <= input$drangeSel[2],]
+#	    res
+#	  })
 
   get_last_date <- reactive({
 		if(verbose) cat("\n REACTIVE:get_last_date")
@@ -91,7 +91,7 @@ output$updateRegUI <- renderUI({
 
 output$lineRegion <- renderPlotly({
 	if(verbose) cat("\n renderPlotly:lineRegion")
-  allData <- get_data()
+  allData <- reacval$dataTables#get_data()
   if (!is.null(allData)) {
     allDataConf <- allData[!grepl("aggiornamento", allData$denominazione_provincia),]
     allDataReg <- aggregate(list(totale_casi=allDataConf$totale_casi), by=list(data=allDataConf$data, denominazione_regione=allDataConf$denominazione_regione), FUN=sum)
@@ -107,7 +107,7 @@ output$lineRegion <- renderPlotly({
 
 output$tabRegion <- renderDT({
 	if(verbose) cat("\n renderDT:tabRegion")
-  allData <- get_data()
+  allData <- reacval$dataTables#get_data()
   if (!is.null(allData)) {
     allDataConf <- allData[!grepl("aggiornamento", allData$denominazione_provincia),]
     allDataReg <- aggregate(list(totale_casi=allDataConf$totale_casi, pop=allDataConf$pop), by=list(data=allDataConf$data, denominazione_regione=allDataConf$denominazione_regione), FUN=sum)
@@ -130,7 +130,7 @@ output$tabRegion <- renderDT({
 output$mapRegion <- renderLeaflet({
 	if(verbose) cat("\n renderLeaflet:mapRegion")
 
-  allData <- get_data()
+  allData <- reacval$dataTables#get_data()
   if (!is.null(allData)) {
     allDataConf <- allData[!grepl("aggiornamento", allData$denominazione_provincia),]
     allDataReg <- aggregate(list(totale_casi=allDataConf$totale_casi, pop=allDataConf$pop),
@@ -146,12 +146,16 @@ output$mapRegion <- renderLeaflet({
 			addProviderTiles("CartoDB.Positron") %>% setView(lng=12.5, lat=41.3, zoom=5)  %>%
 			addPolygons(fillColor = ~pal(log10(totale_casi)), weight = 1, stroke = TRUE, color="lightgrey",
 		  label = ~paste(DEN_REG, "- casi:", totale_casi))
+#    leaflet(data = pltRegioni) %>% addTiles() %>%
+ #       addProviderTiles("CartoDB.Positron") %>% setView(lng=12.5, lat=41.3, zoom=5)  %>%
+  #      addPolygons(fillColor = ~pal(log10(totale_casi)), weight = 1, stroke = TRUE, color="lightgrey",
+   #              label = ~paste(DEN_REG, "- casi:", totale_casi))
   }
 })
 
 output$mapRegionGG <- renderPlot({
 	if(verbose) cat("\n renderPlot:mapRegionGG")
-  allData <- get_data()
+  allData <- reacval$dataTables#get_data()
   if (!is.null(allData)) {
     allDataConf <- allData[!grepl("aggiornamento", allData$denominazione_provincia),]
     allDataReg <- aggregate(list(totale_casi=allDataConf$totale_casi, pop=allDataConf$pop),
@@ -178,7 +182,7 @@ output$updatePrvUI <- renderUI({
 output$lineProvince <- renderPlotly({
 	if(verbose) cat("\n renderPlotly:lineProvince")
   myReg <- input$regionSel
-  allData <- get_data()
+  allData <- reacval$dataTables#get_data()
   if (!is.null(allData)) {
     allDataConf <- allData[!grepl("aggiornamento", allData$denominazione_provincia),]
     allDataConf <- allDataConf[allDataConf$denominazione_regione == myReg,]
@@ -197,11 +201,12 @@ output$lineProvince <- renderPlotly({
 
 output$tabProvince <- renderDT({
 	if(verbose) cat("\n renderDT:tabProvince")
-  myReg <- input$regionSel
+  #myReg <- input$regionSel
+
   if (!is.null(allData)) {
-    allData <- get_data()
+    allData <- reacval$dataTables#get_data()
     allDataConf <- allData[!grepl("aggiornamento", allData$denominazione_provincia),]
-    allDataConf <- allDataConf[allDataConf$denominazione_regione == myReg,]
+    #allDataConf <- allDataConf[allDataConf$denominazione_regione == myReg,]
     allDataProv <- aggregate(list(totale_casi=allDataConf$totale_casi, pop=allDataConf$pop),
                       by=list(data=allDataConf$data, denominazione_provincia=allDataConf$denominazione_provincia),
                       FUN=sum)
@@ -223,7 +228,7 @@ output$tabProvince <- renderDT({
 output$mapProvince <- renderLeaflet({
 	if(verbose) cat("\n renderLeaflet:mapProvince")
   myReg <- input$regionSel
-  allData <- get_data()
+  allData <- reacval$dataTables#get_data()
   if (!is.null(allData)) {
     allDataConf <- allData[!grepl("aggiornamento", allData$denominazione_provincia),]
     allDataConf <- allDataConf[allDataConf$denominazione_regione == myReg,]
@@ -247,7 +252,7 @@ output$mapProvince <- renderLeaflet({
 output$mapProvinceGG <- renderPlot({
 	if(verbose) cat("\n renderPlot:mapProvinceGG")
   myReg <- input$regionSel
-  allData <- get_data()
+  allData <- reacval$dataTables#get_data()
   if (!is.null(allData)) {
     allDataConf <- allData[!grepl("aggiornamento", allData$denominazione_provincia),]
     allDataConf <- allDataConf[allDataConf$denominazione_regione == myReg,]
@@ -260,9 +265,11 @@ output$mapProvinceGG <- renderPlot({
 
     # map_regioni è definita una volta sola nel global
     map_regioni[[unique(pltProvince$COD_REG)]] +
+ 			#map_italia+
       geom_sf(data = pltProvince, aes(fill = totale_casi), color="black", size=.2) +
       scale_fill_distiller(palette = "YlOrRd", direction = 1, name="Numero casi", trans = "log10") +
       geom_text(data = pltProvince, aes(x=prv_long, y=prv_lat, label=paste(DEN_UTS, "\n casi:", totale_casi)), cex=2.5, color="black", fontface = "bold")
+
 
   }
 })
@@ -356,6 +363,9 @@ output$fitRegLog <- renderPlotly({
 		fit <- as.data.frame(do.call(rbind, lapply(modelliReg, function(x) x$coefficients)))
 		names(fit[,1]) <- "int"
 
+	#			minprev <- min(prevItaDT$data)
+	#			geom_vline(aes(xintercept=minprev))+
+
     p <- ggplot(out) + my_ggtheme() +
 					geom_point(aes(x=data, y=`casi totali`, color=regione))+
 #					geom_abline(data=fit, mapping=aes(slope=data, intercept='int')) +
@@ -417,15 +427,14 @@ output$fitIta <- renderPlotly({
   #  setnames(allDataReg, old=c('denominazione_regione', 'totale_casi'), new=c('regione', 'casi totali'))
 	#	setDF(allDataReg)
 #		out <- rbind(allDataReg[, c('regione', 'casi totali', "data")], prevDT[, c('regione', 'casi totali', "data")])
-
+		minprev <- min(prevItaDT$data)
     p <- ggplot(out) + my_ggtheme() +
           geom_line(aes(x=data, y=`casi`, color=variabilePrevista)) +
+					geom_vline(aes(xintercept=minprev))+
           scale_color_manual(values=d3hexcols20)
     p
   }
 })
-
-
 
 output$fitItaLog <- renderPlotly({
 	if(verbose) cat("\n renderPlotly:fitItaLog")
@@ -456,6 +465,14 @@ output$fitItaLog <- renderPlotly({
 		fit <- as.data.frame(do.call(rbind, lapply(modelliIta, function(x) x$coefficients)))
 		names(fit[,1]) <- "int"
 
+
+		minprev <- as.Date(min(prevItaDT$data))
+		if(assignout) assign("prevItaDT", prevItaDT, envir=.GlobalEnv)
+		if(assignout) assign("fit", fit, envir=.GlobalEnv)
+		if(assignout) assign("out", out, envir=.GlobalEnv)
+		if(verbose) cat("\n minprev", as.character(minprev))
+
+	 	minprev <- as.Date(min(prevItaDT$data))
     p <- ggplot(out) + my_ggtheme() +
 					geom_point(aes(x=data, y=`casi`, color=variabilePrevista))+
 #					geom_abline(data=fit, mapping=aes(slope=data, intercept='int')) +
@@ -463,6 +480,7 @@ output$fitItaLog <- renderPlotly({
 					geom_abline(slope=fit[2,2], intercept=fit[2,1])+
 					geom_abline(slope=fit[3,2], intercept=fit[3,1])+
 					geom_abline(slope=fit[4,2], intercept=fit[4,1])+
+					geom_vline(aes(xintercept=minprev))+
 					#geom_abline(data=d,   mapping=aes(slope=s, intercept=ic, linetype=factor(s))) +
 					scale_color_manual(values=d3hexcols20)
     p

@@ -10,7 +10,7 @@ options(bitmapType="cairo")
 
 verbose <- TRUE
 assignout <- TRUE
-saveRDSout <- TRUE
+saveRDSout <- FALSE
 
 dir_prov 	<- "www/pcm_data/"
 dir_reg		<- "www/dati-regioni/"

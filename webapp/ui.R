@@ -1,68 +1,79 @@
 library(shinydashboard)
 source("dashboardPangea.R")
 
-regTab <- tabItem(tabName = "regPlots", h1("Diffusione nelle regioni italiane"), br(), br(),
+regTab <- tabItem(tabName = "regPlots",
+#							h1("Diffusione nelle regioni italiane"), br(), br(),
               fluidRow(
+								box(width=6, title = tagList(shiny::icon("globe-europe"), "Mappa dei casi confermati"), status = "primary", solidHeader = F,
+										collapsible = T,
+										#plotOutput(outputId="mapRegionGG", height = 800),
+										leafletOutput(outputId="mapRegion"),
+										spiegaMappa
+								),
+								box(width=6, title = tagList(shiny::icon("table"), "Tabella con casi confermati"), status = "primary", solidHeader = F,collapsible = T,
+									DTOutput(outputId="tabRegion"),
+									spiegaTabella
+                )
+              ),
+              fluidRow(
+                box(width=12, title = tagList(shiny::icon("analytics"), "Andamento dei casi confermati"), status = "primary", solidHeader = F,collapsible = T,
+									plotlyOutput(outputId="lineRegion"),
+									spiegaLinePlot
+								)
+              ),fluidRow(
                 box(width=12, uiOutput("updateRegUI")
-                )
-              ),
-
-              fluidRow(
-                box(width=6, title = tagList(shiny::icon("globe-europe"), "Mappa dei casi confermati"), status = "primary", solidHeader = F,
-                    collapsible = T, spiegaMappa, #plotOutput(outputId="mapRegionGG", height = 800)
-                    leafletOutput(outputId="mapRegion", height = 800)
-                ),
-								box(width=6, title = tagList(shiny::icon("table"), "Tabella con casi confermati"), status = "primary", solidHeader = F,
-                    collapsible = T, spiegaTabella, DTOutput(outputId="tabRegion")
-                )
-              ),
-              fluidRow(
-                box(width=12, title = tagList(shiny::icon("analytics"), "Andamento dei casi confermati"), status = "primary", solidHeader = F,
-                    collapsible = T, spiegaLinePlot, plotlyOutput(outputId="lineRegion")
                 )
               )
           )
 
-prvTab <- tabItem(tabName = "prvPlots", h1("Diffusione nelle province italiane"), br(), br(),
-              fluidRow(
-                box(width=12, uiOutput("updatePrvUI")
-                )
-              ),
+prvTab <- tabItem(tabName = "prvPlots",
+#							h1("Diffusione nelle province italiane"), br(), br()
+#
               fluidRow(
                 box(width=6, title = tagList(shiny::icon("globe-europe"), "Mappa dei casi confermati"), status = "primary", solidHeader = F,
-                    collapsible = T, spiegaMappa, #plotOutput(outputId="mapProvinceGG", height = 800)
-                    leafletOutput(outputId="mapProvince", height = 800)
+                    collapsible = T,
+										selectInput("regionSel", label="Regione", choices=regioniList, selected = "Lombardia"),
+										#plotOutput(outputId="mapProvinceGG", height = 800),
+                    leafletOutput(outputId="mapProvince"),
+										spiegaMappa
                 ),
 								box(width=6, title = tagList(shiny::icon("table"), "Tabella con casi confermati"), status = "primary", solidHeader = F,
-                    collapsible = T, spiegaTabella,  DTOutput(outputId="tabProvince")
+                    collapsible = T,
+											DTOutput(outputId="tabProvince"), spiegaTabella
                 )
               ),
               fluidRow(
                 box(width=12, title = tagList(shiny::icon("analytics"), "Andamento dei casi confermati"), status = "primary", solidHeader = F,
-                    collapsible = T, spiegaLinePlot, plotlyOutput(outputId="lineProvince")
+                    collapsible = T,
+										plotlyOutput(outputId="lineProvince"), spiegaLinePlot
+                )
+              ),
+              fluidRow(
+                box(width=12, uiOutput("updatePrvUI")
                 )
               )
             )
 
-fitTab <- tabItem(tabName = "fitPlots", h1("Analisi previsionale nelle province italiane"), br(), br(),
+fitTab <- tabItem(tabName = "fitPlots",
+#							h1("Analisi previsionale nelle province italiane"), br(), br(),
               fluidRow(
-                box(width=12, uiOutput("updatePrevisioniUI")
-                )
-              ),
-              fluidRow(
-                box(width=6, title = tagList(shiny::icon("globe-europe"), "Previsione a 3 giorni dei casi totali regionali"), status = "primary", solidHeader = F,
+                box(width=6, title = tagList(shiny::icon("globe-europe"), "Totali Positivi per regione con previsione a 3 giorni"), status = "primary", solidHeader = F,
                     collapsible = T, plotlyOutput(outputId="fitRegion")
                 ),
-								box(width=6, title = tagList(shiny::icon("table"), "Andamento a livello nazionale"), status = "primary", solidHeader = F,
+								box(width=6, title = tagList(shiny::icon("table"), "Andamenti globali in Italia con previsione a 3"), status = "primary", solidHeader = F,
                     collapsible = T,  plotlyOutput(outputId="fitIta")
                 )
               ),
               fluidRow(
-                box(width=6, title = tagList(shiny::icon("globe-europe"), "Previsione a 3 giorni dei casi totali regionali"), status = "primary", solidHeader = F,
+                box(width=6, title = tagList(shiny::icon("globe-europe"), "Totali Positivi per regione con previsione a 3 in scala logaritmica"), status = "primary", solidHeader = F,
                     collapsible = T, plotlyOutput(outputId="fitRegLog")
                 ),
-								box(width=6, title = tagList(shiny::icon("table"), "Andamento a livello nazionale"), status = "primary", solidHeader = F,
+								box(width=6, title = tagList(shiny::icon("table"), "Andamenti globali in Italia con previsione a 3 in scala logaritmica"), status = "primary", solidHeader = F,
                     collapsible = T,  plotlyOutput(outputId="fitItaLog")
+                )
+              ),
+              fluidRow(
+                box(width=12, uiOutput("updatePrevisioniUI")
                 )
               )
             )
@@ -87,12 +98,8 @@ dashboardPage(
       ),
       sidebarMenu(id='fitCFG',
         menuItem2("CoVid-19 previsioni", tabName = "fitPlots", icon = icon("vials"))
-      ),
-      #uiOutput("drangeUI"),
-      dateRangeInput("drangeSel", label="Periodo di interesse", start = date0, end = Sys.Date(), min = date0,
-        max = Sys.Date(), format = "dd-mm-yyyy", startview = "month", weekstart = 1,
-        language = "it", separator = " a "),
-      selectInput("regionSel", label="Regione", choices=regioniList, selected = "Lombardia")
+      )#,
+		 #selectInput("regionSel", label="Regione", choices=regioniList, selected = "Lombardia")
 	),
 
 	dashboardBody(
