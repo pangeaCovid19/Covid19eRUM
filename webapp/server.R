@@ -50,7 +50,6 @@ shinyServer(function(input, output, session) {
 			assign("modelliReg",modelliReg,envir=.GlobalEnv)
 			assign("modelliIta",modelliIta,envir=.GlobalEnv)
 		}
-		#assign("resNew", list(reg=reacval$dataTables_reg, prov=reacval$dataTables), envir=.GlobalEnv)
   })
 
   get_data <- reactive({
@@ -277,7 +276,7 @@ getTimeSeriesReact <- reactive({
 	allDataReg <- copy( reacval$dataTables_reg)
 	if (!is.null(allDataReg)) {
 		tstot <- getTimeSeries(allDataReg)
-		assign("tstotOut",tstot,envir=.GlobalEnv)
+		if(saveRDSout) saveRDS(file="tstotOut.RDS",tstot)
 		tstot
   }
 })
@@ -297,6 +296,7 @@ prevRegion <- reactive({
 
 	if (!is.null(allDataReg)) {
 		tsReg <- getTimeSeriesReact()[which(names(getTimeSeriesReact())!="Italia")]
+		if(saveRDSout) saveRDS(file="prevRegionList.RDS",list(tsReg, modelliReg, allDataReg))
 		#tsReg <- getTimeSeries(allDataReg)
 		#tsReg <- tsReg[which(names(tsReg)!="Italia")]
 		prev <- mapply(FUN=predictNextDays, tsReg, modelliReg, nahead=nahead, SIMPLIFY=F)
@@ -315,6 +315,7 @@ output$fitRegion <- renderPlotly({
 
   if (!is.null(allDataReg)) {
 		tsReg <- getTimeSeriesReact()[which(names(getTimeSeriesReact())!="Italia")]
+		if(saveRDSout) saveRDS(file="fitRegionList.RDS",list(tsReg, allDataReg))
 #		tsReg <- getTimeSeries(allDataReg)
 #		tsReg <- tsReg[which(names(tsReg)!="Italia")]
 
@@ -343,6 +344,7 @@ output$fitRegLog <- renderPlotly({
 
   if (!is.null(allData)) {
 		tsReg <- getTimeSeriesReact()[which(names(getTimeSeriesReact())!="Italia")]
+		if(saveRDSout) saveRDS(file="fitRegLogList.RDS",list(tsReg, modelliReg, allDataReg))
 #		tsReg <- getTimeSeries(allDataReg)
 #		tsReg <- tsReg[which(names(tsReg)!="Italia")]
 
@@ -378,6 +380,7 @@ prevIta <- reactive({
 
 	if (!is.null(allDataReg)) {
 		tsIta <- getTimeSeriesReact()$Italia
+		if(saveRDSout) saveRDS(file="prevItaList.RDS",list(tsIta, modelliIta, allDataReg))
 #		tsIta <- getTimeSeries(allDataReg)$Italia
 		prevIta <- lapply(modelliIta, function(modello, dati, nahead){
 			predictNextDays(dati=dati, modello=modello,nahead=nahead)
@@ -396,6 +399,7 @@ output$fitIta <- renderPlotly({
 
   if (!is.null(allDataReg)) {
 		tsIta <- getTimeSeriesReact()$Italia
+		if(saveRDSout) saveRDS(file="fitItaList.RDS",list(tsIta, allDataReg))
 #		tsIta <- getTimeSeries(allDataReg)$Italia
 		prevItaDT <-copy(prevIta())
 		setnames(prevItaDT, old=c('Attesi'), new=c('casi'))
@@ -434,6 +438,7 @@ output$fitItaLog <- renderPlotly({
 
   if (!is.null(allDataReg)) {
 		tsIta <- getTimeSeriesReact()$Italia
+		if(saveRDSout) saveRDS(file="fitItaLogList.RDS",list(tsIta, modelliIta, allDataReg))
 	#	tsIta <- getTimeSeries(allDataReg)$Italia
 		prevItaDT <-copy(prevIta())
 		setnames(prevItaDT, old=c('Attesi'), new=c('casi'))

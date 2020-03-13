@@ -6,6 +6,12 @@ library(data.table)
 library(DT)
 source("funzionifit.R")
 options(bitmapType="cairo")
+
+
+verbose <- TRUE
+assignout <- TRUE
+saveRDSout <- TRUE
+
 dir_prov 	<- "www/pcm_data/"
 dir_reg		<- "www/dati-regioni/"
 dir_data	<- "www/"
@@ -18,7 +24,6 @@ regShapeRDS <- "RegioniShapeF.RDS"
 
 campiPrevisioni <- c("totale_casi", "deceduti", "totale_ospedalizzati", "terapia_intensiva")
 
-verbose <- TRUE
 
 pop_file <- read.csv("www/tavola_pop_res01.csv", stringsAsFactors=F, skip=1)
 colnames(pop_file) <- c("codice_provincia", "provincia", "pop_m", "pop_f", "pop")
