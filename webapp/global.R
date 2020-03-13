@@ -12,6 +12,8 @@ verbose <- TRUE
 assignout <- TRUE
 saveRDSout <- FALSE
 
+regioni2fit <- c('Lombardia', 'Emilia Romagna', 'Veneto')
+
 dir_prov 	<- "www/pcm_data/"
 dir_reg		<- "www/dati-regioni/"
 dir_data	<- "www/"

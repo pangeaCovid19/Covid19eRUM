@@ -113,7 +113,7 @@ output$tabRegion <- renderDT({
     allDataReg <- aggregate(list(totale_casi=allDataConf$totale_casi, pop=allDataConf$pop), by=list(data=allDataConf$data, denominazione_regione=allDataConf$denominazione_regione), FUN=sum)
     allDataReg$data <- as.Date(allDataReg$data)
     latestDataReg <- allDataReg[allDataReg$data==max(allDataReg$data),]
-    latestDataReg$`casi su 10^4 abit.` <- round(latestDataReg$totale_casi / latestDataReg$pop * 10000, 3)
+    latestDataReg$`casi su 10mila abit` <- round(latestDataReg$totale_casi / latestDataReg$pop * 10000, 3)
     latestDataReg$pop <- NULL
     latestDataReg$data <- strftime(latestDataReg$data, format="%d-%m-%Y")
     colnames(latestDataReg)[2] <- "regione"
@@ -201,17 +201,17 @@ output$lineProvince <- renderPlotly({
 
 output$tabProvince <- renderDT({
 	if(verbose) cat("\n renderDT:tabProvince")
-  #myReg <- input$regionSel
+  myReg <- input$regionSel
 
   if (!is.null(allData)) {
     allData <- reacval$dataTables#get_data()
     allDataConf <- allData[!grepl("aggiornamento", allData$denominazione_provincia),]
-    #allDataConf <- allDataConf[allDataConf$denominazione_regione == myReg,]
+    allDataConf <- allDataConf[allDataConf$denominazione_regione == myReg,]
     allDataProv <- aggregate(list(totale_casi=allDataConf$totale_casi, pop=allDataConf$pop),
                       by=list(data=allDataConf$data, denominazione_provincia=allDataConf$denominazione_provincia),
                       FUN=sum)
     latestDataProv <- allDataProv[allDataProv$data==max(allDataProv$data),]
-    latestDataProv$`casi su 10^4 abit.` <- round(latestDataProv$totale_casi / latestDataProv$pop * 10000, 3)
+    latestDataProv$`casi su 10mila abit` <- round(latestDataProv$totale_casi / latestDataProv$pop * 10000, 3)
     latestDataProv$pop <- NULL
     latestDataProv$data <- strftime(latestDataProv$data, format="%d-%m-%Y")
     colnames(latestDataProv)[2] <- "provincia"
@@ -285,6 +285,33 @@ getTimeSeriesReact <- reactive({
 })
 
 ## PREVISIONI
+##
+output$graficiPrevisioniUI <- renderUI({
+	if(verbose) cat("\n renderUI:graficiPrevisioniUI")
+	tipoGraph <- input$regionLinLogFit
+	if(tipoGraph=="Lineare"){
+		fluidRow(
+			box(width=6, title = tagList(shiny::icon("globe-europe"), "Totali Positivi per regione con previsione a 3 giorni"), status = "primary", solidHeader = F,
+					collapsible = T, plotlyOutput(outputId="fitRegion"), spiegaFitPos
+			),
+			box(width=6, title =  "Andamenti globali in Italia con previsione a 3", status = "primary", solidHeader = F,
+					collapsible = T,  plotlyOutput(outputId="fitIta"), spiegaFitTot
+			)
+		)
+	} else {
+		fluidRow(
+			box(width=6, title = tagList(shiny::icon("globe-europe"), "Totali Positivi per regione con previsione a 3 in scala logaritmica"), status = "primary", solidHeader = F,
+					collapsible = T, plotlyOutput(outputId="fitRegLog"), spiegaFitPosLog
+			),
+			box(width=6, title = tagList( "Andamenti globali in Italia con previsione a 3 in scala logaritmica"), status = "primary", solidHeader = F,
+					collapsible = T,  plotlyOutput(outputId="fitItaLog"), spiegaFitTotLog
+			)
+		)
+	}
+
+
+
+})
 
 output$updatePrevisioniUI <- renderUI({
 	if(verbose) cat("\n renderUI:updatePrevisioniUI")
@@ -316,9 +343,11 @@ prevRegion <- reactive({
 output$fitRegion <- renderPlotly({
 	if(verbose) cat("\n renderPlotly:fitRegion")
   allDataReg <- copy( reacval$dataTables_reg)
+	regioniSel <- input$regionSelFit
 
-  if (!is.null(allDataReg)) {
-		tsReg <- getTimeSeriesReact()[which(names(getTimeSeriesReact())!="Italia")]
+  if (!is.null(allDataReg) & !is.null(regioniSel)) {
+#		tsReg <- getTimeSeriesReact()[which(names(getTimeSeriesReact())!="Italia")]
+		tsReg <- getTimeSeriesReact()[which(names(getTimeSeriesReact())%in%regioniSel)]
 		if(saveRDSout) saveRDS(file="fitRegionList.RDS",list(tsReg, allDataReg))
 #		tsReg <- getTimeSeries(allDataReg)
 #		tsReg <- tsReg[which(names(tsReg)!="Italia")]
@@ -333,7 +362,9 @@ output$fitRegion <- renderPlotly({
 		out <- rbind(allDataReg[, c('regione', 'casi totali', "data")], prevDT[, c('regione', 'casi totali', "data")])
  #   colnames(allDataReg)[2] <- "regione"
  #   colnames(allDataReg)[3] <- "casi totali"
-    p <- ggplot(out) + my_ggtheme() +
+		toplot <- out[which(out$regione %in% regioniSel), ]
+
+    p <- ggplot(toplot) + my_ggtheme() +
           geom_line(aes(x=data, y=`casi totali`, color=regione)) +
           scale_color_manual(values=d3hexcols20)
     p
@@ -346,9 +377,11 @@ output$fitRegLog <- renderPlotly({
 	if(verbose) cat("\n renderPlotly:fitRegLog")
   allDataReg <- copy( reacval$dataTables_reg)
 	modelliReg <- isolate(reacval$modelliReg)
+	regioniSel <- input$regionSelFit
 
-  if (!is.null(allData)) {
-		tsReg <- getTimeSeriesReact()[which(names(getTimeSeriesReact())!="Italia")]
+  if (!is.null(allDataReg) & !is.null(regioniSel)) {
+#		tsReg <- getTimeSeriesReact()[which(names(getTimeSeriesReact())!="Italia")]
+		tsReg <- getTimeSeriesReact()[which(names(getTimeSeriesReact())%in%regioniSel)]
 		if(saveRDSout) saveRDS(file="fitRegLogList.RDS",list(tsReg, modelliReg, allDataReg))
 #		tsReg <- getTimeSeries(allDataReg)
 #		tsReg <- tsReg[which(names(tsReg)!="Italia")]
@@ -365,14 +398,13 @@ output$fitRegLog <- renderPlotly({
 		fit <- as.data.frame(do.call(rbind, lapply(modelliReg, function(x) x$coefficients)))
 		names(fit[,1]) <- "int"
 
-
-    p <- ggplot(out) + my_ggtheme() +
+		toplot <- out[which(out$regione %in% regioniSel), ]
+    p <- ggplot(toplot) + my_ggtheme() +
 					geom_point(aes(x=data, y=`casi totali`, color=regione))+
 #					geom_abline(data=fit, mapping=aes(slope=data, intercept='int')) +
 					geom_abline(slope=fit['Lombardia',2], intercept=fit['Lombardia',1])+
 					geom_abline(slope=fit['Veneto',2], intercept=fit['Veneto',1])+
-					geom_abline(slope=fit['Emilia Romagna',2], intercept=fit['Emilia Romagna',1])+
-					#geom_abline(data=d,   mapping=aes(slope=s, intercept=ic, linetype=factor(s))) +
+#					geom_abline(slope=fit['Emilia Romagna',2], intercept=fit['Emilia Romagna',1])+
 					scale_color_manual(values=d3hexcols20)
     p
   }
