@@ -363,8 +363,6 @@ output$fitRegLog <- renderPlotly({
 		fit <- as.data.frame(do.call(rbind, lapply(modelliReg, function(x) x$coefficients)))
 		names(fit[,1]) <- "int"
 
-	#			minprev <- min(prevItaDT$data)
-	#			geom_vline(aes(xintercept=minprev))+
 
     p <- ggplot(out) + my_ggtheme() +
 					geom_point(aes(x=data, y=`casi totali`, color=regione))+
@@ -427,10 +425,9 @@ output$fitIta <- renderPlotly({
   #  setnames(allDataReg, old=c('denominazione_regione', 'totale_casi'), new=c('regione', 'casi totali'))
 	#	setDF(allDataReg)
 #		out <- rbind(allDataReg[, c('regione', 'casi totali', "data")], prevDT[, c('regione', 'casi totali', "data")])
-		minprev <- min(prevItaDT$data)
+
     p <- ggplot(out) + my_ggtheme() +
           geom_line(aes(x=data, y=`casi`, color=variabilePrevista)) +
-					geom_vline(aes(xintercept=minprev))+
           scale_color_manual(values=d3hexcols20)
     p
   }
@@ -465,14 +462,6 @@ output$fitItaLog <- renderPlotly({
 		fit <- as.data.frame(do.call(rbind, lapply(modelliIta, function(x) x$coefficients)))
 		names(fit[,1]) <- "int"
 
-
-		minprev <- as.Date(min(prevItaDT$data))
-		if(assignout) assign("prevItaDT", prevItaDT, envir=.GlobalEnv)
-		if(assignout) assign("fit", fit, envir=.GlobalEnv)
-		if(assignout) assign("out", out, envir=.GlobalEnv)
-		if(verbose) cat("\n minprev", as.character(minprev))
-
-	 	minprev <- as.Date(min(prevItaDT$data))
     p <- ggplot(out) + my_ggtheme() +
 					geom_point(aes(x=data, y=`casi`, color=variabilePrevista))+
 #					geom_abline(data=fit, mapping=aes(slope=data, intercept='int')) +
@@ -480,7 +469,6 @@ output$fitItaLog <- renderPlotly({
 					geom_abline(slope=fit[2,2], intercept=fit[2,1])+
 					geom_abline(slope=fit[3,2], intercept=fit[3,1])+
 					geom_abline(slope=fit[4,2], intercept=fit[4,1])+
-					geom_vline(aes(xintercept=minprev))+
 					#geom_abline(data=d,   mapping=aes(slope=s, intercept=ic, linetype=factor(s))) +
 					scale_color_manual(values=d3hexcols20)
     p
