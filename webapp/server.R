@@ -49,11 +49,7 @@ shinyServer(function(input, output, session) {
 			assign("allData_reg",regData,envir=.GlobalEnv)
 			assign("modelliReg",modelliReg,envir=.GlobalEnv)
 			assign("modelliIta",modelliIta,envir=.GlobalEnv)
-
 		}
-
-
-
 		#assign("resNew", list(reg=reacval$dataTables_reg, prov=reacval$dataTables), envir=.GlobalEnv)
   })
 
@@ -78,7 +74,6 @@ shinyServer(function(input, output, session) {
   })
 
 ## CONFIG
-
 ## Se metto il dateRange dipendente dal reacVal, all'inizio la app ha due refresh e sembra congelata all'utente medio...
 ## quindi congelo il range dal 24/02 alla data di oggi e tanto poi il box con la data di aggiornamento dice quale sia la data più recente!
 #output$drangeUI <- renderUI({
@@ -89,9 +84,7 @@ shinyServer(function(input, output, session) {
 #})
 
 
-
 ## REGIONI
-
 output$updateRegUI <- renderUI({
 	if(verbose) cat("\n renderUI:updateRegUI")
   h3(paste("Dati aggiornati al giorno:", get_last_date()))
@@ -279,6 +272,15 @@ output$mapProvinceGG <- renderPlot({
   }
 })
 
+getTimeSeriesReact <- reactive({
+	if(verbose) cat("\n reactive:getTimeSeriesReact")
+	allDataReg <- copy( reacval$dataTables_reg)
+	if (!is.null(allDataReg)) {
+		tstot <- getTimeSeries(allDataReg)
+		assign("tstotOut",tstot,envir=.GlobalEnv)
+		tstot
+  }
+})
 
 ## PREVISIONI
 
@@ -294,13 +296,15 @@ prevRegion <- reactive({
 	nahead=3
 
 	if (!is.null(allDataReg)) {
-		tsReg <- getTimeSeries(allDataReg)
-		tsReg <- tsReg[which(names(tsReg)!="Italia")]
+		tsReg <- getTimeSeriesReact()[which(names(getTimeSeriesReact())!="Italia")]
+		#tsReg <- getTimeSeries(allDataReg)
+		#tsReg <- tsReg[which(names(tsReg)!="Italia")]
 		prev <- mapply(FUN=predictNextDays, tsReg, modelliReg, nahead=nahead, SIMPLIFY=F)
 
 		prevDT <- rbindlist(prev)
 		prevDT[, regione:=rep(names(prev), each=nahead)]
 		setDF(prevDT)
+		prevDT
   }
 })
 
@@ -310,8 +314,9 @@ output$fitRegion <- renderPlotly({
   allDataReg <- copy( reacval$dataTables_reg)
 
   if (!is.null(allDataReg)) {
-		tsReg <- getTimeSeries(allDataReg)
-		tsReg <- tsReg[which(names(tsReg)!="Italia")]
+		tsReg <- getTimeSeriesReact()[which(names(getTimeSeriesReact())!="Italia")]
+#		tsReg <- getTimeSeries(allDataReg)
+#		tsReg <- tsReg[which(names(tsReg)!="Italia")]
 
 		prevDT <-copy(prevRegion())
 		setnames(prevDT, old=c('Attesi'), new=c('casi totali'))
@@ -337,8 +342,9 @@ output$fitRegLog <- renderPlotly({
 	modelliReg <- isolate(reacval$modelliReg)
 
   if (!is.null(allData)) {
-		tsReg <- getTimeSeries(allDataReg)
-		tsReg <- tsReg[which(names(tsReg)!="Italia")]
+		tsReg <- getTimeSeriesReact()[which(names(getTimeSeriesReact())!="Italia")]
+#		tsReg <- getTimeSeries(allDataReg)
+#		tsReg <- tsReg[which(names(tsReg)!="Italia")]
 
 		prevDT <-copy(prevRegion())
 		setnames(prevDT, old=c('Attesi'), new=c('casi totali'))
@@ -364,7 +370,6 @@ output$fitRegLog <- renderPlotly({
   }
 })
 
-
 prevIta <- reactive({
 	if(verbose) cat("\n reactive:prevIta")
 	allDataReg <- copy( reacval$dataTables_reg)
@@ -372,15 +377,16 @@ prevIta <- reactive({
 	nahead=3
 
 	if (!is.null(allDataReg)) {
-		tsIta <- getTimeSeries(allDataReg)$Italia
+		tsIta <- getTimeSeriesReact()$Italia
+#		tsIta <- getTimeSeries(allDataReg)$Italia
 		prevIta <- lapply(modelliIta, function(modello, dati, nahead){
 			predictNextDays(dati=dati, modello=modello,nahead=nahead)
 		},dati=tsIta, nahead=nahead)
 
 		prevItaDT <- rbindlist(prevIta)
 		prevItaDT[, variabilePrevista:=rep(names(prevIta), each=nahead)]
-		assign('prevItaDT',prevItaDT,envir=.GlobalEnv)
 		setDF(prevItaDT)
+		prevItaDT
   }
 })
 
@@ -389,7 +395,8 @@ output$fitIta <- renderPlotly({
   allDataReg <- copy( reacval$dataTables_reg)
 
   if (!is.null(allDataReg)) {
-		tsIta <- getTimeSeries(allDataReg)$Italia
+		tsIta <- getTimeSeriesReact()$Italia
+#		tsIta <- getTimeSeries(allDataReg)$Italia
 		prevItaDT <-copy(prevIta())
 		setnames(prevItaDT, old=c('Attesi'), new=c('casi'))
 
@@ -426,7 +433,8 @@ output$fitItaLog <- renderPlotly({
 	modelliIta <- isolate(reacval$modelliIta)
 
   if (!is.null(allDataReg)) {
-		tsIta <- getTimeSeries(allDataReg)$Italia
+		tsIta <- getTimeSeriesReact()$Italia
+	#	tsIta <- getTimeSeries(allDataReg)$Italia
 		prevItaDT <-copy(prevIta())
 		setnames(prevItaDT, old=c('Attesi'), new=c('casi'))
 
