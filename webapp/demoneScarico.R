@@ -40,7 +40,7 @@ if (!is.na(infofiles$size[2])) {
 }
 prov<-try(content(GET(provremotepath),type="raw"))
 if (!inherits(prov,"try-error")) {
-	d1<- digest(currentprov)
+	d1<- digest(prov)
 	if (length(prov)>=length(currentprov) && (is.na(hashes["Province"]) || d1!=hashes["Province"])) {
 		cat("Scarico Province\n")
 		writeBin(prov,provlocalpathcsv)
@@ -49,7 +49,7 @@ if (!inherits(prov,"try-error")) {
 }
 reg<-try(content(GET(regremotepath),type="raw"))
 if (!inherits(reg,"try-error")) {
-	d2<- digest(currentreg)
+	d2<- digest(reg)
 	if (length(reg)>=length(currentreg) && (is.na(hashes["Regioni"]) || d2!=hashes["Regioni"])) {
 		cat("Scarico Regioni\n")
 		writeBin(reg,reglocalpathcsv)
