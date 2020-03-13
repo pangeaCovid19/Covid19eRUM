@@ -74,56 +74,38 @@ map_regioni <- readRDS(file=paste0(dir_data, "map_regioni.RDS"))
 
 
 
-spiegaMappa <- HTML("<div style='padding-bottom:10px;'>In questa mappa mostriamo la diffusione sul territorio dei casi confermati
+spiegaMappa <- HTML("<div style='padding-top:10px;'>In questa mappa mostriamo la diffusione sul territorio dei casi confermati
 di CoVid19, alla data pi&ugrave; recente del periodo di interesse selezionato nel men&ugrave; (o alla data di aggiornamento dei dati)
 laterale. <br>La scala di colore parte dal giallo per le aree con il minor numero assoluto di
 casi confermati e arriva al rosso per le aree con il maggior numero assoluto di casi confermati.
 <br>Passando sulla mappa potete vedere l'effettivo numero di casi confermati in ciasuna area.</div>")
 
-spiegaTabella <- HTML("<div style='padding-bottom:10px;'>In questa tabella mostriamo la diffusione sul territorio dei casi confermati
+spiegaTabella <- HTML("<div style='padding-top:10px;'>In questa tabella mostriamo la diffusione sul territorio dei casi confermati
 di CoVid19, alla data pi&ugrave; recente del periodo di interesse selezionato nel men&ugrave; (o alla data di aggiornamento dei dati)
 laterale. <br>La colonna &quot;casi totali&quot; riporta il numero totale di casi confermati di CoVid19
 nel territorio, mentre la colonna &quot;casi su 10^4 abit.&quot; riporta il numero di casi per ogni
 10mila abitanti cos&igrave; da contestualizzare la diffusione rispetto alla popolazione presente
 nel territorio.</div>")
 
-spiegaLinePlot <- HTML("<div style='padding-bottom:10px;'>In questo grafico mostriamo l'andamento del numero di casi confermati
+spiegaLinePlot <- HTML("<div style='padding-top:10px;'>In questo grafico mostriamo l'andamento del numero di casi confermati
 di CoVid19, nel periodo di interesse selezionato nel men&ugrave; laterale. <br>Ciascuna area territoriale
 &egrave; indicata con un colore diverso. &Egrave; possibile ingrandire aree specifiche del grafico
 e disabilitare (o riabilitare) singoli territori interagendo con la legenda del grafico.</div>")
 
+spiegaFitPos <- HTML("<div style='padding-top:10px;'></div>")
 
+spiegaFitPosLog <- HTML("<div style='padding-top:10px;'></div>")
 
+spiegaFitTot <- HTML("<div style='padding-top:10px;'></div>")
 
+spiegaFitTotLog <- HTML("<div style='padding-top:10px;'></div>")
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+fontiDati <- HTML("<div>Dati provenienti da:
+<ul>
+<li><a href='https://github.com/pcm-dpc/COVID-19'>Presidenza del Consiglio dei Ministri - Dipartimento della Protezione Civile
+</a> (Monitoraggio COVID-19)</li>
+<li><a href='https://www.istat.it/it/archivio/222527'>ISTAT</a> (shapefile unit&agrave; amministrative e dati popolazione)</li>
+</ul></div>")
 
 
 
