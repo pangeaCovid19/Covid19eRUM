@@ -146,10 +146,6 @@ output$mapRegion <- renderLeaflet({
 			addProviderTiles("CartoDB.Positron") %>% setView(lng=12.5, lat=41.3, zoom=5)  %>%
 			addPolygons(fillColor = ~pal(log10(totale_casi)), weight = 1, stroke = TRUE, color="lightgrey",
 		  label = ~paste(DEN_REG, "- casi:", totale_casi))
-#    leaflet(data = pltRegioni) %>% addTiles() %>%
- #       addProviderTiles("CartoDB.Positron") %>% setView(lng=12.5, lat=41.3, zoom=5)  %>%
-  #      addPolygons(fillColor = ~pal(log10(totale_casi)), weight = 1, stroke = TRUE, color="lightgrey",
-   #              label = ~paste(DEN_REG, "- casi:", totale_casi))
   }
 })
 
@@ -240,7 +236,7 @@ output$mapProvince <- renderLeaflet({
     my_frame <- st_drop_geometry(regioni[regioni$COD_REG == unique(pltProvince$COD_REG), c("reg_long", "reg_lat")])
     #pltProvince <- merge(province, latestDataProv[,c("codice_regione", "reg_long", "reg_lat")], by.x="COD_REG", by.y="codice_regione")
     pal <- colorBin("YlOrRd", domain = log10(pltProvince$totale_casi))
-    leaflet(data = pltProvince, options = leafletOptions(zoomControl = FALSE,minZoom = 5, maxZoom = 5)) %>% addTiles() %>%
+    leaflet(data = pltProvince, options = leafletOptions(zoomControl = FALSE,minZoom = 7, maxZoom = 7)) %>% addTiles() %>%
         addProviderTiles("CartoDB.Positron") %>% setView(lng=my_frame$reg_long, lat=my_frame$reg_lat, zoom=7)  %>%
         addPolygons(fillColor = ~pal(log10(totale_casi)), weight = 1, stroke = TRUE, color="lightgrey",
                  label = ~paste(DEN_UTS, "- casi:", totale_casi))

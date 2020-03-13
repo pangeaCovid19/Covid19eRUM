@@ -9,8 +9,8 @@ regTab <- tabItem(tabName = "regPlots", h1("Diffusione nelle regioni italiane"),
 
               fluidRow(
                 box(width=6, title = tagList(shiny::icon("globe-europe"), "Mappa dei casi confermati"), status = "primary", solidHeader = F,
-                    collapsible = T, spiegaMappa, plotOutput(outputId="mapRegionGG", height = 800)
-                    #leafletOutput(outputId="mapRegion")
+                    collapsible = T, spiegaMappa, #plotOutput(outputId="mapRegionGG", height = 800)
+                    leafletOutput(outputId="mapRegion", height = 800)
                 ),
 								box(width=6, title = tagList(shiny::icon("table"), "Tabella con casi confermati"), status = "primary", solidHeader = F,
                     collapsible = T, spiegaTabella, DTOutput(outputId="tabRegion")
@@ -30,8 +30,8 @@ prvTab <- tabItem(tabName = "prvPlots", h1("Diffusione nelle province italiane")
               ),
               fluidRow(
                 box(width=6, title = tagList(shiny::icon("globe-europe"), "Mappa dei casi confermati"), status = "primary", solidHeader = F,
-                    collapsible = T, spiegaMappa, plotOutput(outputId="mapProvinceGG", height = 800)
-                    #leafletOutput(outputId="mapProvince")
+                    collapsible = T, spiegaMappa, #plotOutput(outputId="mapProvinceGG", height = 800)
+                    leafletOutput(outputId="mapProvince", height = 800)
                 ),
 								box(width=6, title = tagList(shiny::icon("table"), "Tabella con casi confermati"), status = "primary", solidHeader = F,
                     collapsible = T, spiegaTabella,  DTOutput(outputId="tabProvince")
