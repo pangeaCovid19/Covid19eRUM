@@ -78,7 +78,7 @@ tsReg <- getTimeSeries(due)
 modelliIta <- list()
 
 for(i in  1:length(campiPrevisioni)){
-	modelliIta[[i]]<-loglinmodel2(tsReg$Italia, var="totale_casi", rangepesi=c(0,1))
+	modelliIta[[i]]<-loglinmodel2(tsReg$Italia, var=campiPrevisioni[i], rangepesi=c(0,1))
 }
 names(modelliIta) <- campiPrevisioni
 modelliReg <-lapply( tsReg[which(names(tsReg)!='Italia')], loglinmodel2)

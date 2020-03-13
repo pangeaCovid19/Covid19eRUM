@@ -56,6 +56,14 @@ fitTab <- tabItem(tabName = "fitPlots", h1("Analisi previsionale nelle province 
 								box(width=6, title = tagList(shiny::icon("table"), "Andamento a livello nazionale"), status = "primary", solidHeader = F,
                     collapsible = T,  plotlyOutput(outputId="fitIta")
                 )
+              ),
+              fluidRow(
+                box(width=6, title = tagList(shiny::icon("globe-europe"), "Previsione a 3 giorni dei casi totali regionali"), status = "primary", solidHeader = F,
+                    collapsible = T, plotlyOutput(outputId="fitRegLog")
+                ),
+								box(width=6, title = tagList(shiny::icon("table"), "Andamento a livello nazionale"), status = "primary", solidHeader = F,
+                    collapsible = T,  plotlyOutput(outputId="fitItaLog")
+                )
               )
             )
 

@@ -29,7 +29,7 @@ shinyServer(function(input, output, session) {
 			dataProv	<- readRDS(pathProv)
 			reacval$dataTables  <- dataProv
 			reacval$mdataProv 	<- file.info(pathProv)$mtime
-			assing("allData",dataProv,envir=.GlobalEnv)
+			assign("allData",dataProv,envir=.GlobalEnv)
 		}
 		if( file.info(pathReg)$mtime > isolate(reacval$mdataReg)  ) {
 			regData <- readRDS(pathReg)
@@ -46,9 +46,9 @@ shinyServer(function(input, output, session) {
 
 			reacval$modelliIta 	<- modelliIta
 			reacval$modelliReg 	<- modelliReg
-			assing("allData_reg",regData,envir=.GlobalEnv)
-			assing("modelliReg",modelliReg,envir=.GlobalEnv)
-			assing("modelliIta",modelliIta,envir=.GlobalEnv)
+			assign("allData_reg",regData,envir=.GlobalEnv)
+			assign("modelliReg",modelliReg,envir=.GlobalEnv)
+			assign("modelliIta",modelliIta,envir=.GlobalEnv)
 
 		}
 
@@ -313,7 +313,7 @@ output$fitRegion <- renderPlotly({
 		tsReg <- getTimeSeries(allDataReg)
 		tsReg <- tsReg[which(names(tsReg)!="Italia")]
 
-		prevDT <-prevRegion()
+		prevDT <-copy(prevRegion())
 		setnames(prevDT, old=c('Attesi'), new=c('casi totali'))
 
     setnames(allDataReg, old=c('denominazione_regione', 'totale_casi'), new=c('regione', 'casi totali'))
@@ -329,6 +329,42 @@ output$fitRegion <- renderPlotly({
   }
 })
 
+
+
+output$fitRegLog <- renderPlotly({
+	if(verbose) cat("\n renderPlotly:fitRegLog")
+  allDataReg <- copy( reacval$dataTables_reg)
+	modelliReg <- isolate(reacval$modelliReg)
+
+  if (!is.null(allData)) {
+		tsReg <- getTimeSeries(allDataReg)
+		tsReg <- tsReg[which(names(tsReg)!="Italia")]
+
+		prevDT <-copy(prevRegion())
+		setnames(prevDT, old=c('Attesi'), new=c('casi totali'))
+
+    setnames(allDataReg, old=c('denominazione_regione', 'totale_casi'), new=c('regione', 'casi totali'))
+		setDF(allDataReg)
+
+		out <- rbind(allDataReg[, c('regione', 'casi totali', "data")], prevDT[, c('regione', 'casi totali', "data")])
+		out[,'casi totali' ] <- log(out[,'casi totali' ] )
+
+		fit <- as.data.frame(do.call(rbind, lapply(modelliReg, function(x) x$coefficients)))
+		names(fit[,1]) <- "int"
+
+    p <- ggplot(out) + my_ggtheme() +
+					geom_point(aes(x=data, y=`casi totali`, color=regione))+
+#					geom_abline(data=fit, mapping=aes(slope=data, intercept='int')) +
+					geom_abline(slope=fit['Lombardia',2], intercept=fit['Lombardia',1])+
+					geom_abline(slope=fit['Veneto',2], intercept=fit['Veneto',1])+
+					geom_abline(slope=fit['Emilia Romagna',2], intercept=fit['Emilia Romagna',1])+
+					#geom_abline(data=d,   mapping=aes(slope=s, intercept=ic, linetype=factor(s))) +
+					scale_color_manual(values=d3hexcols20)
+    p
+  }
+})
+
+
 prevIta <- reactive({
 	if(verbose) cat("\n reactive:prevIta")
 	allDataReg <- copy( reacval$dataTables_reg)
@@ -343,6 +379,7 @@ prevIta <- reactive({
 
 		prevItaDT <- rbindlist(prevIta)
 		prevItaDT[, variabilePrevista:=rep(names(prevIta), each=nahead)]
+		assign('prevItaDT',prevItaDT,envir=.GlobalEnv)
 		setDF(prevItaDT)
   }
 })
@@ -353,8 +390,8 @@ output$fitIta <- renderPlotly({
 
   if (!is.null(allDataReg)) {
 		tsIta <- getTimeSeries(allDataReg)$Italia
-		prevItaDT <-prevIta()
-		#setnames(prevDT, old=c('Attesi'), new=c('casi totali'))
+		prevItaDT <-copy(prevIta())
+		setnames(prevItaDT, old=c('Attesi'), new=c('casi'))
 
 		setDF(allDataReg)
 		varPrev <- unique(prevItaDT$variabilePrevista)
@@ -362,24 +399,66 @@ output$fitIta <- renderPlotly({
 		dataRDX <- allDataReg[, c('data', varPrev)]
 		dataIta <- aggregate(dataRDX[,2:5], sum, by=list(data=dataRDX$data))
 
-		out <- data.frame(
+		tmp <- data.frame(
 			data=rep(unique(dataIta$data), times=length(varPrev)),
 			casi=unlist(lapply(2:5, function(x) dataIta[, x])),
-			varPrev=rep(unique(varPrev), each=nrow(dataIta))
+			variabilePrevista=rep(unique(varPrev), each=nrow(dataIta))
 		)
+
+		out <- rbind(tmp, prevItaDT[, c('data', 'casi',  'variabilePrevista')])
 
   #  setnames(allDataReg, old=c('denominazione_regione', 'totale_casi'), new=c('regione', 'casi totali'))
 	#	setDF(allDataReg)
-
 #		out <- rbind(allDataReg[, c('regione', 'casi totali', "data")], prevDT[, c('regione', 'casi totali', "data")])
 
     p <- ggplot(out) + my_ggtheme() +
-          geom_line(aes(x=data, y=`casi`, color=varPrev)) +
+          geom_line(aes(x=data, y=`casi`, color=variabilePrevista)) +
           scale_color_manual(values=d3hexcols20)
     p
   }
 })
 
+
+
+output$fitItaLog <- renderPlotly({
+	if(verbose) cat("\n renderPlotly:fitItaLog")
+  allDataReg <- copy( reacval$dataTables_reg)
+	modelliIta <- isolate(reacval$modelliIta)
+
+  if (!is.null(allDataReg)) {
+		tsIta <- getTimeSeries(allDataReg)$Italia
+		prevItaDT <-copy(prevIta())
+		setnames(prevItaDT, old=c('Attesi'), new=c('casi'))
+
+		setDF(allDataReg)
+		varPrev <- unique(prevItaDT$variabilePrevista)
+
+		dataRDX <- allDataReg[, c('data', varPrev)]
+		dataIta <- aggregate(dataRDX[,2:5], sum, by=list(data=dataRDX$data))
+
+		tmp <- data.frame(
+			data=rep(unique(dataIta$data), times=length(varPrev)),
+			casi=unlist(lapply(2:5, function(x) dataIta[, x])),
+			variabilePrevista=rep(unique(varPrev), each=nrow(dataIta))
+		)
+		out <- rbind(tmp, prevItaDT[, c('data', 'casi',  'variabilePrevista')])
+		out$casi <- log(out$casi)
+
+		fit <- as.data.frame(do.call(rbind, lapply(modelliIta, function(x) x$coefficients)))
+		names(fit[,1]) <- "int"
+
+    p <- ggplot(out) + my_ggtheme() +
+					geom_point(aes(x=data, y=`casi`, color=variabilePrevista))+
+#					geom_abline(data=fit, mapping=aes(slope=data, intercept='int')) +
+					geom_abline(slope=fit[1,2], intercept=fit[1,1])+
+					geom_abline(slope=fit[2,2], intercept=fit[2,1])+
+					geom_abline(slope=fit[3,2], intercept=fit[3,1])+
+					geom_abline(slope=fit[4,2], intercept=fit[4,1])+
+					#geom_abline(data=d,   mapping=aes(slope=s, intercept=ic, linetype=factor(s))) +
+					scale_color_manual(values=d3hexcols20)
+    p
+  }
+})
 
 
 
