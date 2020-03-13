@@ -86,7 +86,7 @@ shinyServer(function(input, output, session) {
 ## REGIONI
 output$updateRegUI <- renderUI({
 	if(verbose) cat("\n renderUI:updateRegUI")
-  h3(paste("Dati aggiornati al giorno:", get_last_date()))
+  h4(paste("Dati aggiornati al giorno:", get_last_date()))
 })
 
 output$lineRegion <- renderPlotly({

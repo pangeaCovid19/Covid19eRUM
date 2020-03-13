@@ -21,7 +21,7 @@ regTab <- tabItem(tabName = "regPlots",
 									spiegaLinePlot
 								)
               ),fluidRow(
-                box(width=12, uiOutput("updateRegUI")
+                box(width=12, uiOutput("updateRegUI"), fontiDati
                 )
               )
           )
@@ -49,7 +49,7 @@ prvTab <- tabItem(tabName = "prvPlots",
                 )
               ),
               fluidRow(
-                box(width=12, uiOutput("updatePrvUI")
+                box(width=12, uiOutput("updatePrvUI"), fontiDati
                 )
               )
             )
@@ -58,22 +58,22 @@ fitTab <- tabItem(tabName = "fitPlots",
 #							h1("Analisi previsionale nelle province italiane"), br(), br(),
               fluidRow(
                 box(width=6, title = tagList(shiny::icon("globe-europe"), "Totali Positivi per regione con previsione a 3 giorni"), status = "primary", solidHeader = F,
-                    collapsible = T, plotlyOutput(outputId="fitRegion")
+                    collapsible = T, plotlyOutput(outputId="fitRegion"), spiegaFitPos
                 ),
 								box(width=6, title = tagList(shiny::icon("table"), "Andamenti globali in Italia con previsione a 3"), status = "primary", solidHeader = F,
-                    collapsible = T,  plotlyOutput(outputId="fitIta")
+                    collapsible = T,  plotlyOutput(outputId="fitIta"), spiegaFitTot
                 )
               ),
               fluidRow(
                 box(width=6, title = tagList(shiny::icon("globe-europe"), "Totali Positivi per regione con previsione a 3 in scala logaritmica"), status = "primary", solidHeader = F,
-                    collapsible = T, plotlyOutput(outputId="fitRegLog")
+                    collapsible = T, plotlyOutput(outputId="fitRegLog"), spiegaFitPosLog
                 ),
 								box(width=6, title = tagList(shiny::icon("table"), "Andamenti globali in Italia con previsione a 3 in scala logaritmica"), status = "primary", solidHeader = F,
-                    collapsible = T,  plotlyOutput(outputId="fitItaLog")
+                    collapsible = T,  plotlyOutput(outputId="fitItaLog"), spiegaFitTotLog
                 )
               ),
               fluidRow(
-                box(width=12, uiOutput("updatePrevisioniUI")
+                box(width=12, uiOutput("updatePrevisioniUI"), fontiDati
                 )
               )
             )
