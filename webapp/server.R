@@ -307,6 +307,7 @@ prevRegion <- reactive({
 		prevDT <- rbindlist(prev)
 		prevDT[, regione:=rep(names(prev), each=nahead)]
 		setDF(prevDT)
+
 		prevDT
   }
 })
@@ -324,6 +325,7 @@ output$fitRegion <- renderPlotly({
 
 		prevDT <-copy(prevRegion())
 		setnames(prevDT, old=c('Attesi'), new=c('casi totali'))
+
 
     setnames(allDataReg, old=c('denominazione_regione', 'totale_casi'), new=c('regione', 'casi totali'))
 		setDF(allDataReg)
