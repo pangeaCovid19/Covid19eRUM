@@ -422,6 +422,7 @@ output$fitRegLog <- renderPlotly({
 	prevDT$logcasi <- log(prevDT[,'casi totali'])
 
 	p <- ggplot() + my_ggtheme() +
+	labs(title = "", x = "", y = "casi (log)") +
  	geom_point(data= allDataReg[which(allDataReg$regione%in%regioniSel),], aes(x=data, y=`logcasi`, color=regione))+
 	geom_line(data= prevDT[which(prevDT$regione%in%regioniSel),],aes(x=data, y=`logcasi`, color=regione), linetype=2)+
  	#geom_abline(slope=df$slopes, intercept=df$intercepts, linetype=2)+
@@ -591,16 +592,17 @@ if(assignout) assign("prevItaDT",prevItaDT, envir=.GlobalEnv)
 	tmp$logcasi <- log(tmp[,'casi'])
 	prevItaDT$logcasi <- log(prevItaDT[,'casi'])
 
-	p1 <- ggplot() + my_ggtheme() +
+	p <- ggplot() + my_ggtheme() +
+		labs(title = "", x = "", y = "casi (log)") +
 	 	geom_point(data= tmp, aes(x=data, y=`logcasi`, color=variabilePrevista))+
 		geom_line(data= prevItaDT,aes(x=data, y=`logcasi`, color=variabilePrevista), linetype=2)+
 	 	#geom_abline(slope=df$slopes, intercept=df$intercepts, linetype=2)+
-	 	scale_color_manual(values=d3hexcols20)+
+	 	scale_color_manual(values=d3hexcols20)
 	 #	geom_errorbar(data=logcasi,aes(x=data,ymin=LowerRange, ymax=UpperRange, color=regione),width=0.1)+
-	 	xlab("")#+
+	# 	xlab("")#+
 	# 	geom_rect(aes(xmin=mindataprev-0.5, xmax=max(prevItaDT$data+1), ymin=0, ymax=max(prevItaDT$logcasi)*1.05),fill="grey", alpha=0.3)+xlim(c(min(prevItaDT$data),max(prevItaDT$data+1)))+theme(axis.text.x=element_text(angle=45,hjust=1))
 
- 	 p1
+ 	 p
 
   #  tmp$UpperRange<-NA
  #   tmp$LowerRange<-NA
