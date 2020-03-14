@@ -327,17 +327,20 @@ prevRegion <- reactive({
 	if (!is.null(allDataReg)) {
 		tsReg <- getTimeSeriesReact()[which(names(getTimeSeriesReact())!="Italia")]
 		if(saveRDSout) saveRDS(file="prevRegionList.RDS",list(tsReg, modelliReg, allDataReg))
-		#tsReg <- getTimeSeries(allDataReg)
-		#tsReg <- tsReg[which(names(tsReg)!="Italia")]
-		prev <- mapply(FUN=predictNextDays, tsReg, modelliReg, nahead=nahead, SIMPLIFY=F)
+		if(assignout) assign("prevRegionList",list(tsReg, modelliReg, allDataReg), envir=.GlobalEnv)
+
+		prev <- mapply(FUN=predictNextDays, tsReg, modelliReg, nahead=nahead, SIMPLIFY=F, all=TRUE)
 
 		prevDT <- rbindlist(prev)
-		prevDT[, regione:=rep(names(prev), each=nahead)]
+		prevDT[, regione:=rep(names(prev), each=nahead+nrow(tsReg[[1]]))]
+		#prevDT[, regione:=rep(names(prev), each=nahead)]
 		setDF(prevDT)
 
+		if(assignout) assign("prevDT",prevDT, envir=.GlobalEnv)
 		prevDT
   }
 })
+
 
 
 output$fitRegion <- renderPlotly({
@@ -345,33 +348,54 @@ output$fitRegion <- renderPlotly({
   allDataReg <- copy( reacval$dataTables_reg)
 	regioniSel <- input$regionSelFit
 
-  if (!is.null(allDataReg) & !is.null(regioniSel)) {
-#		tsReg <- getTimeSeriesReact()[which(names(getTimeSeriesReact())!="Italia")]
+  if (!is.null(allDataReg)) {
 		tsReg <- getTimeSeriesReact()[which(names(getTimeSeriesReact())%in%regioniSel)]
+		#tsReg <- getTimeSeriesReact()[which(names(getTimeSeriesReact())!="Italia")]
 		if(saveRDSout) saveRDS(file="fitRegionList.RDS",list(tsReg, allDataReg))
-#		tsReg <- getTimeSeries(allDataReg)
-#		tsReg <- tsReg[which(names(tsReg)!="Italia")]
+		#	tsReg <- getTimeSeries(allDataReg)
+		#	tsReg <- tsReg[which(names(tsReg)!="Italia")]
 
 		prevDT <-copy(prevRegion())
 		setnames(prevDT, old=c('Attesi'), new=c('casi totali'))
 
-
     setnames(allDataReg, old=c('denominazione_regione', 'totale_casi'), new=c('regione', 'casi totali'))
 		setDF(allDataReg)
+		mindataprev <- max(prevDT$data)-2
 
-		out <- rbind(allDataReg[, c('regione', 'casi totali', "data")], prevDT[, c('regione', 'casi totali', "data")])
- #   colnames(allDataReg)[2] <- "regione"
- #   colnames(allDataReg)[3] <- "casi totali"
-		toplot <- out[which(out$regione %in% regioniSel), ]
 
-    p <- ggplot(toplot) + my_ggtheme() +
-          geom_line(aes(x=data, y=`casi totali`, color=regione)) +
-          scale_color_manual(values=d3hexcols20)
-    p
+		p <- ggplot() + my_ggtheme() +
+			 geom_line(data=prevDT[which(prevDT$regione%in%regioniSel),],aes(x=data, y=`casi totali`, color=regione), linetype=2) +
+			 geom_point(data=allDataReg[which(allDataReg$regione%in%regioniSel),],aes(x=data, y=`casi totali`, color=regione))+
+			 scale_color_manual(values=d3hexcols20)+
+	#		 geom_rect(aes(xmin=mindataprev-0.5, xmax=max(prevDT$data+1), ymin=0, ymax=max(prevDT$casi)*1.05),fill="grey", alpha=0.3)+xlim(c(min(prevDT$data),max(prevDT$data+1)))+
+			 theme(axis.text.x=element_text(angle=45,hjust=1))+
+		#		 geom_errorbar(data=prevDT,aes(x=data,ymin=LowerRange, ymax=UpperRange, color=regione),width=0.1)+
+			 xlab("")
+
+		p
+    ###
+   # allDataReg$UpperRange<-0
+ #   allDataReg$LowerRange<-0
+ #   out <- rbind(allDataReg[, c('regione', 'casi totali', "data","UpperRange","LowerRange")], prevDT[, c('regione', 'casi totali', "data","UpperRange","LowerRange")])
+#		out <- out[which(out$regione %in% regioniSel), ]
+
+#    out1<-out[which(out$data<mindataprev),]
+#    out2<-out[which(out$data>=mindataprev),]
+    ###
+ ###q <- ggplot() + my_ggtheme() +
+###				 geom_line(data=out1,aes(x=data, y=`casi totali`, color=regione)) +
+###				 geom_point(data=out2,aes(x=data, y=`casi totali`, color=regione))+
+###				 scale_color_manual(values=d3hexcols20)+
+###				 geom_rect(aes(xmin=mindataprev-0.5, xmax=max(out$data+1), ymin=0, ymax=max(out$casi)*1.05),fill="grey", alpha=0.3)+xlim(c(min(out$data),max(out2$data+1)))+
+###				 theme(axis.text.x=element_text(angle=45,hjust=1))+
+###				 geom_errorbar(data=out2,aes(x=data,ymin=LowerRange, ymax=UpperRange, color=regione),width=0.1)+
+###				 xlab("")
+###	 q
+
+
+
   }
 })
-
-
 
 output$fitRegLog <- renderPlotly({
 	if(verbose) cat("\n renderPlotly:fitRegLog")
@@ -379,66 +403,112 @@ output$fitRegLog <- renderPlotly({
 	modelliReg <- isolate(reacval$modelliReg)
 	regioniSel <- input$regionSelFit
 
-  if (!is.null(allDataReg) & !is.null(regioniSel)) {
-#		tsReg <- getTimeSeriesReact()[which(names(getTimeSeriesReact())!="Italia")]
+  if (!is.null(allData)) {
 		tsReg <- getTimeSeriesReact()[which(names(getTimeSeriesReact())%in%regioniSel)]
-		if(saveRDSout) saveRDS(file="fitRegLogList.RDS",list(tsReg, modelliReg, allDataReg))
-#		tsReg <- getTimeSeries(allDataReg)
-#		tsReg <- tsReg[which(names(tsReg)!="Italia")]
+	if(saveRDSout) saveRDS(file="fitRegLogList.RDS",list(tsReg, modelliReg, allDataReg))
+	#	tsReg <- getTimeSeries(allDataReg)
+	#	tsReg <- tsReg[which(names(tsReg)!="Italia")]
 
-		prevDT <-copy(prevRegion())
-		setnames(prevDT, old=c('Attesi'), new=c('casi totali'))
+	prevDT <-copy(prevRegion())
+	setnames(prevDT, old=c('Attesi'), new=c('casi totali'))
 
-    setnames(allDataReg, old=c('denominazione_regione', 'totale_casi'), new=c('regione', 'casi totali'))
-		setDF(allDataReg)
+  setnames(allDataReg, old=c('denominazione_regione', 'totale_casi'), new=c('regione', 'casi totali'))
+	setDF(allDataReg)
 
-		out <- rbind(allDataReg[, c('regione', 'casi totali', "data")], prevDT[, c('regione', 'casi totali', "data")])
-		out[,'casi totali' ] <- log(out[,'casi totali' ] )
+	mindataprev <- max(prevDT$data)-2
 
-		fit <- as.data.frame(do.call(rbind, lapply(modelliReg, function(x) x$coefficients)))
-		names(fit[,1]) <- "int"
 
-		toplot <- out[which(out$regione %in% regioniSel), ]
-    p <- ggplot(toplot) + my_ggtheme() +
-					geom_point(aes(x=data, y=`casi totali`, color=regione))+
-#					geom_abline(data=fit, mapping=aes(slope=data, intercept='int')) +
-#					geom_abline(slope=fit['Lombardia',2], intercept=fit['Lombardia',1])+
-#					geom_abline(slope=fit['Veneto',2], intercept=fit['Veneto',1])+
-#					geom_abline(slope=fit['Emilia Romagna',2], intercept=fit['Emilia Romagna',1])+
-					scale_color_manual(values=d3hexcols20)
-    p
+	allDataReg$logcasi <- log(allDataReg[,'casi totali'])
+	prevDT$logcasi <- log(prevDT[,'casi totali'])
+
+	p <- ggplot() + my_ggtheme() +
+ 	geom_point(data= allDataReg[which(allDataReg$regione%in%regioniSel),], aes(x=data, y=`logcasi`, color=regione))+
+	geom_line(data= prevDT[which(prevDT$regione%in%regioniSel),],aes(x=data, y=`logcasi`, color=regione), linetype=2)+
+ 	#geom_abline(slope=df$slopes, intercept=df$intercepts, linetype=2)+
+ 	scale_color_manual(values=d3hexcols20)+
+ #	geom_rect(aes(xmin=mindataprev-0.5, xmax=max(prevDT$data+1), ymin=0, ymax=max(prevDT$logcasi)*1.05),fill="grey", alpha=0.3)+xlim(c(min(prevDT$data),max(prevDT$data+1)))+theme(axis.text.x=element_text(angle=45,hjust=1))  +
+ #	geom_errorbar(data=logcasi,aes(x=data,ymin=LowerRange, ymax=UpperRange, color=regione),width=0.1)+
+ 	xlab("")
+
+ 	 p
+
+#out <- rbind(allDataReg[, c('regione', 'casi totali', "data")], prevDT[, c('regione', 'casi totali', "data")])
+
+ # allDataReg$UpperRange<-10000
+ # allDataReg$LowerRange<-10000
+ # out <- rbind(allDataReg[, c('regione', 'casi totali', "data","UpperRange","LowerRange")], prevDT[, c('regione', 'casi totali', "data","UpperRange","LowerRange")])
+#	out[,'casi totali' ] <- log(out[,'casi totali' ] )
+ # out$UpperRange<-log(out$UpperRange)
+ # out$LowerRange<-log(out$LowerRange)
+
+#	out <- out[which(out$regione %in% regioniSel), ]
+ # out1<-out[which(out$data<mindataprev),]
+ # out2<-out[which(out$data>=mindataprev),]
+
+#	fit <- as.data.frame(do.call(rbind, lapply(modelliReg, function(x) x$coefficients)))
+#	names(fit[,1]) <- "int"
+
+#definisco i fit per multiple regioni: da agganciare al tuo slectInput sulle regioni
+ #   df<-data.frame(slopes=c(fit['Lombardia',2],fit['Veneto',2],fit['Emilia Romagna',2]),intercepts=c(fit['Lombardia',1],fit['Veneto',1],fit['Emilia Romagna',1]))
+
+ #   df<-data.frame(
+#			slopes=as.array(fit[regioniSel,2]),
+#			intercepts=as.array(fit[regioniSel,1])
+#		)
+
+
+#    delta<-10 #definisce dopo quanti gg datta data minima parte la retta di fit
+#    xstart_fit<-min(out$data)
+#    xend_fit<-max(out$data)
+#    p <- ggplot(out) + my_ggtheme() +
+#		geom_point(aes(x=data, y=`casi totali`, color=regione))+
+#	geom_abline(data=fit, mapping=aes(slope=data, intercept='int')) +
+# geom_abline(slope=fit['Lombardia',2], intercept=fit['Lombardia',1], linetype=2)+
+# geom_abline(slope=fit['Veneto',2], intercept=fit['Veneto',1], linetype=2)+
+# geom_abline(slope=fit['Emilia Romagna',2], intercept=fit['Emilia Romagna',1], linetype=2)+
+          #questo geom_segment non funge e non so perché
+          #geom_segment(aes(x=xstart_fit+delta, xend=xend_fit, y=df$intercepts+df$slopes*as.numeric(xstart_fit+delta), yend=df$intercepts+df$slopes*as.numeric(xend_fit)), linetype=2)+
+#    geom_abline(slope=df$slopes, intercept=df$intercepts, linetype=2)+
+#		scale_color_manual(values=d3hexcols20)+
+#    geom_rect(aes(xmin=mindataprev-0.5, xmax=max(out$data+1), ymin=0, ymax=max(out[['casi totali']])*1.05),fill="grey", alpha=0.3)+xlim(c(min(out$data),max(out$data+1)))+theme(axis.text.x=element_text(angle=45,hjust=1))  +
+#    geom_errorbar(data=out2,aes(x=data,ymin=LowerRange, ymax=UpperRange, color=regione),width=0.1)+
+#  xlab("")
+#   p
+
   }
 })
 
+
 prevIta <- reactive({
 	if(verbose) cat("\n reactive:prevIta")
-	allDataReg <- copy( reacval$dataTables_reg)
-	modelliIta <- isolate(reacval$modelliIta)
-	nahead=3
+		allDataReg <- copy( reacval$dataTables_reg)
+		modelliIta <- isolate(reacval$modelliIta)
+		nahead=3
 
-	if (!is.null(allDataReg)) {
+		if (!is.null(allDataReg)) {
 		tsIta <- getTimeSeriesReact()$Italia
 		if(saveRDSout) saveRDS(file="prevItaList.RDS",list(tsIta, modelliIta, allDataReg))
-#		tsIta <- getTimeSeries(allDataReg)$Italia
-		prevIta <- lapply(modelliIta, function(modello, dati, nahead){
-			predictNextDays(dati=dati, modello=modello,nahead=nahead)
+			#	tsIta <- getTimeSeries(allDataReg)$Italia
+			prevIta <- lapply(modelliIta, function(modello, dati, nahead){
+			predictNextDays(dati=dati, modello=modello,nahead=nahead, all=TRUE)
 		},dati=tsIta, nahead=nahead)
 
 		prevItaDT <- rbindlist(prevIta)
-		prevItaDT[, variabilePrevista:=rep(names(prevIta), each=nahead)]
+		prevItaDT[, variabilePrevista:=rep(names(prevIta), each=nrow(tsIta)+nahead)]
 		setDF(prevItaDT)
 		prevItaDT
   }
 })
 
+
 output$fitIta <- renderPlotly({
-	if(verbose) cat("\n renderPlotly:fitRegion")
+if(verbose) cat("\n renderPlotly:fitRegion")
   allDataReg <- copy( reacval$dataTables_reg)
 
   if (!is.null(allDataReg)) {
 		tsIta <- getTimeSeriesReact()$Italia
 		if(saveRDSout) saveRDS(file="fitItaList.RDS",list(tsIta, allDataReg))
-#		tsIta <- getTimeSeries(allDataReg)$Italia
+		#	tsIta <- getTimeSeries(allDataReg)$Italia
 		prevItaDT <-copy(prevIta())
 		setnames(prevItaDT, old=c('Attesi'), new=c('casi'))
 
@@ -454,28 +524,54 @@ output$fitIta <- renderPlotly({
 			variabilePrevista=rep(unique(varPrev), each=nrow(dataIta))
 		)
 
-		out <- rbind(tmp, prevItaDT[, c('data', 'casi',  'variabilePrevista')])
+#out <- rbind(tmp, prevItaDT[, c('data', 'casi',  'variabilePrevista')])
+    tmp$UpperRange<-NA
+    tmp$LowerRange<-NA
+    out <- rbind(tmp, prevItaDT)
+		minprevdata <- max(prevItaDT$data)-2
+
+		cat("\t", as.character(minprevdata))
+		assign('prevItaDTa', prevItaDT, envir=.GlobalEnv)
+		assign('outa', out, envir=.GlobalEnv)
+		assign('out2a', out2, envir=.GlobalEnv)
+
+		p <- ggplot() + my_ggtheme() +
+			 geom_line(data=prevItaDT,aes(x=data, y=`casi`, color=variabilePrevista), linetype=2) +
+			 geom_point(data=tmp,aes(x=data, y=`casi`, color=variabilePrevista))+
+			 scale_color_manual(values=d3hexcols20)+
+#			 geom_rect(aes(xmin=mindataprev-0.5, xmax=max(prevItaDT$data+1), ymin=0, ymax=max(prevItaDT$casi)*1.05),fill="grey", alpha=0.3)+ xlim(c(min(prevItaDT$data),max(prevItaDT$data+1)))+theme(axis.text.x=element_text(angle=45,hjust=1))+
+		#		 geom_errorbar(data=prevDT,aes(x=data,ymin=LowerRange, ymax=UpperRange, color=regione),width=0.1)+
+			 xlab("")
+			 #geom_rect(aes(xmin=minprevdata-0.5, xmax=max(out$data+1), ymin=0, ymax=max(out$casi)*1.05),fill="grey", alpha=0.3)+xlim(c(min(out$data),max(out2$data+1)))+theme(axis.text.x=element_text(angle=45,hjust=1))
+
+		p
 
   #  setnames(allDataReg, old=c('denominazione_regione', 'totale_casi'), new=c('regione', 'casi totali'))
-	#	setDF(allDataReg)
-#		out <- rbind(allDataReg[, c('regione', 'casi totali', "data")], prevDT[, c('regione', 'casi totali', "data")])
+#	setDF(allDataReg)
+ #   out1<-out[which(out$data<minprevdata),]
+#    out2<-out[which(out$data>=minprevdata),]
 
-    p <- ggplot(out) + my_ggtheme() +
-          geom_line(aes(x=data, y=`casi`, color=variabilePrevista)) +
-          scale_color_manual(values=d3hexcols20)
-    p
+ #   p <- ggplot() + my_ggtheme() +
+  #        geom_line(data=out1, aes(x=data, y=`casi`, color=variabilePrevista)) +
+   #       geom_point(data=out2, aes(x=data, y=`casi`, color=variabilePrevista)) +
+ #         scale_color_manual(values=d3hexcols20)+
+ #         geom_rect(aes(xmin=minprevdata-0.5, xmax=max(out$data+1), ymin=0, ymax=max(out$casi)*1.05),fill="grey", #alpha=0.3)+xlim(c(min(out$data),max(out2$data+1)))+theme(axis.text.x=element_text(angle=45,hjust=1))  +
+ #         geom_errorbar(data=out2,aes(x=data,ymin=LowerRange, ymax=UpperRange, color=variabilePrevista),width=0.1)+
+ #         xlab("")
+  #  p
   }
 })
 
+
 output$fitItaLog <- renderPlotly({
-	if(verbose) cat("\n renderPlotly:fitItaLog")
+if(verbose) cat("\n renderPlotly:fitItaLog")
   allDataReg <- copy( reacval$dataTables_reg)
-	modelliIta <- isolate(reacval$modelliIta)
+modelliIta <- isolate(reacval$modelliIta)
 
   if (!is.null(allDataReg)) {
 		tsIta <- getTimeSeriesReact()$Italia
 		if(saveRDSout) saveRDS(file="fitItaLogList.RDS",list(tsIta, modelliIta, allDataReg))
-	#	tsIta <- getTimeSeries(allDataReg)$Italia
+		#	tsIta <- getTimeSeries(allDataReg)$Italia
 		prevItaDT <-copy(prevIta())
 		setnames(prevItaDT, old=c('Attesi'), new=c('casi'))
 
@@ -490,24 +586,54 @@ output$fitItaLog <- renderPlotly({
 			casi=unlist(lapply(2:5, function(x) dataIta[, x])),
 			variabilePrevista=rep(unique(varPrev), each=nrow(dataIta))
 		)
-		out <- rbind(tmp, prevItaDT[, c('data', 'casi',  'variabilePrevista')])
-		out$casi <- log(out$casi)
+		minprevdata <- max(prevItaDT$data)-2
+#out <- rbind(tmp, prevItaDT[, c('data', 'casi',  'variabilePrevista')])
+#
+if(assignout) assign("tmp",tmp, envir=.GlobalEnv)
+if(assignout) assign("prevItaDT",prevItaDT, envir=.GlobalEnv)
+	tmp$logcasi <- log(tmp[,'casi'])
+	prevItaDT$logcasi <- log(prevItaDT[,'casi'])
 
-		fit <- as.data.frame(do.call(rbind, lapply(modelliIta, function(x) x$coefficients)))
-		names(fit[,1]) <- "int"
+	p1 <- ggplot() + my_ggtheme() +
+	 	geom_point(data= tmp, aes(x=data, y=`logcasi`, color=variabilePrevista))+
+		geom_line(data= prevItaDT,aes(x=data, y=`logcasi`, color=variabilePrevista), linetype=2)+
+	 	#geom_abline(slope=df$slopes, intercept=df$intercepts, linetype=2)+
+	 	scale_color_manual(values=d3hexcols20)+
+	 #	geom_errorbar(data=logcasi,aes(x=data,ymin=LowerRange, ymax=UpperRange, color=regione),width=0.1)+
+	 	xlab("")#+
+	# 	geom_rect(aes(xmin=mindataprev-0.5, xmax=max(prevItaDT$data+1), ymin=0, ymax=max(prevItaDT$logcasi)*1.05),fill="grey", alpha=0.3)+xlim(c(min(prevItaDT$data),max(prevItaDT$data+1)))+theme(axis.text.x=element_text(angle=45,hjust=1))
 
-    p <- ggplot(out) + my_ggtheme() +
-					geom_point(aes(x=data, y=`casi`, color=variabilePrevista))+
-#					geom_abline(data=fit, mapping=aes(slope=data, intercept='int')) +
-					geom_abline(slope=fit[1,2], intercept=fit[1,1])+
-					geom_abline(slope=fit[2,2], intercept=fit[2,1])+
-					geom_abline(slope=fit[3,2], intercept=fit[3,1])+
-					geom_abline(slope=fit[4,2], intercept=fit[4,1])+
-					#geom_abline(data=d,   mapping=aes(slope=s, intercept=ic, linetype=factor(s))) +
-					scale_color_manual(values=d3hexcols20)
-    p
+ 	 p1
+
+  #  tmp$UpperRange<-NA
+ #   tmp$LowerRange<-NA
+ #   out <- rbind(tmp, prevItaDT[, c('data', 'casi',  'variabilePrevista', 'UpperRange', 'LowerRange')])
+ #   out$casi <- log(out$casi)
+ #   out$UpperRange<-log(out$UpperRange)
+ #   out$LowerRange<-log(out$LowerRange)
+  #  out1<-out[which(out$data<minprevdata),]
+ #   out2<-out[which(out$data>=minprevdata),]
+
+#		fit <- as.data.frame(do.call(rbind, lapply(modelliIta, function(x) x$coefficients)))
+#		names(fit[,1]) <- "int"
+
+ #   delta<-10 #definisce dopo quanti gg datta data minima parte la retta di fit
+ #   xstart_fit<-min(out$data)
+ #   xend_fit<-max(out$data)
+ #   p<-ggplot() + my_ggtheme() +
+#            geom_point(data= out, aes(x=data, y=`casi`, color=variabilePrevista))+
+#
+#            geom_segment(aes(x=xstart_fit+delta, xend=xend_fit, y=fit[1:4,1]+fit[1:4,2]*as.numeric(xstart_fit+delta), yend=fit[1:4,1]+fit[1:4,2]*as.numeric(xend_fit)), linetype=2)+
+
+ #           scale_color_manual(values=d3hexcols20)+
+ #           geom_rect(aes(xmin=minprevdata-0.5, xmax=max(out$data+1), ymin=0, ymax=max(out$casi)*1.05),fill="grey", #alpha=0.3)+xlim(c(min(out$data),max(out2$data+1)))+theme(axis.text.x=element_text(angle=45,hjust=1))  +
+ #           geom_errorbar(data=out2,aes(x=data,ymin=LowerRange, ymax=UpperRange, color=variabilePrevista),width=0.1)+
+ #           xlab("")
+
   }
 })
+
+
 
 
 

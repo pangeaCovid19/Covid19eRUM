@@ -53,8 +53,11 @@ loglinmodel<-function(regione, rangepesi=c(0,1)) {
 	fit
 }
 #Ritorna le predizioni del modello
-predictNextDays<-function(dati,modello,nahead=3) {
-	newdata<-data.frame(data = max(dati$data)+seq_len(nahead))
+predictNextDays<-function(dati,modello,nahead=3, all=FALSE) {
+	if(all==TRUE){
+		newdata <- data.frame(data = c(dati$data, max(dati$data)+seq_len(nahead))  )
+	} else newdata<-data.frame(data = max(dati$data)+seq_len(nahead))
+
 	predizioni<-exp(predict(modello,newdata,interval="confidence"))
 	colnames(predizioni)<-c("Attesi","LowerRange","UpperRange")
 	newdata<-cbind(newdata,predizioni)
