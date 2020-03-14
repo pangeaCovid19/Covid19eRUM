@@ -104,6 +104,21 @@ output$lineRegion <- renderPlotly({
   }
 })
 
+output$tabRegionNEW <- renderDT({
+	if(verbose) cat("\n renderDT:tabRegion")
+  allDataReg <- reacval$dataTables_reg#get_data()
+  if (!is.null(allData)) {
+    regrdx <- allDataReg[allDataReg$data==max(allDataReg$data), ]
+		out <- regrdx[, c('denominazione_regione', 'tamponi', 'totale_casi', 'totale_ospedalizzati','terapia_intensiva','deceduti','dimessi_guariti')]
+		names(out) <- c('regione', 'tamponi', 'casi', 'ospedalizzati', 'Terapia intensiva','deceduti','guariti')
+ #   out$`casi su 10mila abit` <- round(out$totale_casi / out$pop * 10000, 3)
+
+    datatable(out,
+      selection = list(target = NULL),
+      options=list(paging = T, searching = F, info=F, ordering=T, order=list(list(2, 'desc'))),
+      rownames=F)
+  }
+})
 
 output$tabRegion <- renderDT({
 	if(verbose) cat("\n renderDT:tabRegion")
@@ -141,7 +156,7 @@ output$mapRegion <- renderLeaflet({
     pltRegioni <- merge(regioni, latestDataReg[,c("codice_regione", "totale_casi", "densita_casi")], by.x="COD_REG", by.y="codice_regione")
     pal <- colorBin("YlOrRd", domain = log10(pltRegioni$totale_casi))
 
-		leaflet(data = pltRegioni, options = leafletOptions(zoomControl = FALSE,minZoom = 5, maxZoom = 5)) %>%
+		leaflet(data = pltRegioni, options = leafletOptions(zoomControl = FALSE,minZoom = 3, maxZoom = 6)) %>%
 			addTiles()%>%
 			addProviderTiles("CartoDB.Positron") %>% setView(lng=12.5, lat=41.3, zoom=5)  %>%
 			addPolygons(fillColor = ~pal(log10(totale_casi)), weight = 1, stroke = TRUE, color="lightgrey",
