@@ -85,6 +85,21 @@ map_italia <- readRDS(file=paste0(dir_data, "map_italia.RDS"))
 map_regioni <- readRDS(file=paste0(dir_data, "map_regioni.RDS"))
 
 
+risultatiFit <- HTML("<div style='padding-top:10px;'></div>")
+
+
+spiegaFitPos <- HTML("<div style='padding-top:10px;'>In questo grafico mostriamo la serie storica dei casi confermati di CoVid19 nelle regioni selezionate ed una previsione che si estende fino a tre giorni, linea tratteggiata. Abbiamo utilizzando un fit esponenziale dando maggiore importanza ai dati più recenti.</div>")
+
+spiegaFitPosLog <- HTML("<div style='padding-top:10px;'>In questo grafico mostriamo la serie storica dei casi confermati di CoVid19 nelle regioni selezionate ed una previsione che si estende fino a tre giorni, linea tratteggiata. L'asse delle ascisse è logaritmico, questo permette di rimappare un andamento esponenziale su una retta.</div>")
+
+spiegaFitTot <- HTML("<div style='padding-top:10px;'>In questo grafico mostriamo la serie storica dei casi confermati, dei pazienti ospedalizzati, dei pazienti in terapia intensiva e dei defunti a causa del CoVid19 in Italia ed una previsione che si estende fino a tre giorni, linea tratteggiata. Abbiamo utilizzando un fit esponenziale dando maggiore importanza ai dati più recenti.</div>")
+
+spiegaFitTotLog <- HTML("<div style='padding-top:10px;'>In questo grafico mostriamo la serie storica dei casi confermati, dei pazienti ospedalizzati, dei pazienti in terapia intensiva e dei defunti a causa del CoVid19 in Italia ed una previsione che si estende fino a tre giorni, linea tratteggiata. L'asse delle ascisse è logaritmico, questo permette di rimappare un andamento esponenziale su una retta.</div>")
+
+
+
+
+
 
 spiegaMappa <- HTML("<div style='padding-top:10px;'>In questa mappa mostriamo la diffusione sul territorio dei casi confermati
 di CoVid19.
@@ -103,14 +118,6 @@ spiegaLinePlot <- HTML("<div style='padding-top:10px;'>In questo grafico mostria
 di CoVid19. <br>Ciascuna area territoriale
 &egrave; indicata con un colore diverso. &Egrave; possibile ingrandire aree specifiche del grafico
 e disabilitare (o riabilitare) singoli territori interagendo con la legenda del grafico.</div>")
-
-spiegaFitPos <- HTML("<div style='padding-top:10px;'>In questo grafico mostriamo la serie storica dei casi confermati di CoVid19 nelle regioni selezionate ed una previsione che si estende fino a tre giorni, linea tratteggiata. Abbiamo utilizzando un fit esponenziale dando maggiore importanza ai dati più recenti.</div>")
-
-spiegaFitPosLog <- HTML("<div style='padding-top:10px;'>In questo grafico mostriamo la serie storica dei casi confermati di CoVid19 nelle regioni selezionate ed una previsione che si estende fino a tre giorni, linea tratteggiata. L'asse delle ascisse è logaritmico, questo permette di rimappare un andamento esponenziale su una retta.</div>")
-
-spiegaFitTot <- HTML("<div style='padding-top:10px;'>In questo grafico mostriamo la serie storica dei casi confermati, dei pazienti ospedalizzati, dei pazienti in terapia intensiva e dei defunti a causa del CoVid19 in Italia ed una previsione che si estende fino a tre giorni, linea tratteggiata. Abbiamo utilizzando un fit esponenziale dando maggiore importanza ai dati più recenti.</div>")
-
-spiegaFitTotLog <- HTML("<div style='padding-top:10px;'>In questo grafico mostriamo la serie storica dei casi confermati, dei pazienti ospedalizzati, dei pazienti in terapia intensiva e dei defunti a causa del CoVid19 in Italia ed una previsione che si estende fino a tre giorni, linea tratteggiata. L'asse delle ascisse è logaritmico, questo permette di rimappare un andamento esponenziale su una retta.</div>")
 
 fontiDati <- HTML("<div>Dati provenienti da:
 <ul>

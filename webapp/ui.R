@@ -5,6 +5,8 @@ fitTab <- tabItem(tabName = "fitPlots",
 #							h1("Analisi previsionale nelle province italiane"), br(), br(),
 							fluidRow(
 								box(width=12,
+									h4("Sia gli andamenti totali che quelli delle regioni maggiormente colpite si stanno staccando dall'andamento esponenziale, questo sembra indicare che le misure preventive iniziano ad avere effetto."),
+									 br(),
 									fluidRow(
 										column(width=4, selectizeInput("regionSelFit", label="Regione", choices=regioniList, selected = regioni2fit, multiple=TRUE, width='400px')),
 										column(width=4, selectizeInput("regionLinLogFit", label="Tipo Grafico", choices=c("Lineare", "Logaritmico"), selected = "Lineare", width='200px'))
