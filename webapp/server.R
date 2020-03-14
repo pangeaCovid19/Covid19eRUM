@@ -159,7 +159,7 @@ output$mapRegion <- renderLeaflet({
 		leaflet(data = pltRegioni, options = leafletOptions(zoomControl = FALSE,minZoom = 3, maxZoom = 6)) %>%
 			addTiles()%>%
 			addProviderTiles("CartoDB.Positron") %>% setView(lng=12.5, lat=41.3, zoom=5)  %>%
-			addPolygons(fillColor = ~pal(log10(totale_casi)), weight = 1, stroke = TRUE, color="lightgrey",
+			addPolygons(fillColor = ~pal(log10(totale_casi)), weight = 1, stroke = TRUE, color="lightgrey", fillOpacity=.7,
 		  label = ~paste(DEN_REG, "- casi:", totale_casi))
 #    leaflet(data = pltRegioni) %>% addTiles() %>%
  #       addProviderTiles("CartoDB.Positron") %>% setView(lng=12.5, lat=41.3, zoom=5)  %>%
@@ -258,7 +258,7 @@ output$mapProvince <- renderLeaflet({
     pal <- colorBin("YlOrRd", domain = log10(pltProvince$totale_casi))
     leaflet(data = pltProvince, options = leafletOptions(zoomControl = FALSE,minZoom = 7, maxZoom = 7)) %>% addTiles() %>%
         addProviderTiles("CartoDB.Positron") %>% setView(lng=my_frame$reg_long, lat=my_frame$reg_lat, zoom=7)  %>%
-        addPolygons(fillColor = ~pal(log10(totale_casi)), weight = 1, stroke = TRUE, color="lightgrey",
+        addPolygons(fillColor = ~pal(log10(totale_casi)), weight = 1, stroke = TRUE, color="lightgrey", fillOpacity = .7,
                  label = ~paste(DEN_UTS, "- casi:", totale_casi))
 
   }
@@ -425,21 +425,21 @@ output$fitRegLog <- renderPlotly({
 	#	tsReg <- tsReg[which(names(tsReg)!="Italia")]
 
 	prevDT <-copy(prevRegion())
-	setnames(prevDT, old=c('Attesi'), new=c('casi totali'))
+	setnames(prevDT, old=c('Attesi'), new=c('casi'))
 
-  setnames(allDataReg, old=c('denominazione_regione', 'totale_casi'), new=c('regione', 'casi totali'))
+  setnames(allDataReg, old=c('denominazione_regione', 'totale_casi'), new=c('regione', 'casi'))
 	setDF(allDataReg)
 
 	mindataprev <- max(prevDT$data)-2
 
 
-	allDataReg$logcasi <- log(allDataReg[,'casi totali'])
-	prevDT$logcasi <- log(prevDT[,'casi totali'])
+	allDataReg$logcasi <- log(allDataReg[,'casi'])
+	#prevDT$logcasi <- log(prevDT[,'casi'])
 
 	p <- ggplot() + my_ggtheme() +
-	labs(title = "", x = "", y = "casi (log)") +
- 	geom_point(data= allDataReg[which(allDataReg$regione%in%regioniSel),], aes(x=data, y=`logcasi`, color=regione))+
-	geom_line(data= prevDT[which(prevDT$regione%in%regioniSel),],aes(x=data, y=`logcasi`, color=regione), linetype=2)+
+	labs(title = "", x = "", y = "casi") +
+ 	geom_point(data= allDataReg[which(allDataReg$regione%in%regioniSel),], aes(x=data, y=casi, color=regione))+
+	geom_line(data= prevDT[which(prevDT$regione%in%regioniSel),],aes(x=data, y=casi, color=regione), linetype=2) + scale_y_log10() +
  	#geom_abline(slope=df$slopes, intercept=df$intercepts, linetype=2)+
  	scale_color_manual(values=d3hexcols20)+
  #	geom_rect(aes(xmin=mindataprev-0.5, xmax=max(prevDT$data+1), ymin=0, ymax=max(prevDT$logcasi)*1.05),fill="grey", alpha=0.3)+xlim(c(min(prevDT$data),max(prevDT$data+1)))+theme(axis.text.x=element_text(angle=45,hjust=1))  +
@@ -549,8 +549,8 @@ if(verbose) cat("\n renderPlotly:fitRegion")
 		cat("\t", as.character(minprevdata))
 
 		p <- ggplot() + my_ggtheme() +
-			 geom_line(data=prevItaDT,aes(x=data, y=`casi`, color=variabilePrevista), linetype=2) +
-			 geom_point(data=tmp,aes(x=data, y=`casi`, color=variabilePrevista))+
+			 geom_line(data=prevItaDT,aes(x=data, y=casi, color=variabilePrevista), linetype=2) +
+			 geom_point(data=tmp,aes(x=data, y=casi, color=variabilePrevista))+
 			 scale_color_manual(values=d3hexcols20)+
 #			 geom_rect(aes(xmin=mindataprev-0.5, xmax=max(prevItaDT$data+1), ymin=0, ymax=max(prevItaDT$casi)*1.05),fill="grey", alpha=0.3)+ xlim(c(min(prevItaDT$data),max(prevItaDT$data+1)))+theme(axis.text.x=element_text(angle=45,hjust=1))+
 		#		 geom_errorbar(data=prevDT,aes(x=data,ymin=LowerRange, ymax=UpperRange, color=regione),width=0.1)+
@@ -565,8 +565,8 @@ if(verbose) cat("\n renderPlotly:fitRegion")
 #    out2<-out[which(out$data>=minprevdata),]
 
  #   p <- ggplot() + my_ggtheme() +
-  #        geom_line(data=out1, aes(x=data, y=`casi`, color=variabilePrevista)) +
-   #       geom_point(data=out2, aes(x=data, y=`casi`, color=variabilePrevista)) +
+  #        geom_line(data=out1, aes(x=data, y=casi, color=variabilePrevista)) +
+   #       geom_point(data=out2, aes(x=data, y=casi, color=variabilePrevista)) +
  #         scale_color_manual(values=d3hexcols20)+
  #         geom_rect(aes(xmin=minprevdata-0.5, xmax=max(out$data+1), ymin=0, ymax=max(out$casi)*1.05),fill="grey", #alpha=0.3)+xlim(c(min(out$data),max(out2$data+1)))+theme(axis.text.x=element_text(angle=45,hjust=1))  +
  #         geom_errorbar(data=out2,aes(x=data,ymin=LowerRange, ymax=UpperRange, color=variabilePrevista),width=0.1)+
@@ -605,12 +605,12 @@ modelliIta <- isolate(reacval$modelliIta)
 if(assignout) assign("tmp",tmp, envir=.GlobalEnv)
 if(assignout) assign("prevItaDT",prevItaDT, envir=.GlobalEnv)
 	tmp$logcasi <- log(tmp[,'casi'])
-	prevItaDT$logcasi <- log(prevItaDT[,'casi'])
+	#prevItaDT$logcasi <- log(prevItaDT[,'casi'])
 
 	p <- ggplot() + my_ggtheme() +
 		labs(title = "", x = "", y = "casi (log)") +
-	 	geom_point(data= tmp, aes(x=data, y=`logcasi`, color=variabilePrevista))+
-		geom_line(data= prevItaDT,aes(x=data, y=`logcasi`, color=variabilePrevista), linetype=2)+
+	 	geom_point(data= tmp, aes(x=data, y=casi, color=variabilePrevista))+
+		geom_line(data= prevItaDT,aes(x=data, y=casi, color=variabilePrevista), linetype=2) + scale_y_log10() +
 	 	#geom_abline(slope=df$slopes, intercept=df$intercepts, linetype=2)+
 	 	scale_color_manual(values=d3hexcols20)
 	 #	geom_errorbar(data=logcasi,aes(x=data,ymin=LowerRange, ymax=UpperRange, color=regione),width=0.1)+
@@ -635,7 +635,7 @@ if(assignout) assign("prevItaDT",prevItaDT, envir=.GlobalEnv)
  #   xstart_fit<-min(out$data)
  #   xend_fit<-max(out$data)
  #   p<-ggplot() + my_ggtheme() +
-#            geom_point(data= out, aes(x=data, y=`casi`, color=variabilePrevista))+
+#            geom_point(data= out, aes(x=data, y=casi, color=variabilePrevista))+
 #
 #            geom_segment(aes(x=xstart_fit+delta, xend=xend_fit, y=fit[1:4,1]+fit[1:4,2]*as.numeric(xstart_fit+delta), yend=fit[1:4,1]+fit[1:4,2]*as.numeric(xend_fit)), linetype=2)+
 
