@@ -441,6 +441,7 @@ output$fitRegLog <- renderPlotly({
  	geom_point(data= allDataReg[which(allDataReg$regione%in%regioniSel),], aes(x=data, y=casi, color=regione))+
 	geom_line(data= prevDT[which(prevDT$regione%in%regioniSel),],aes(x=data, y=casi, color=regione), linetype=2) + scale_y_log10() +
  	#geom_abline(slope=df$slopes, intercept=df$intercepts, linetype=2)+
+ 	theme(axis.text.x=element_text(angle=45,hjust=1))+
  	scale_color_manual(values=d3hexcols20)+
  #	geom_rect(aes(xmin=mindataprev-0.5, xmax=max(prevDT$data+1), ymin=0, ymax=max(prevDT$logcasi)*1.05),fill="grey", alpha=0.3)+xlim(c(min(prevDT$data),max(prevDT$data+1)))+theme(axis.text.x=element_text(angle=45,hjust=1))  +
  #	geom_errorbar(data=logcasi,aes(x=data,ymin=LowerRange, ymax=UpperRange, color=regione),width=0.1)+
@@ -552,6 +553,7 @@ if(verbose) cat("\n renderPlotly:fitRegion")
 			 geom_line(data=prevItaDT,aes(x=data, y=casi, color=variabilePrevista), linetype=2) +
 			 geom_point(data=tmp,aes(x=data, y=casi, color=variabilePrevista))+
 			 scale_color_manual(values=d3hexcols20)+
+			 theme(axis.text.x=element_text(angle=45,hjust=1))+
 #			 geom_rect(aes(xmin=mindataprev-0.5, xmax=max(prevItaDT$data+1), ymin=0, ymax=max(prevItaDT$casi)*1.05),fill="grey", alpha=0.3)+ xlim(c(min(prevItaDT$data),max(prevItaDT$data+1)))+theme(axis.text.x=element_text(angle=45,hjust=1))+
 		#		 geom_errorbar(data=prevDT,aes(x=data,ymin=LowerRange, ymax=UpperRange, color=regione),width=0.1)+
 			 xlab("")
@@ -608,9 +610,10 @@ if(assignout) assign("prevItaDT",prevItaDT, envir=.GlobalEnv)
 	#prevItaDT$logcasi <- log(prevItaDT[,'casi'])
 
 	p <- ggplot() + my_ggtheme() +
-		labs(title = "", x = "", y = "casi (log)") +
+		labs(title = "", x = "", y = "casi") +
 	 	geom_point(data= tmp, aes(x=data, y=casi, color=variabilePrevista))+
 		geom_line(data= prevItaDT,aes(x=data, y=casi, color=variabilePrevista), linetype=2) + scale_y_log10() +
+		theme(axis.text.x=element_text(angle=45,hjust=1))+
 	 	#geom_abline(slope=df$slopes, intercept=df$intercepts, linetype=2)+
 	 	scale_color_manual(values=d3hexcols20)
 	 #	geom_errorbar(data=logcasi,aes(x=data,ymin=LowerRange, ymax=UpperRange, color=regione),width=0.1)+
