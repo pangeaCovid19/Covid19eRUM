@@ -531,9 +531,6 @@ if(verbose) cat("\n renderPlotly:fitRegion")
 		minprevdata <- max(prevItaDT$data)-2
 
 		cat("\t", as.character(minprevdata))
-		assign('prevItaDTa', prevItaDT, envir=.GlobalEnv)
-		assign('outa', out, envir=.GlobalEnv)
-		assign('out2a', out2, envir=.GlobalEnv)
 
 		p <- ggplot() + my_ggtheme() +
 			 geom_line(data=prevItaDT,aes(x=data, y=`casi`, color=variabilePrevista), linetype=2) +
