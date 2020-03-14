@@ -12,6 +12,8 @@ verbose <- TRUE
 assignout <- TRUE
 saveRDSout <- FALSE
 
+regioni2fit <- c('Lombardia', 'Emilia Romagna', 'Veneto')
+
 dir_prov 	<- "www/pcm_data/"
 dir_reg		<- "www/dati-regioni/"
 dir_data	<- "www/"
@@ -46,6 +48,16 @@ my_ggtheme <- function() {
               strip.text = element_text(size = 9))
 }
 
+my_ggtheme <- function() {
+  theme_minimal() +
+            theme(legend.text = element_text(size = 10),
+              axis.text = element_text(size=10),
+              legend.title = element_text(size = 10),
+              axis.title = element_text(size = 12),
+              plot.title = element_text(size = 10),
+              strip.text = element_text(size = 9))
+}
+
 # dati epidemiolocigi
 allData <- readRDS(paste0(dir_prov,provRDS))
 regioniList <- sort(unique(allData$denominazione_regione))
@@ -75,30 +87,30 @@ map_regioni <- readRDS(file=paste0(dir_data, "map_regioni.RDS"))
 
 
 spiegaMappa <- HTML("<div style='padding-top:10px;'>In questa mappa mostriamo la diffusione sul territorio dei casi confermati
-di CoVid19, alla data pi&ugrave; recente del periodo di interesse selezionato nel men&ugrave; (o alla data di aggiornamento dei dati)
-laterale. <br>La scala di colore parte dal giallo per le aree con il minor numero assoluto di
+di CoVid19.
+<br>La scala di colore parte dal giallo per le aree con il minor numero assoluto di
 casi confermati e arriva al rosso per le aree con il maggior numero assoluto di casi confermati.
 <br>Passando sulla mappa potete vedere l'effettivo numero di casi confermati in ciasuna area.</div>")
 
 spiegaTabella <- HTML("<div style='padding-top:10px;'>In questa tabella mostriamo la diffusione sul territorio dei casi confermati
-di CoVid19, alla data pi&ugrave; recente del periodo di interesse selezionato nel men&ugrave; (o alla data di aggiornamento dei dati)
-laterale. <br>La colonna &quot;casi totali&quot; riporta il numero totale di casi confermati di CoVid19
+di CoVid19.
+<br>La colonna &quot;casi totali&quot; riporta il numero totale di casi confermati di CoVid19
 nel territorio, mentre la colonna &quot;casi su 10^4 abit.&quot; riporta il numero di casi per ogni
 10mila abitanti cos&igrave; da contestualizzare la diffusione rispetto alla popolazione presente
 nel territorio.</div>")
 
 spiegaLinePlot <- HTML("<div style='padding-top:10px;'>In questo grafico mostriamo l'andamento del numero di casi confermati
-di CoVid19, nel periodo di interesse selezionato nel men&ugrave; laterale. <br>Ciascuna area territoriale
+di CoVid19. <br>Ciascuna area territoriale
 &egrave; indicata con un colore diverso. &Egrave; possibile ingrandire aree specifiche del grafico
 e disabilitare (o riabilitare) singoli territori interagendo con la legenda del grafico.</div>")
 
-spiegaFitPos <- HTML("<div style='padding-top:10px;'></div>")
+spiegaFitPos <- HTML("<div style='padding-top:10px;'>In questo grafico mostriamo la serie storica dei casi confermati di CoVid19 nelle regioni selezionate ed una previsione che si estende fino a tre giorni, linea tratteggiata. Abbiamo utilizzando un fit esponenziale dando maggiore importanza ai dati più recenti.</div>")
 
-spiegaFitPosLog <- HTML("<div style='padding-top:10px;'></div>")
+spiegaFitPosLog <- HTML("<div style='padding-top:10px;'>In questo grafico mostriamo la serie storica dei casi confermati di CoVid19 nelle regioni selezionate ed una previsione che si estende fino a tre giorni, linea tratteggiata. L'asse delle ascisse è logaritmico, questo permette di rimappare un andamento esponenziale su una retta.</div>")
 
-spiegaFitTot <- HTML("<div style='padding-top:10px;'></div>")
+spiegaFitTot <- HTML("<div style='padding-top:10px;'>In questo grafico mostriamo la serie storica dei casi confermati, dei pazienti ospedalizzati, dei pazienti in terapia intensiva e dei defunti a causa del CoVid19 in Italia ed una previsione che si estende fino a tre giorni, linea tratteggiata. Abbiamo utilizzando un fit esponenziale dando maggiore importanza ai dati più recenti.</div>")
 
-spiegaFitTotLog <- HTML("<div style='padding-top:10px;'></div>")
+spiegaFitTotLog <- HTML("<div style='padding-top:10px;'>In questo grafico mostriamo la serie storica dei casi confermati, dei pazienti ospedalizzati, dei pazienti in terapia intensiva e dei defunti a causa del CoVid19 in Italia ed una previsione che si estende fino a tre giorni, linea tratteggiata. L'asse delle ascisse è logaritmico, questo permette di rimappare un andamento esponenziale su una retta.</div>")
 
 fontiDati <- HTML("<div>Dati provenienti da:
 <ul>
