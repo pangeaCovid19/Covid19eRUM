@@ -91,7 +91,7 @@ loglinmodel3<-function(dati, var="totale_casi", rangepesi=c(0,1), quadratico = F
 	if (quadratico) {
 		regione$dataind<-as.numeric(regione$data-min(regione$data))+1
 		regione$data2<-as.numeric(regione$dataind)^2
-		fit<-lm(logcasi~data+data2,regione,weights=pesi)
+		fit<-lm(logcasi~dataind+data2,regione,weights=pesi)
 		attr(fit,"quadratico")<-TRUE
 		attr(fit,"mindata")<-min(regione$data)
 	} else {
