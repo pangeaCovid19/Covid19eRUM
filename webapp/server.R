@@ -531,7 +531,7 @@ output$terapiaIntPlotNow<- renderPlotly({
 
 	tintLong <- data.frame(rep(tint$denominazione_regione, 2), c(tint$terapia_intensiva,tint$lettiTI) )
 	names(tintLong) <- c("regione", "numero")
-	tintLong$dati <- rep(c( 'letti disponibili', 'pazienti CoVid19'), each=nrow(tint))
+	tintLong$dati <- rep(c('pazienti CoVid19', 'letti disponibili'), each=nrow(tint))
 
 
 	p <-ggplot(data=tintLong, aes(x=regione, y=numero, fill=dati)) +
