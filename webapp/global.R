@@ -23,12 +23,18 @@ regRDS <- "dataRegioni.RDS"
 provShapeRDS <- "ProvinceShapeF.RDS"
 regShapeRDS <- "RegioniShapeF.RDS"
 
-
 campiPrevisioni <- c("totale_casi", "deceduti", "totale_ospedalizzati", "terapia_intensiva")
 
 
 pop_file <- read.csv("www/tavola_pop_res01.csv", stringsAsFactors=F, skip=1)
 colnames(pop_file) <- c("codice_provincia", "provincia", "pop_m", "pop_f", "pop")
+
+letti2018 <- readRDS("www/letti2018.RDS")
+TIindx <- grep("TERAPIA INTENSIVA", letti2018$Descrizione.disciplina)
+Tintensiva <- aggregate(letti2018[TIindx, 'Totale.posti.letto'],by=list( denominazione_regione=letti2018[TIindx, 'Descrizione.Regione']), sum)
+setnames(Tintensiva, old="x", new="lettiTI")
+
+
 
 # Temi dell'applicazione
 d3cols <- "1f77b4ff7f0e2ca02cd627289467bd8c564be377c27f7f7fbcbd2217becf"
@@ -124,6 +130,8 @@ fontiDati <- HTML("<div>Dati provenienti da:
 <li><a href='https://github.com/pcm-dpc/COVID-19'>Presidenza del Consiglio dei Ministri - Dipartimento della Protezione Civile
 </a> (Monitoraggio COVID-19)</li>
 <li><a href='https://www.istat.it/it/archivio/222527'>ISTAT</a> (shapefile unit&agrave; amministrative e dati popolazione)</li>
+<li><a href='
+http://www.dati.salute.gov.it/dati/dettaglioDataset.jsp?menu=dati&idPag=96'>Ministero della Salute</a> (Numero di posti letto in terapia intensiva, dati aggiornati al 2018)</li>
 </ul></div>")
 
 

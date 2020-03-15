@@ -77,3 +77,23 @@ map_italia <- ggplot() +
 
 saveRDS(file=paste0(dir_data, "map_italia.RDS"), map_italia)
 saveRDS(file=paste0(dir_data, "map_regioni.RDS"), map_regioni)
+
+
+
+letti <- read.csv2("www/C_17_dataset_96_0_upFile.csv", stringsAsFactors=FALSE)
+setDT(letti)
+letti2018 <- letti[Anno=="2018", ]
+letti2018[, Descrizione.Regione:= paste0(
+	substr(toupper(Descrizione.Regione),1,1),
+	substr(tolower(Descrizione.Regione),2,nchar(Descrizione.Regione))
+	)]
+paTrentino <- grep('bolz|trent', letti2018$Descrizione.Regione, ignore.case=T)
+letti2018[paTrentino, Descrizione.Regione:="Trentino - Alto Adige"]
+
+letti2018[, Descrizione.Regione := gsub("`", "'", Descrizione.Regione)]
+
+letti2018[grepl("Emilia Romagna", Descrizione.Regione, ignore.case=T), Descrizione.Regione :='Emilia Romagna']
+letti2018[grepl("Friuli Venezia Giulia", Descrizione.Regione, ignore.case=T), Descrizione.Regione :='Friuli Venezia Giulia']
+letti2018[grepl("Valle d'Aosta", Descrizione.Regione, ignore.case=T), Descrizione.Regione :="Valle d'Aosta"]
+setDF(letti2018)
+saveRDS(file=paste0(dir_data, "letti2018.RDS"),letti2018 )
