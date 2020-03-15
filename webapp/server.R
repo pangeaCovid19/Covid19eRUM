@@ -331,7 +331,7 @@ prevRegion <- reactive({
 		prevDT <- get_predictions(modelliReg, tsReg, nahead=nahead, alldates=TRUE)
     setnames(prevDT, old=c("outName"), new=c("regione"))
 		setDF(prevDT)
-
+		prevDT[,c("dataind","data2")]<-NULL
 		if(assignout) assign("prevDT",prevDT, envir=.GlobalEnv)
 		prevDT
   }
