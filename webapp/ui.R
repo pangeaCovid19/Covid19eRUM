@@ -24,7 +24,25 @@ fitTab <- tabItem(tabName = "fitPlots",
 												collapsible = T, plotlyOutput(outputId="fitCasesIta")
 										)
 									),
+								)
+							),
+              fluidRow(
+                box(width=12, uiOutput("updatePrevisioniUI"), fontiDati
+                )
+              )
+            )
+
+
+tiTab <- tabItem(tabName = "tiPlots",
+							fluidRow(
+								box(width=12,
+									h4("I dati relativi al numero di posti letto in terapia intensiva per regione sono aggiornati al 2018 e non vengono riaggiornati in base agli sforzi che il sistema sanitario sta portando avanti in questi giorni. Non ha scopo allarmistico ma solo di mostrare quali siano le criticità che il nostro paese sta affrontando a causa del CoVid19 "),
+									 br(),
 	                fluidRow(
+										box(width=12,
+											title = tagList(shiny::icon("globe-europe"), "Previsione del numero di letti occupati da pazienti conCovid19 e disponibilità per regione (posti letto aggiornati al 2018)"),
+											plotlyOutput("terapiaIntPlotPercPrev")
+										),
 	                	box(width=12,
 											title = tagList(shiny::icon("globe-europe"), "Percentuale in terapia intensiva occupati da pazienti con CoVid19 (posti letto aggiornati al 2018)"),
 											plotlyOutput("terapiaIntPlotPercNow")
@@ -32,33 +50,16 @@ fitTab <- tabItem(tabName = "fitPlots",
 										box(width=12,
 											title = tagList(shiny::icon("globe-europe"), "Diponibilità di letti in terapia intensiva e numero di occupanti con CoVid19 (posti letto aggiornati al 2018)"),
 											plotlyOutput("terapiaIntPlotNow")
-										),
-										box(width=12,
-											title = tagList(shiny::icon("globe-europe"), "Previsione del numero di letti occupati da pazienti conCovid19 e disponibilità per regione (posti letto aggiornati al 2018)"),
-											plotlyOutput("terapiaIntPlotPercPrev")
-										),
+										)
 	                )
-#									box(width=6, title = tagList(shiny::icon("globe-europe"), "Totali Positivi per regione con previsione a 3 giorni"), status = "primary", solidHeader = F,
-#											collapsible = T, plotlyOutput(outputId="fitRegion"), spiegaFitPos
-#									),
-#									box(width=6, title =  "Andamenti globali in Italia con previsione a 3", status = "primary", solidHeader = F,
-#											collapsible = T,  plotlyOutput(outputId="fitIta"), spiegaFitTot
-#									)
 								)
 							),
-#              fluidRow(
- #               box(width=6, title = tagList(shiny::icon("globe-europe"), "Totali Positivi per regione con previsione a 3 in scala logaritmica"), status = "primary", solidHeader = F,
-  #                  collapsible = T, plotlyOutput(outputId="fitRegLog"), spiegaFitPosLog
-   #             ),
-#								box(width=6, title = tagList( "Andamenti globali in Italia con previsione a 3 in scala logaritmica"), status = "primary", solidHeader = F,
- #                   collapsible = T,  plotlyOutput(outputId="fitItaLog"), spiegaFitTotLog
- #               )
- #             ),
               fluidRow(
-                box(width=12, uiOutput("updatePrevisioniUI"), fontiDati
+                box(width=12, uiOutput("updateTIUI"), fontiDati
                 )
               )
             )
+
 
 regTab <- tabItem(tabName = "regPlots",
 #							h1("Diffusione nelle regioni italiane"), br(), br(),
@@ -129,6 +130,9 @@ dashboardPage(
 			sidebarMenu(id='fitCFG',
 				menuItem2("CoVid-19 previsioni", tabName = "fitPlots", icon = icon("vials"))
 			),
+      sidebarMenu(id='tiCFG',
+        menuItem2("CoVid-19 e Terapia Intensiva", tabName = "tiPlots", icon = icon("vials"))
+      ),
       sidebarMenu(id='regCFG',
         menuItem2("CoVid-19 per regione", tabName = "regPlots", icon = icon("vials"))
       ),
@@ -143,6 +147,7 @@ dashboardPage(
 
     tabItems(
 				fitTab,
+				tiTab,
         regTab,
         prvTab
 	))
