@@ -36,7 +36,7 @@ fitTab <- tabItem(tabName = "fitPlots",
 tiTab <- tabItem(tabName = "tiPlots",
 							fluidRow(
 								box(width=12,
-									h4("I dati relativi al numero di terapie intensive sono aggiornati al 2018 e non vengono riaggiornati in base agli sforzi che il sistema sanitario sta portando avanti in questi giorni. Non ha scopo allarmistico ma solo di mostrare quali siano le criticità che il nostro paese sta affrontando a causa del CoVid19 "),
+									h4("I dati relativi al numero di posti letto in terapia intensiva per regione sono aggiornati al 2018 e non vengono riaggiornati in base agli sforzi che il sistema sanitario sta portando avanti in questi giorni. Non ha scopo allarmistico ma solo di mostrare quali siano le criticità che il nostro paese sta affrontando a causa del CoVid19 "),
 									 br(),
 	                fluidRow(
 										box(width=12,
