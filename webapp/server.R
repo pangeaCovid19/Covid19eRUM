@@ -612,8 +612,8 @@ output$terapiaIntPlotPercPrev<- renderPlotly({
 
 	prevFin <- prevDT[between(prevDT$data,oggi+1,oggi+nahead),]
 	prevFin$Attesi 		<-round(prevFin$Attesi*percTI)
-	prevFin$UpperRange	<-prevFin$UpperRange*percTI
-	prevFin$LowerRange	<-prevFin$LowerRange*percTI
+	prevFin$UpperRange	<-round(prevFin$UpperRange*percTI)
+	prevFin$LowerRange	<-round(prevFin$LowerRange*percTI)
 	prevFin$data	<-as.character(prevFin$data)
 
 	Ntint <- nrow(tint)

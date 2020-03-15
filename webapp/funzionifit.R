@@ -53,21 +53,21 @@ loglinmodel<-function(regione, rangepesi=c(0,1)) {
 	fit
 }
 #Ritorna le predizioni del modello
-predictNextDays<-function(dati,modello,nahead=3, all=FALSE) {
-	if(all==TRUE){
-		newdata <- data.frame(data = c(dati$data, max(dati$data)+seq_len(nahead))  )
-	} else newdata<-data.frame(data = max(dati$data)+seq_len(nahead))
+#predictNextDays<-function(dati,modello,nahead=3, all=FALSE) {
+#	if(all==TRUE){
+#		newdata <- data.frame(data = c(dati$data, max(dati$data)+seq_len(nahead))  )
+#	} else newdata<-data.frame(data = max(dati$data)+seq_len(nahead))
 
-	predizioni<-try(exp(predict(modello,newdata,interval="confidence")))
-	if (inherits(predizioni,"try-error")) {
-		warning("Can't make predictions")
-		tmp<-rep(NA_real_,nahead)
-		return(data.frame(Attesi=tmp,LowerRange=tmp,UpperRange=tmp))
-	}
-	colnames(predizioni)<-c("Attesi","LowerRange","UpperRange")
-	newdata<-cbind(newdata,predizioni)
-	return(newdata)
-}
+#	predizioni<-try(exp(predict(modello,newdata,interval="confidence")))
+#	if (inherits(predizioni,"try-error")) {
+#		warning("Can't make predictions")
+#		tmp<-rep(NA_real_,nahead)
+#		return(data.frame(Attesi=tmp,LowerRange=tmp,UpperRange=tmp))
+#	}
+#	colnames(predizioni)<-c("Attesi","LowerRange","UpperRange")
+#	newdata<-cbind(newdata,predizioni)
+#	return(newdata)
+#}
 
 loglinmodel2<-function(dati, var="totale_casi", rangepesi=c(0,1)) {
 	regione <- copy(dati)
@@ -118,7 +118,7 @@ predictNextDays<-function(dati,modello,nahead=3, all=FALSE) {
 		newdata$dataind<-as.numeric(newdata$data-attr(modello,"mindata"))+1
 		newdata$data2<-newdata$dataind^2
 	}
-	predizioni<-exp(predict(modello,newdata,interval="confidence"))
+	predizioni<-round(exp(predict(modello,newdata,interval="confidence")))
 	colnames(predizioni)<-c("Attesi","LowerRange","UpperRange")
 	newdata<-cbind(newdata,predizioni)
 	return(newdata)
