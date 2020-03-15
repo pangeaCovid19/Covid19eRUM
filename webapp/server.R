@@ -104,11 +104,14 @@ output$lineRegion <- renderPlotly({
     colnames(allDataReg)[2] <- "regione"
     colnames(allDataReg)[3] <- "casi totali"
     p <- ggplot(allDataReg) + my_ggtheme() +
-          geom_line(aes(x=data, y=`casi totali`, color=regione)) +
+          geom_line(group=1, # group=1 serve per aggirare un bug di ggplotly con tooltip = c("text")
+            aes(x=data, y=`casi totali`, color=regione,
+            text = paste('Regione:', regione, '<br>Data:', strftime(data, format="%d-%m-%Y"),
+             '<br>Casi: ', `casi totali`))) +
           scale_color_manual(values=d3hexcols20) +
           theme(axis.text.x=element_text(angle=45, hjust=1)) +
           labs(x="")
-    ggplotly(p) %>% config(locale = 'it')
+    ggplotly(p, tooltip = c("text")) %>% config(locale = 'it')
   }
 })
 
@@ -211,11 +214,14 @@ output$lineProvince <- renderPlotly({
     colnames(allDataProv)[2] <- "provincia"
     colnames(allDataProv)[3] <- "casi totali"
     p <- ggplot(allDataProv) + my_ggtheme() +
-          geom_line(aes(x=data, y=`casi totali`, color=provincia)) +
+          geom_line(group=1, # group=1 serve per aggirare un bug di ggplotly con tooltip = c("text")
+            aes(x=data, y=`casi totali`, color=provincia,
+            text = paste('Provincia:', provincia, '<br>Data:', strftime(data, format="%d-%m-%Y"),
+             '<br>Casi: ', `casi totali`))) +
           scale_color_manual(values=d3hexcols20) +
           theme(axis.text.x=element_text(angle=45, hjust=1)) +
           labs(x="")
-    ggplotly(p) %>% config(locale = 'it')
+    ggplotly(p, tooltip = c("text")) %>% config(locale = 'it')
   }
 })
 
@@ -365,8 +371,15 @@ output$fitRegion <- renderPlotly({
 		setDF(allDataReg)
 
 		p <- ggplot() + my_ggtheme() +
-			 geom_line(data=prevDT[which(prevDT$regione%in%regioniSel),],aes(x=data, y=`casi totali`, color=regione), linetype=2) +
-			 geom_point(data=allDataReg[which(allDataReg$regione%in%regioniSel),],aes(x=data, y=`casi totali`, color=regione)) +
+       geom_line(data=prevDT[which(prevDT$regione%in%regioniSel),], linetype=2, group=1, # group=1 serve per aggirare un bug di ggplotly con tooltip = c("text")
+           aes(x=data, y=`casi totali`, color=regione,
+             text = paste('Data:', strftime(data, format="%d-%m-%Y"),
+              '<br>Casi (fit): ', round(`casi totali`),
+              '<br>Regione: ', regione))) +
+       geom_point(data=allDataReg[which(allDataReg$regione%in%regioniSel),], aes(x=data, y=`casi totali`, color=regione,
+             text = paste('Data:', strftime(data, format="%d-%m-%Y"),
+              '<br>Casi: ', `casi totali`,
+              '<br>Regione: ', regione))) +
 			 scale_color_manual(values=d3hexcols20) +
 			 #geom_rect(aes(xmin=mindataprev-0.5, xmax=max(prevDT$data+1), ymin=0, ymax=max(prevDT$casi)*1.05),fill="grey", alpha=0.3)+xlim(c(min(prevDT$data),max(prevDT$data+1)))+
 			 theme(axis.text.x=element_text(angle=45,hjust=1)) +
@@ -376,7 +389,7 @@ output$fitRegion <- renderPlotly({
 
     if (tipoGraph == "Logaritmico") p <- p + scale_y_log10()
 
-    ggplotly(p) %>% config(locale = 'it')
+    ggplotly(p, tooltip = c("text")) %>% config(locale = 'it')
     ###
     #allDataReg$UpperRange<-0
     #allDataReg$LowerRange<-0
@@ -443,15 +456,22 @@ if(verbose) cat("\n renderPlotly:fitIta")
     )
 
 		p <- ggplot() + my_ggtheme() +
-			 geom_line(data=prevItaDT,aes(x=data, y=casi, color=variabilePrevista), linetype=2) +
-			 geom_point(data=tmp,aes(x=data, y=casi, color=variabilePrevista)) +
+			 geom_line(data=prevItaDT, linetype=2, group=1, # group=1 serve per aggirare un bug di ggplotly con tooltip = c("text")
+              aes(x=data, y=casi, color=variabilePrevista,
+                text = paste('Data:', strftime(data, format="%d-%m-%Y"),
+                 '<br>Casi (fit): ', round(casi),
+                 '<br>Variabile: ', variabilePrevista))) +
+			 geom_point(data=tmp, aes(x=data, y=casi, color=variabilePrevista,
+                text = paste('Data:', strftime(data, format="%d-%m-%Y"),
+                 '<br>Casi: ', casi,
+                 '<br>Variabile: ', variabilePrevista))) +
 			 scale_color_manual(values=d3hexcols20) +
-       theme(axis.text.x=element_text(angle=45,hjust=1)) +
-       labs(x="", color="variabile prevista")
+       theme(axis.text.x = element_text(angle=45,hjust=1)) +
+       labs(x="", color = "variabile prevista")
 
     if (tipoGraph == "Logaritmico") p <- p + scale_y_log10()
 
-    ggplotly(p) %>% config(locale = 'it')
+    ggplotly(p, tooltip = c("text")) %>% config(locale = 'it')
 
     #tmp$UpperRange<-NA
     #tmp$LowerRange<-NA
@@ -507,12 +527,14 @@ output$fitCasesIta <- renderPlotly({
       datiIta$tipo <- factor(datiIta$tipo, levels=c("veri", "predetti"))
 
       p <- ggplot() + my_ggtheme() +
-  					geom_bar(data=datiIta, aes(x=data, y=casi, fill=tipo), stat="identity", width = 0.8)+
+  					geom_bar(data=datiIta, aes(x=data, y=casi, fill=tipo,
+              text = paste('Data:', strftime(data, format="%d-%m-%Y"),
+               '<br>Casi: ', round(casi))), stat="identity", width = 0.8)+
   					scale_fill_manual(values=d3hexcols) +
             theme(axis.text.x=element_text(angle=45,hjust=1)) +
             labs(x="")
             theme(legend.title = element_blank())
-      ggplotly(p) %>% config(locale = 'it')
+      ggplotly(p, tooltip = c("text")) %>% config(locale = 'it')
    }
 })
 
@@ -531,11 +553,14 @@ output$terapiaIntPlotPercNow<- renderPlotly({
 
 	tint <- terapiaInt()
 	if(is.null(tint)) return(NULL)
-	p <- ggplot(data=tint, aes(x=denominazione_regione, y=percTI)) +
-          geom_bar(stat="identity", fill="steelblue") + my_ggtheme() +
+	p <- ggplot(data=tint, aes(x=denominazione_regione, y=percTI,
+                text = paste('Regione:', denominazione_regione,
+                  '<br>Percentuale: ', round(percTI)))) +
+          geom_bar(stat="identity", fill="steelblue",
+            ) + my_ggtheme() +
 	        theme(axis.text.x=element_text(angle=45,hjust=1))+
           labs(x="", y="% letti occupati per CoVid19")
-	ggplotly(p) %>% config(locale = 'it')
+	ggplotly(p, tooltip = c("text")) %>% config(locale = 'it')
 })
 
 output$terapiaIntPlotNow<- renderPlotly({
@@ -549,12 +574,14 @@ output$terapiaIntPlotNow<- renderPlotly({
 	tintLong$dati <- rep(c('pazienti CoVid19', 'letti disponibili'), each=nrow(tint))
 
 
-	p <-ggplot(data=tintLong, aes(x=regione, y=numero, fill=dati)) +
+	p <-ggplot(data=tintLong, aes(x=regione, y=numero, fill=dati,
+                text = paste0('Regione: ', regione,
+                  '<br>numero ', dati, ": ", numero))) +
         geom_bar(stat="identity", position=position_dodge())+my_ggtheme() +
 	      theme(axis.text.x=element_text(angle=45,hjust=1))+
         scale_fill_manual(values=d3hexcols) +
         labs(x="", y="numero letti")
-  ggplotly(p) %>% config(locale = 'it')
+  ggplotly(p, tooltip = c("text")) %>% config(locale = 'it')
 })
 
 output$terapiaIntPlotPercPrev<- renderPlotly({
