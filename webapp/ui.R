@@ -11,7 +11,21 @@ fitTab <- tabItem(tabName = "fitPlots",
 										column(width=4, selectizeInput("regionSelFit", label="Regione", choices=regioniList, selected = regioni2fit, multiple=TRUE, width='400px')),
 										column(width=4, selectizeInput("regionLinLogFit", label="Tipo Grafico", choices=c("Lineare", "Logaritmico"), selected = "Lineare", width='200px'))
 									),
-									uiOutput('graficiPrevisioniUI')
+									uiOutput('graficiPrevisioniUI'),
+	                fluidRow(
+	                	box(width=12,
+											title = tagList(shiny::icon("globe-europe"), "Percentuale in terapia intensiva occupati da pazienti con CoVid19 (posti letto aggiornati al 2018)"),
+											plotlyOutput("terapiaIntPlotPercNow")
+										),
+										box(width=12,
+											title = tagList(shiny::icon("globe-europe"), "Diponibilità di letti in terapia intensiva e numero di occupanti con CoVid19 (posti letto aggiornati al 2018)"),
+											plotlyOutput("terapiaIntPlotNow")
+										),
+										box(width=12,
+											title = tagList(shiny::icon("globe-europe"), "Previsione del numero di letti occupati da pazienti conCovid19 e disponibilità per regione (posti letto aggiornati al 2018)"),
+											plotlyOutput("terapiaIntPlotPercPrev")
+										),
+	                )
 #									box(width=6, title = tagList(shiny::icon("globe-europe"), "Totali Positivi per regione con previsione a 3 giorni"), status = "primary", solidHeader = F,
 #											collapsible = T, plotlyOutput(outputId="fitRegion"), spiegaFitPos
 #									),

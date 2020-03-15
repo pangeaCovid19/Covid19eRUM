@@ -124,4 +124,3 @@ predictNextDays<-function(dati,modello,nahead=3, all=FALSE) {
 	return(newdata)
 	newdata
 }
-
