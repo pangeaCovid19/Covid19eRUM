@@ -402,6 +402,7 @@ prevIta <- reactive({
     prevDT <- get_predictions(modelliIta, tsIta, nahead=nahead, alldates=TRUE)
     setnames(prevDT, old=c("outName"), new=c("variabilePrevista"))
     setDF(prevDT)
+    prevDT[,c("dataind","data2")]<-NULL
 		prevDT
   }
 })
