@@ -105,7 +105,9 @@ output$lineRegion <- renderPlotly({
     colnames(allDataReg)[3] <- "casi totali"
     p <- ggplot(allDataReg) + my_ggtheme() +
           geom_line(aes(x=data, y=`casi totali`, color=regione)) +
-          scale_color_manual(values=d3hexcols20)
+          scale_color_manual(values=d3hexcols20) +
+          theme(axis.text.x=element_text(angle=45, hjust=1)) +
+          labs(x="")
     ggplotly(p) %>% config(locale = 'it')
   }
 })
@@ -210,7 +212,9 @@ output$lineProvince <- renderPlotly({
     colnames(allDataProv)[3] <- "casi totali"
     p <- ggplot(allDataProv) + my_ggtheme() +
           geom_line(aes(x=data, y=`casi totali`, color=provincia)) +
-          scale_color_manual(values=d3hexcols20)
+          scale_color_manual(values=d3hexcols20) +
+          theme(axis.text.x=element_text(angle=45, hjust=1)) +
+          labs(x="")
     ggplotly(p) %>% config(locale = 'it')
   }
 })
@@ -363,11 +367,12 @@ output$fitRegion <- renderPlotly({
 		p <- ggplot() + my_ggtheme() +
 			 geom_line(data=prevDT[which(prevDT$regione%in%regioniSel),],aes(x=data, y=`casi totali`, color=regione), linetype=2) +
 			 geom_point(data=allDataReg[which(allDataReg$regione%in%regioniSel),],aes(x=data, y=`casi totali`, color=regione)) +
-			 scale_color_manual(values=d3hexcols20)+
+			 scale_color_manual(values=d3hexcols20) +
 			 #geom_rect(aes(xmin=mindataprev-0.5, xmax=max(prevDT$data+1), ymin=0, ymax=max(prevDT$casi)*1.05),fill="grey", alpha=0.3)+xlim(c(min(prevDT$data),max(prevDT$data+1)))+
-			 theme(axis.text.x=element_text(angle=45,hjust=1))+
+			 theme(axis.text.x=element_text(angle=45,hjust=1)) +
 			 #geom_errorbar(data=prevDT,aes(x=data,ymin=LowerRange, ymax=UpperRange, color=regione),width=0.1)+
-			 xlab("")
+       labs(x="")
+
 
     if (tipoGraph == "Logaritmico") p <- p + scale_y_log10()
 
@@ -439,9 +444,10 @@ if(verbose) cat("\n renderPlotly:fitIta")
 
 		p <- ggplot() + my_ggtheme() +
 			 geom_line(data=prevItaDT,aes(x=data, y=casi, color=variabilePrevista), linetype=2) +
-			 geom_point(data=tmp,aes(x=data, y=casi, color=variabilePrevista))+
-			 scale_color_manual(values=d3hexcols20)+
-			 xlab("")
+			 geom_point(data=tmp,aes(x=data, y=casi, color=variabilePrevista)) +
+			 scale_color_manual(values=d3hexcols20) +
+       theme(axis.text.x=element_text(angle=45,hjust=1)) +
+       labs(x="", color="variabile prevista")
 
     if (tipoGraph == "Logaritmico") p <- p + scale_y_log10()
 
@@ -502,7 +508,9 @@ output$fitCasesIta <- renderPlotly({
 
       p <- ggplot() + my_ggtheme() +
   					geom_bar(data=datiIta, aes(x=data, y=casi, fill=tipo), stat="identity", width = 0.8)+
-  					scale_fill_manual(values=d3hexcols) + theme(legend.title = element_blank())
+  					scale_fill_manual(values=d3hexcols) +
+            theme(axis.text.x=element_text(angle=45,hjust=1)) +
+            theme(legend.title = element_blank())
       ggplotly(p) %>% config(locale = 'it')
    }
 })
@@ -522,11 +530,11 @@ output$terapiaIntPlotPercNow<- renderPlotly({
 
 	tint <- terapiaInt()
 	if(is.null(tint)) return(NULL)
-	p <-ggplot(data=tint, aes(x=denominazione_regione, y=percTI)) +
-        geom_bar(stat="identity", fill="steelblue") + my_ggtheme() +
-	      theme(axis.text.x=element_text(angle=45,hjust=1))+
-	      xlab("")+ylab("% letti occupati per CoVid19")
-	p
+	p <- ggplot(data=tint, aes(x=denominazione_regione, y=percTI)) +
+          geom_bar(stat="identity", fill="steelblue") + my_ggtheme() +
+	        theme(axis.text.x=element_text(angle=45,hjust=1))+
+          labs(x="", y="% letti occupati per CoVid19")
+	ggplotly(p) %>% config(locale = 'it')
 })
 
 output$terapiaIntPlotNow<- renderPlotly({
@@ -544,7 +552,7 @@ output$terapiaIntPlotNow<- renderPlotly({
         geom_bar(stat="identity", position=position_dodge())+my_ggtheme() +
 	      theme(axis.text.x=element_text(angle=45,hjust=1))+
         scale_fill_manual(values=d3hexcols) +
-	      xlab("")+ylab("numero letti")
+        labs(x="", y="numero letti")
   ggplotly(p) %>% config(locale = 'it')
 })
 
@@ -576,15 +584,14 @@ output$terapiaIntPlotPercPrev<- renderPlotly({
                 UpperRange=rep(0,Ntint), LowerRange=rep(0,Ntint),
                 regione=tint$denominazione_regione, stringsAsFactors=F)
 	prevFin[,c("dataind","data2")]<-NULL
-	print(str(prevFin))
-	print(str(postiLetto))
+
 	out <- rbind(prevFin,postiLetto )
 	p <-ggplot(data=out, aes(x=regione, y=Attesi, fill=data)) +
         geom_bar(stat="identity", position=position_dodge()) + my_ggtheme() +
 	      theme(axis.text.x=element_text(angle=45,hjust=1)) +
 	      geom_errorbar(aes(ymin=LowerRange, ymax=UpperRange), width=.2, position=position_dodge(.9))+
         scale_fill_manual(values=d3hexcols) +
-	      xlab("")+ylab("numero letti")
+        labs(x="", y="numero letti")
   ggplotly(p) %>% config(locale = 'it')
 
 })

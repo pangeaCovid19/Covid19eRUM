@@ -15,7 +15,7 @@ fitTab <- tabItem(tabName = "fitPlots",
 										box(width=6, title = tagList(shiny::icon("globe-europe"), "Totali Positivi per regione con previsione a 3 giorni"), status = "primary", solidHeader = F,
 												collapsible = T, plotlyOutput(outputId="fitRegion"), spiegaFitPos
 										),
-										box(width=6, title =  "Andamenti globali in Italia con previsione a 3", status = "primary", solidHeader = F,
+										box(width=6, title =  "Andamenti globali in Italia con previsione a 3 giorni", status = "primary", solidHeader = F,
 												collapsible = T,  plotlyOutput(outputId="fitIta"), spiegaFitTot
 										)
 									),
