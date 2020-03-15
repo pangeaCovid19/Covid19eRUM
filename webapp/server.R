@@ -162,10 +162,6 @@ output$mapRegion <- renderLeaflet({
 			addProviderTiles("CartoDB.Positron") %>% setView(lng=12.5, lat=41.3, zoom=5)  %>%
 			addPolygons(fillColor = ~pal(log10(totale_casi)), weight = 1, stroke = TRUE, color="lightgrey", fillOpacity=.7,
 		  label = ~paste(DEN_REG, "- casi:", totale_casi))
-#    leaflet(data = pltRegioni) %>% addTiles() %>%
- #       addProviderTiles("CartoDB.Positron") %>% setView(lng=12.5, lat=41.3, zoom=5)  %>%
-  #      addPolygons(fillColor = ~pal(log10(totale_casi)), weight = 1, stroke = TRUE, color="lightgrey",
-   #              label = ~paste(DEN_REG, "- casi:", totale_casi))
   }
 })
 
@@ -302,32 +298,6 @@ getTimeSeriesReact <- reactive({
 
 ## PREVISIONI
 ##
-output$graficiPrevisioniUI <- renderUI({
-	if(verbose) cat("\n renderUI:graficiPrevisioniUI")
-	tipoGraph <- input$regionLinLogFit
-	if(tipoGraph=="Lineare"){
-		fluidRow(
-			box(width=6, title = tagList(shiny::icon("globe-europe"), "Totali Positivi per regione con previsione a 3 giorni"), status = "primary", solidHeader = F,
-					collapsible = T, plotlyOutput(outputId="fitRegion"), spiegaFitPos
-			),
-			box(width=6, title =  "Andamenti globali in Italia con previsione a 3", status = "primary", solidHeader = F,
-					collapsible = T,  plotlyOutput(outputId="fitIta"), spiegaFitTot
-			)
-		)
-	} else {
-		fluidRow(
-			box(width=6, title = tagList(shiny::icon("globe-europe"), "Totali Positivi per regione con previsione a 3 in scala logaritmica"), status = "primary", solidHeader = F,
-					collapsible = T, plotlyOutput(outputId="fitRegLog"), spiegaFitPosLog
-			),
-			box(width=6, title = tagList( "Andamenti globali in Italia con previsione a 3 in scala logaritmica"), status = "primary", solidHeader = F,
-					collapsible = T,  plotlyOutput(outputId="fitItaLog"), spiegaFitTotLog
-			)
-		)
-	}
-
-
-
-})
 
 output$updatePrevisioniUI <- renderUI({
 	if(verbose) cat("\n renderUI:updatePrevisioniUI")
@@ -372,6 +342,7 @@ output$fitRegion <- renderPlotly({
 	if(verbose) cat("\n renderPlotly:fitRegion")
   allDataReg <- copy(reacval$dataTables_reg)
 	regioniSel <- input$regionSelFit
+  tipoGraph <- input$regionLinLogFit
 
   if (!is.null(allDataReg)) {
 		tsReg <- getTimeSeriesReact()[which(names(getTimeSeriesReact())%in%regioniSel)]
@@ -379,19 +350,21 @@ output$fitRegion <- renderPlotly({
 
 		prevDT <- copy(prevRegion())
 		setnames(prevDT, old=c('Attesi'), new=c('casi totali'))
+    #mindataprev <- max(prevDT$data) - 2
 
     setnames(allDataReg, old=c('denominazione_regione', 'totale_casi'), new=c('regione', 'casi totali'))
 		setDF(allDataReg)
-		mindataprev <- max(prevDT$data) - 2
 
 		p <- ggplot() + my_ggtheme() +
 			 geom_line(data=prevDT[which(prevDT$regione%in%regioniSel),],aes(x=data, y=`casi totali`, color=regione), linetype=2) +
-			 geom_point(data=allDataReg[which(allDataReg$regione%in%regioniSel),],aes(x=data, y=`casi totali`, color=regione))+
+			 geom_point(data=allDataReg[which(allDataReg$regione%in%regioniSel),],aes(x=data, y=`casi totali`, color=regione)) +
 			 scale_color_manual(values=d3hexcols20)+
 			 #geom_rect(aes(xmin=mindataprev-0.5, xmax=max(prevDT$data+1), ymin=0, ymax=max(prevDT$casi)*1.05),fill="grey", alpha=0.3)+xlim(c(min(prevDT$data),max(prevDT$data+1)))+
 			 theme(axis.text.x=element_text(angle=45,hjust=1))+
 			 #geom_errorbar(data=prevDT,aes(x=data,ymin=LowerRange, ymax=UpperRange, color=regione),width=0.1)+
 			 xlab("")
+
+    if (tipoGraph == "Logaritmico") p <- p + scale_y_log10()
 
 		p
     ###
@@ -412,81 +385,6 @@ output$fitRegion <- renderPlotly({
  		#		 geom_errorbar(data=out2,aes(x=data,ymin=LowerRange, ymax=UpperRange, color=regione),width=0.1)+
  		#		 xlab("")
  	  #q
-  }
-})
-
-output$fitRegLog <- renderPlotly({
-	if(verbose) cat("\n renderPlotly:fitRegLog")
-  allDataReg <- copy(reacval$dataTables_reg)
-	modelliReg <- isolate(reacval$modelliReg)
-	regioniSel <- input$regionSelFit
-
-  if (!is.null(allData)) {
-		tsReg <- getTimeSeriesReact()[which(names(getTimeSeriesReact())%in%regioniSel)]
-	if(saveRDSout) saveRDS(file="fitRegLogList.RDS",list(tsReg, modelliReg, allDataReg))
-	#	tsReg <- getTimeSeries(allDataReg)
-	#	tsReg <- tsReg[which(names(tsReg)!="Italia")]
-
-	prevDT <-copy(prevRegion())
-	setnames(prevDT, old=c('Attesi'), new=c('casi'))
-  #mindataprev <- max(prevDT$data)-2
-
-  setnames(allDataReg, old=c('denominazione_regione', 'totale_casi'), new=c('regione', 'casi'))
-	setDF(allDataReg)
-
-	p <- ggplot() + my_ggtheme() +
-	     labs(title = "", x = "", y = "casi") +
- 	     geom_point(data= allDataReg[which(allDataReg$regione%in%regioniSel),], aes(x=data, y=casi, color=regione))+
-	     geom_line(data= prevDT[which(prevDT$regione%in%regioniSel),],aes(x=data, y=casi, color=regione), linetype=2) + scale_y_log10() +
- 	     #geom_abline(slope=df$slopes, intercept=df$intercepts, linetype=2)+
- 	     scale_color_manual(values=d3hexcols20)+
-       #geom_rect(aes(xmin=mindataprev-0.5, xmax=max(prevDT$data+1), ymin=0, ymax=max(prevDT$logcasi)*1.05),fill="grey", alpha=0.3)+xlim(c(min(prevDT$data),max(prevDT$data+1)))+theme(axis.text.x=element_text(angle=45,hjust=1))  +
-       #geom_errorbar(data=logcasi,aes(x=data,ymin=LowerRange, ymax=UpperRange, color=regione),width=0.1)+
- 	p
-
-  #out <- rbind(allDataReg[, c('regione', 'casi totali', "data")], prevDT[, c('regione', 'casi totali', "data")])
-
-  #allDataReg$UpperRange<-10000
-  #allDataReg$LowerRange<-10000
-  #out <- rbind(allDataReg[, c('regione', 'casi totali', "data","UpperRange","LowerRange")], prevDT[, c('regione', 'casi totali', "data","UpperRange","LowerRange")])
-  #out[,'casi totali' ] <- log(out[,'casi totali' ] )
-  #out$UpperRange<-log(out$UpperRange)
-  #out$LowerRange<-log(out$LowerRange)
-
-  #out <- out[which(out$regione %in% regioniSel), ]
-  #out1<-out[which(out$data<mindataprev),]
-  #out2<-out[which(out$data>=mindataprev),]
-
-  #fit <- as.data.frame(do.call(rbind, lapply(modelliReg, function(x) x$coefficients)))
-  #names(fit[,1]) <- "int"
-
-  #definisco i fit per multiple regioni: da agganciare al tuo slectInput sulle regioni
-  #df<-data.frame(slopes=c(fit['Lombardia',2],fit['Veneto',2],fit['Emilia Romagna',2]),intercepts=c(fit['Lombardia',1],fit['Veneto',1],fit['Emilia Romagna',1]))
-
-  #df<-data.frame(
-  # 			slopes=as.array(fit[regioniSel,2]),
-  # 			intercepts=as.array(fit[regioniSel,1])
-  #)
-
-
-  #delta<-10 #definisce dopo quanti gg datta data minima parte la retta di fit
-  #xstart_fit<-min(out$data)
-  #xend_fit<-max(out$data)
-  #p <- ggplot(out) + my_ggtheme() +
-  #        geom_point(aes(x=data, y=`casi totali`, color=regione))+
-  #	       geom_abline(data=fit, mapping=aes(slope=data, intercept='int')) +
-  #        geom_abline(slope=fit['Lombardia',2], intercept=fit['Lombardia',1], linetype=2)+
-  #        geom_abline(slope=fit['Veneto',2], intercept=fit['Veneto',1], linetype=2)+
-  #        geom_abline(slope=fit['Emilia Romagna',2], intercept=fit['Emilia Romagna',1], linetype=2)+
-  #        #questo geom_segment non funge e non so perché
-  #        geom_segment(aes(x=xstart_fit+delta, xend=xend_fit, y=df$intercepts+df$slopes*as.numeric(xstart_fit+delta), yend=df$intercepts+df$slopes*as.numeric(xend_fit)), linetype=2)+
-  #        geom_abline(slope=df$slopes, intercept=df$intercepts, linetype=2)+
-  # 		   scale_color_manual(values=d3hexcols20)+
-  #        geom_rect(aes(xmin=mindataprev-0.5, xmax=max(out$data+1), ymin=0, ymax=max(out[['casi totali']])*1.05),fill="grey", alpha=0.3)+xlim(c(min(out$data),max(out$data+1)))+theme(axis.text.x=element_text(angle=45,hjust=1))  +
-  #        geom_errorbar(data=out2,aes(x=data,ymin=LowerRange, ymax=UpperRange, color=regione),width=0.1)+
-  #        xlab("")
-  #p
-
   }
 })
 
@@ -513,6 +411,7 @@ prevIta <- reactive({
 output$fitIta <- renderPlotly({
 if(verbose) cat("\n renderPlotly:fitIta")
   allDataReg <- copy(reacval$dataTables_reg)
+  tipoGraph <- input$regionLinLogFit
 
   if (!is.null(allDataReg)) {
 		tsIta <- getTimeSeriesReact()$Italia
@@ -538,8 +437,9 @@ if(verbose) cat("\n renderPlotly:fitIta")
 			 scale_color_manual(values=d3hexcols20)+
 			 xlab("")
 
-		p
+    if (tipoGraph == "Logaritmico") p <- p + scale_y_log10()
 
+		p
 
     #tmp$UpperRange<-NA
     #tmp$LowerRange<-NA
@@ -560,71 +460,6 @@ if(verbose) cat("\n renderPlotly:fitIta")
     #      geom_errorbar(data=out2,aes(x=data,ymin=LowerRange, ymax=UpperRange, color=variabilePrevista),width=0.1)+
     #      xlab("")
     #p
-  }
-})
-
-
-output$fitItaLog <- renderPlotly({
-if(verbose) cat("\n renderPlotly:fitItaLog")
-  allDataReg <- copy(reacval$dataTables_reg)
-  modelliIta <- isolate(reacval$modelliIta)
-
-  if (!is.null(allDataReg)) {
-		tsIta <- getTimeSeriesReact()$Italia
-		if(saveRDSout) saveRDS(file="fitItaLogList.RDS",list(tsIta, modelliIta, allDataReg))
-		#	tsIta <- getTimeSeries(allDataReg)$Italia
-		prevItaDT <-copy(prevIta())
-		setnames(prevItaDT, old=c('Attesi'), new=c('casi'))
-
-		setDF(allDataReg)
-		varPrev <- unique(prevItaDT$variabilePrevista)
-
-		dataRDX <- allDataReg[, c('data', varPrev)]
-		dataIta <- aggregate(dataRDX[,2:5], sum, by=list(data=dataRDX$data))
-
-    tmp <- data.frame(
-   		data=rep(unique(dataIta$data), times=length(varPrev)),
-   		casi=unlist(lapply(2:5, function(x) dataIta[, x])),
-   		variabilePrevista=rep(unique(varPrev), each=nrow(dataIta))
-   	)
-
-    if(assignout) assign("tmp",tmp, envir=.GlobalEnv)
-    if(assignout) assign("prevItaDT",prevItaDT, envir=.GlobalEnv)
-
-	  p <- ggplot() + my_ggtheme() +
-		        labs(title = "", x = "", y = "casi") +
-	 	        geom_point(data= tmp, aes(x=data, y=casi, color=variabilePrevista))+
-		        geom_line(data= prevItaDT,aes(x=data, y=casi, color=variabilePrevista), linetype=2) + scale_y_log10() +
-	 	        scale_color_manual(values=d3hexcols20)
-
- 	  p
-
-
-   	#minprevdata <- max(prevItaDT$data)-2
-
-    #tmp$UpperRange<-NA
-    #tmp$LowerRange<-NA
-    #out <- rbind(tmp, prevItaDT[, c('data', 'casi',  'variabilePrevista', 'UpperRange', 'LowerRange')])
-    #out$casi <- log(out$casi)
-    #out$UpperRange<-log(out$UpperRange)
-    #out$LowerRange<-log(out$LowerRange)
-    #out1<-out[which(out$data<minprevdata),]
-    #out2<-out[which(out$data>=minprevdata),]
-
-		#fit <- as.data.frame(do.call(rbind, lapply(modelliIta, function(x) x$coefficients)))
-		#names(fit[,1]) <- "int"
-
-    #delta<-10 #definisce dopo quanti gg datta data minima parte la retta di fit
-    #xstart_fit<-min(out$data)
-    #xend_fit<-max(out$data)
-    #p<-ggplot() + my_ggtheme() +
-    #        geom_point(data= out, aes(x=data, y=casi, color=variabilePrevista))+
-    #        geom_segment(aes(x=xstart_fit+delta, xend=xend_fit, y=fit[1:4,1]+fit[1:4,2]*as.numeric(xstart_fit+delta), yend=fit[1:4,1]+fit[1:4,2]*as.numeric(xend_fit)), linetype=2)+
-    #        scale_color_manual(values=d3hexcols20)+
-    #        geom_rect(aes(xmin=minprevdata-0.5, xmax=max(out$data+1), ymin=0, ymax=max(out$casi)*1.05),fill="grey", #alpha=0.3)+xlim(c(min(out$data),max(out2$data+1)))+theme(axis.text.x=element_text(angle=45,hjust=1))  +
-    #        geom_errorbar(data=out2,aes(x=data,ymin=LowerRange, ymax=UpperRange, color=variabilePrevista),width=0.1)+
-    #        xlab("")
-
   }
 })
 
@@ -682,9 +517,9 @@ output$terapiaIntPlotPercNow<- renderPlotly({
 	tint <- terapiaInt()
 	if(is.null(tint)) return(NULL)
 	p <-ggplot(data=tint, aes(x=denominazione_regione, y=percTI)) +
-  geom_bar(stat="identity", fill="steelblue")+my_ggtheme() +
-	theme(axis.text.x=element_text(angle=45,hjust=1))+
-	xlab("")+ylab("% letti occupati per CoVid19")
+        geom_bar(stat="identity", fill="steelblue") + my_ggtheme() +
+	      theme(axis.text.x=element_text(angle=45,hjust=1))+
+	      xlab("")+ylab("% letti occupati per CoVid19")
 	p
 })
 
@@ -700,9 +535,10 @@ output$terapiaIntPlotNow<- renderPlotly({
 
 
 	p <-ggplot(data=tintLong, aes(x=regione, y=numero, fill=dati)) +
-  geom_bar(stat="identity", position=position_dodge())+my_ggtheme() +
-	theme(axis.text.x=element_text(angle=45,hjust=1))+
-	xlab("")+ylab("numero letti")
+        geom_bar(stat="identity", position=position_dodge())+my_ggtheme() +
+	      theme(axis.text.x=element_text(angle=45,hjust=1))+
+        scale_fill_manual(values=d3hexcols) +
+	      xlab("")+ylab("numero letti")
 	p
 })
 
@@ -735,10 +571,11 @@ output$terapiaIntPlotPercPrev<- renderPlotly({
 	out <- rbind(prevFin,postiLetto )
 
 	p <-ggplot(data=out, aes(x=regione, y=Attesi, fill=data)) +
-  geom_bar(stat="identity", position=position_dodge())+my_ggtheme() +
-	theme(axis.text.x=element_text(angle=45,hjust=1))+
-	geom_errorbar(aes(ymin=LowerRange, ymax=UpperRange), width=.2,position=position_dodge(.9))+
-	xlab("")+ylab("numero letti")
+        geom_bar(stat="identity", position=position_dodge()) + my_ggtheme() +
+	      theme(axis.text.x=element_text(angle=45,hjust=1)) +
+	      geom_errorbar(aes(ymin=LowerRange, ymax=UpperRange), width=.2, position=position_dodge(.9))+
+        scale_fill_manual(values=d3hexcols) +
+	      xlab("")+ylab("numero letti")
 	p
 
 })

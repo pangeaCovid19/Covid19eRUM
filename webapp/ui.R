@@ -11,7 +11,14 @@ fitTab <- tabItem(tabName = "fitPlots",
 										column(width=4, selectizeInput("regionSelFit", label="Regione", choices=regioniList, selected = regioni2fit, multiple=TRUE, width='400px')),
 										column(width=4, selectizeInput("regionLinLogFit", label="Tipo Grafico", choices=c("Lineare", "Logaritmico"), selected = "Lineare", width='200px'))
 									),
-									uiOutput('graficiPrevisioniUI'),
+									fluidRow(
+										box(width=6, title = tagList(shiny::icon("globe-europe"), "Totali Positivi per regione con previsione a 3 giorni"), status = "primary", solidHeader = F,
+												collapsible = T, plotlyOutput(outputId="fitRegion"), spiegaFitPos
+										),
+										box(width=6, title =  "Andamenti globali in Italia con previsione a 3", status = "primary", solidHeader = F,
+												collapsible = T,  plotlyOutput(outputId="fitIta"), spiegaFitTot
+										)
+									),
 									fluidRow(
 										box(width=12, title = tagList(shiny::icon("globe-europe"), "Previsione del numero di casi con modello esponenziale quadratico"), status = "primary", solidHeader = F,
 												collapsible = T, plotlyOutput(outputId="fitCasesIta")

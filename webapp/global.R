@@ -94,17 +94,17 @@ map_regioni <- readRDS(file=paste0(dir_data, "map_regioni.RDS"))
 risultatiFit <- HTML("<div style='padding-top:10px;'></div>")
 
 
-spiegaFitPos <- HTML("<div style='padding-top:10px;'>In questo grafico mostriamo la serie storica dei casi confermati di CoVid19 nelle regioni selezionate ed una previsione che si estende fino a tre giorni, linea tratteggiata. Abbiamo utilizzando un fit esponenziale dando maggiore importanza ai dati più recenti.</div>")
+spiegaFitPos <- HTML("<div style='padding-top:10px;'>In questo grafico mostriamo la serie storica dei casi confermati di
+CoVid19 nelle regioni selezionate ed una previsione che si estende fino a tre giorni, linea tratteggiata.
+Abbiamo utilizzando un fit esponenziale dando maggiore importanza ai dati più recenti. Se si seleziona l'opzione
+&quot;Logaritmico&quot; come tipo di grafico, l'asse delle ordinate diventa logaritmico ed &egrave; possibile
+rimappare l'andamento esponenziale su una retta.</div>")
 
-spiegaFitPosLog <- HTML("<div style='padding-top:10px;'>In questo grafico mostriamo la serie storica dei casi confermati di CoVid19 nelle regioni selezionate ed una previsione che si estende fino a tre giorni, linea tratteggiata. L'asse delle ascisse è logaritmico, questo permette di rimappare un andamento esponenziale su una retta.</div>")
-
-spiegaFitTot <- HTML("<div style='padding-top:10px;'>In questo grafico mostriamo la serie storica dei casi confermati, dei pazienti ospedalizzati, dei pazienti in terapia intensiva e dei defunti a causa del CoVid19 in Italia ed una previsione che si estende fino a tre giorni, linea tratteggiata. Abbiamo utilizzando un fit esponenziale dando maggiore importanza ai dati più recenti.</div>")
-
-spiegaFitTotLog <- HTML("<div style='padding-top:10px;'>In questo grafico mostriamo la serie storica dei casi confermati, dei pazienti ospedalizzati, dei pazienti in terapia intensiva e dei defunti a causa del CoVid19 in Italia ed una previsione che si estende fino a tre giorni, linea tratteggiata. L'asse delle ascisse è logaritmico, questo permette di rimappare un andamento esponenziale su una retta.</div>")
-
-
-
-
+spiegaFitTot <- HTML("<div style='padding-top:10px;'>In questo grafico mostriamo la serie storica dei casi confermati,
+dei pazienti ospedalizzati, dei pazienti in terapia intensiva e dei defunti a causa del CoVid19 in Italia ed una
+previsione che si estende fino a tre giorni, linea tratteggiata. Abbiamo utilizzando un fit esponenziale dando maggiore
+importanza ai dati più recenti. Se si seleziona l'opzione &quot;Logaritmico&quot; come tipo di grafico, l'asse delle ordinate
+diventa logaritmico ed &egrave; possibile rimappare l'andamento esponenziale su una retta.</div>")
 
 
 spiegaMappa <- HTML("<div style='padding-top:10px;'>In questa mappa mostriamo la diffusione sul territorio dei casi confermati
@@ -131,7 +131,8 @@ fontiDati <- HTML("<div>Dati provenienti da:
 </a> (Monitoraggio COVID-19)</li>
 <li><a href='https://www.istat.it/it/archivio/222527'>ISTAT</a> (shapefile unit&agrave; amministrative e dati popolazione)</li>
 <li><a href='
-http://www.dati.salute.gov.it/dati/dettaglioDataset.jsp?menu=dati&idPag=96'>Ministero della Salute</a> (Numero di posti letto in terapia intensiva, dati aggiornati al 2018)</li>
+http://www.dati.salute.gov.it/dati/dettaglioDataset.jsp?menu=dati&idPag=96'>Ministero della Salute</a>
+(Numero di posti letto in terapia intensiva, dati aggiornati al 2018)</li>
 </ul></div>")
 
 
