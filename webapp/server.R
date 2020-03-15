@@ -569,9 +569,10 @@ output$terapiaIntPlotPercPrev<- renderPlotly({
   postiLetto <- data.frame(data=rep("posti disponibili",Ntint), Attesi= tint$lettiTI,
                 UpperRange=rep(0,Ntint), LowerRange=rep(0,Ntint),
                 regione=tint$denominazione_regione, stringsAsFactors=F)
-
+	prevFin[,c("dataind","data2")]<-NULL
+	print(str(prevFin))
+	print(str(postiLetto))
 	out <- rbind(prevFin,postiLetto )
-
 	p <-ggplot(data=out, aes(x=regione, y=Attesi, fill=data)) +
         geom_bar(stat="identity", position=position_dodge()) + my_ggtheme() +
 	      theme(axis.text.x=element_text(angle=45,hjust=1)) +
