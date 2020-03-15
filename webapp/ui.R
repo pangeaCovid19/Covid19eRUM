@@ -1,5 +1,7 @@
 library(shinydashboard)
 source("dashboardPangea.R")
+#HTML(readChar("../docs/intro.html",file.info("../docs/intro.html")$size))
+introTab<-tabItem(tabName="intro",fluidRow(box(width=12,HTML(readChar("../docs/intro.html",file.info("../docs/intro.html")$size)))))
 
 fitTab <- tabItem(tabName = "fitPlots",
 #							h1("Analisi previsionale nelle province italiane"), br(), br(),
@@ -127,6 +129,9 @@ dashboardPage(
 
 ## Sidebar content
 	dashboardSidebar(
+			sidebarMenu(id='spiegazione',
+				menuItem2("Introduzione", tabName = "intro", icon = icon("air-freshener"))
+			),
 			sidebarMenu(id='fitCFG',
 				menuItem2("CoVid-19 previsioni", tabName = "fitPlots", icon = icon("vials"))
 			),
@@ -146,6 +151,7 @@ dashboardPage(
         tags$head(tags$link(rel = "stylesheet", type = "text/css", href = "pangea.css")),
 
     tabItems(
+    				introTab,
 				fitTab,
 				tiTab,
         regTab,

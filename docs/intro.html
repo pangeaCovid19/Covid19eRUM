@@ -1,0 +1,85 @@
+<h1> Quanto veloce si diffonde il Coronavirus in Italia </h1>
+
+<body>
+<p>
+La diffusione di Coronavirus, <a href="http://www.salute.gov.it/portale/nuovocoronavirus/dettaglioNotizieNuovoCoronavirus.jsp?lingua=italiano&menu=notizie&p=dalministero&id=4209"> recentemente dichiarata pandemia dall'OMS</a> ha avuto e sta avendo effetti globali. L'Italia &egrave; diventato rapidamente <a href="https://experience.arcgis.com/experience/685d0ace521648f8a5beeeee1b9125cd">il secondo paese del mondo per diffusione</a>, costringendo il governo ad emanare una serie di decreti <a href="https://www.gazzettaufficiale.it/eli/id/2020/03/01/20A01381/sg">sempre</a> <a href="https://www.gazzettaufficiale.it/eli/id/2020/03/08/20A01522/sg">pi&ugrave; </a> <a href="https://www.gazzettaufficiale.it/eli/id/2020/03/11/20A01605/sg">restrittivi</a>, al fine di rallentare la diffusione dei contagi, che stanno gi&agrave; adesso provocando enormi difficolt&agrave; al Sistema Sanitario Nazionale.
+</p>
+
+<h2>La matematica della diffusione</h2>
+<p>
+Dal punto di vista matematico, ci possiamo chiedere se tali misure stiano avendo il loro effetto. Per poterlo verificare, occorre confrontare l'andamento che registriamo nei nuovi casi di contagio, nei pazienti che necessitano terapia intensiva e nei decessi, con un andamento teorico che riesca a riprodurre tali grandezze <i>in assenza di misure contenitive</i>. I dati che abbiamo analizzato sono quelli ufficiali, <a href="https://github.com/pcm-dpc/COVID-19">resi disponibili</a> sul sito della Protezione Civile.
+</p>
+
+<p>
+Un modello matematico della diffusione di un virus deve tenere in conto alcuni fattori. Per primo, la capacit&agrave; del virus stesso di attecchire da un soggetto contagiato a un altro. Poi, le difese del sistema immunitario: soggetti che hanno superato le patologie originate dal virus si immunizzano? Successivamente, se esistono (e quanti sono) i soggetti che sono naturalmente immuni.
+</p>
+<p> 
+Qualitativamente, quello che ci aspettiamo se andassimo a monitorare il numero di contagiati nel tempo dovrebbe avere le seguenti caratteristiche.
+<ul>
+<li>All'inizio la diffusione &egrave; molto rapida, addirittura esponenziale. Il virus ha infatti la massima possibilit&agrave; di attecchire.</li>
+<li>Ad un certo punto, l'andamento esponenziale si interrompe. Questo &egrave; dovuto al fatto che molti dei soggetti sono gi&agrave; contagiati o immuni. Il numero dei contagiati aumenta, ma in maniera all'incirca lineare.</li>
+<li>Un'ultima fase in cui il virus ha ormai contagiato quasi tutti coloro che potevano essere contagiati. L'espansione del virus arriva ad un <i>valore di plateau.</i></li>
+</ul> 
+
+Il comportamento descritto sopra corrisponde all'andamento di una <a href="https://it.wikipedia.org/wiki/Equazione_logistica">funzione logistica</a>. Essa &egrave; la soluzione di un'equazione differenziale, detta di <i>equazione di Verhulst</i> che descrive i comportamenti del virus o di altri fenomeni di diffusione. Ad esempio, la diffusione di un nuovo prodotto si comporta analogamente.
+</p>
+<p>
+Anche il Coronavirus seguir&agrave; ineluttabilmente questo percorso. S&igrave; e no; vediamo perch&egrave;.
+<ul>
+<li>L'equazione logistica presuppone che il rate di trasmissione (il <a href="https://www.iss.it/primo-piano/-/asset_publisher/o4oGR9qmvUz9/content/id/5268851">famoso parametro R0</a>) sia costante nel tempo. Esso dipende da quante interazioni i soggetti hanno. Se la popolazione cambia comportamenti, diminuendo quindi i contatti, tale parametro si abbassa.</li>
+<li>Il valore di <i>plateau</i> non &egrave; noto. Non sappiamo che percentuale della popolazione potrebbe rimanere contagiata.</li>
+<li>Nonostante i due punti precedenti, &egrave; ragionevole pensare che tale valore di plateau sia ancora molto lontano. Virus anche meno contagiosi del CoVid19, come le normali influenze stagionali, possono arrivare a infettare milioni di soggetti solo in Italia. Con i numeri di contagio attuali, ci aspettiamo, un andamento esponenziale in assenza di misure.</i></li>
+</ul> 
+</p>
+<p>
+Analisi gi&agrave; disponibili hanno mostrato come l'inizio del contagio sia stato effettivamente esponenziale, ma che poi tale ritmo si sia abbassato, sperabilmente per il cambio dei comportamenti della popolazione. La domanda che ci si pone adesso &egrave; quando si raggiunger&agrave; il "picco", ossia il momento in cui i nuovi contagi giornalieri cominciano effettivamente a diminuire. Come abbiamo visto, non abbiamo un modello teorico che possa prendere in considerazioni gli effetti ignoti delle misure intraprese. C'&egrave; inoltre il problema dovuto al fatto che il numero di contagi registrato potrebbe non essere quello reale. Scarsezza dei tamponi e altri fattori potrebbero portare a stime errate.
+</p>
+<h2>Il machine learning</h2>
+
+<p>
+Tuttavia si potrebbe tentare di scoprire quale sia l'andamento del numero dei contagiati con tecniche di <a href="https://it.wikipedia.org/wiki/Apprendimento_automatico">machine learning</a>. In linea teorica, non vi sono problemi a ricostruire una funzione che effettivamente riproduca tutti i dati osservati fin qui. Cos&igrave; facendo per&ograve; si finirebbe inevitabilmente nel fenomeno dell'<a href="https://it.wikipedia.org/wiki/Overfitting">overfitting</a>, ossia nella costruzione di un modello infallibile a dirmi quello che gi&agrave; so (ossia ricostruire i dati osservati), ma incapace di dirmi quello che non so, ossia predire i dati futuri.
+</p>
+<p>
+Altro problema legato a tecniche di machine learning &egrave; legato all'<a href="https://medium.com/@ODSC/opening-the-black-box-interpretability-in-deep-learning-13ecc80ae34e">interpretabilit&agrave;</a>. Ammesso che il modello sia in grado di predire i dati futuri, spesso il valore risiede nel capire come tali previsioni sono effettuate. 
+</p>
+<h2>Modello implementato</h2>
+<p>
+Per questi motivi, abbiamo scelto di implementare un modello che abbia le seguenti propriet&agrave;.
+<ul>
+<li>Capacit&agrave; di ricostruire i dati passati.</li>
+<li>Semplicit&agrave;. Il modello deve essere dotato di pochi parametri interpretabili.</li>
+<li>Utilit&agrave;. Nel nostro caso pensiamo che l'utilit&agrave; del modello risieda principalmente nel riuscire a monitorare la situazione corrente che ad effettuare previsioni precise.</li>
+</ul>
+</p>
+<p>
+Considerato che, alla data attuale (15 marzo 2020), l'andamento esponenziale non &egrave; pi&ugrave; nei dati, abbiamo scelto di implementare un modello di questo tipo:
+<br>
+<img src="http://latex.codecogs.com/gif.latex?log(N) = a+bt+ct^2" border="0"/>
+<br>
+Dove N &egrave; il numero di persone contagiate e t &egrave; il tempo. Tale andamento non &egrave; altro che una correzione a quello esponenziale, in quanto prevede che il rate di crescita possa diminuire (o aumentare) linearmente nel tempo. Inoltre, tale modello &egrave; anche un'approssimazione dell'andamento logistico in prossimit&agrave; del regime non esponenziale. Il parametro c mi dice quanto la crescita esponenziale sta rallentando. Mi dice, nel nostro caso, quanto bene le cose stanno andando. Un valore di zero indica un andamento esponenziale puro (le cose vanno male). Un valore negativo rappresenta un rallentamento, mentre uno positivo addirittura un'accelerazione nell'espansione.
+</p>
+<p>
+Le previsioni fatte dal modello sono quindi pi&ugrave; da intendersi come <a href="https://it.wikipedia.org/wiki/Estrapolazione">estrapolazioni</a>. In particolare, ci si deve aspettare che questo modello abbia imprecisioni sia nelle fasi iniziali dell'espansione,  in quanto potrebbe non essere in grado di prevedere l'interruzione dell'andamento esponenziale, sia in quelle successive, in quanto un andamento quadratico pu&ograve; risultare troppo veloce verso il raggiungimento del picco. Nel nostro caso ci dobbiamo quindi aspettare che:
+<ul>
+<li>le nostre estrapolazioni sovrastimino il numero dei decessi;</li>
+<li>viceversa, il numero dei contagiati potrebbe essere sottostimato.</li>
+</ul>
+Il primo punto &egrave; dovuto al fatto che i decessi, poich&egrave; seguono lo stesso andamento dei contagiati, ma in ritardo, sono ancora vicini alla fase esponenziale. Il modello potrebbe essere indotto a continuare il trend, quando invece le misure adottate potrebbero rallentare il ritmo di crescita.
+
+Il secondo punto invece estrapola una situazione di rallentamento esponenziale consolidata, ma lo fa in maniera troppo veloce. Il modello potrebbe essere troppo ottimista nel prevedere il picco. 
+</p>
+
+<h3>Utilizzo del modello</h3>
+
+Come utilizzare quindi le estrapolazioni del modello? Ecco alcuni spunti.
+
+<ul>
+<li>Confrontiamo il valore previsto con quello reale, una volta disponibile. Se il numero dei decessi risulta decisamente inferiore, &egrave; un segno dell'efficacia delle misure. Anche solo un lieve scostamento verso l'alto dei numeri di contagi potrebbe essere un segnale positivo, mentre una valore sotto la previsione sarebbe un segnale molto positivo (ma attenzione al numero dei contagi che spesso &egrave; riportato in modo parziale).</li>
+<li>Studiamo l'andamento dei contagi nelle varie regioni. Specialmente rilevatore &egrave; l'andamento in scala logaritmica. Gli andamenti che sembrano rette in tale scala sono in realt&agrave; esponenziali, e quindi cattive notizie. Viceversa, andamenti parabolici sono incoraggianti.</li>
+<li>Occhio alle previsioni sui posti letto di terapia intensiva. Possono anticipare situazioni critiche.</li>
+<li>Altro segnale positivo sar&agrave; quando l'andamento dei decessi in scala logaritmica prender&agrave; una chiara strada parabolica.</li>
+</ul>
+
+Enjoy!
+<br><br><br><br><br><br><br><br><br><br><br><br><br>
+</body>
