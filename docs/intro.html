@@ -54,7 +54,7 @@ Per questi motivi, abbiamo scelto di implementare un modello che abbia le seguen
 <p>
 Considerato che, alla data attuale (15 marzo 2020), l'andamento esponenziale non &egrave; pi&ugrave; nei dati, abbiamo scelto di implementare un modello di questo tipo:
 <br>
-<img src="http://latex.codecogs.com/gif.latex?log(N) = a+bt+ct^2" border="0"/>
+<img src="https://latex.codecogs.com/gif.latex?log(N) = a+bt+ct^2" border="0"/>
 <br>
 Dove N &egrave; il numero di persone contagiate e t &egrave; il tempo. Tale andamento non &egrave; altro che una correzione a quello esponenziale, in quanto prevede che il rate di crescita possa diminuire (o aumentare) linearmente nel tempo. Inoltre, tale modello &egrave; anche un'approssimazione dell'andamento logistico in prossimit&agrave; del regime non esponenziale. Il parametro c mi dice quanto la crescita esponenziale sta rallentando. Mi dice, nel nostro caso, quanto bene le cose stanno andando. Un valore di zero indica un andamento esponenziale puro (le cose vanno male). Un valore negativo rappresenta un rallentamento, mentre uno positivo addirittura un'accelerazione nell'espansione.
 </p>
