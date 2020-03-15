@@ -566,7 +566,9 @@ output$terapiaIntPlotPercPrev<- renderPlotly({
 	prevFin$data	<-as.character(prevFin$data)
 
 	Ntint <- nrow(tint)
-	postiLetto <- data.frame(data=rep("posti disponibili",Ntint),regione=tint$denominazione_regione, Attesi= tint$lettiTI, UpperRange=rep(0,Ntint),LowerRange=rep(0,Ntint))
+  postiLetto <- data.frame(data=rep("posti disponibili",Ntint), Attesi= tint$lettiTI,
+                UpperRange=rep(0,Ntint), LowerRange=rep(0,Ntint),
+                regione=tint$denominazione_regione, stringsAsFactors=F)
 
 	out <- rbind(prevFin,postiLetto )
 

@@ -18,14 +18,14 @@ dir_data		<- "www/"
 provShapeRDS <- "ProvinceShapeF.RDS"
 regShapeRDS <- "RegioniShapeF.RDS"
 
-regioni <- st_read("www/Reg01012019/Reg01012019_WGS84.shp")
+regioni <- st_read("www/Reg01012019_g/Reg01012019_g_WGS84.shp")
 regioni <- st_transform(regioni, crs="+proj=longlat +datum=WGS84 +no_defs")
 hlpr <- st_coordinates(st_centroid(regioni))
 colnames(hlpr) <- c("reg_long", "reg_lat")
 regioni <- cbind(regioni, hlpr)
 
 
-province <- st_read("www/ProvCM01012019/ProvCM01012019_WGS84.shp")
+province <- st_read("www/ProvCM01012019_g/ProvCM01012019_g_WGS84.shp")
 province <- st_transform(province, crs="+proj=longlat +datum=WGS84 +no_defs")
 hlpr <- st_coordinates(st_centroid(province))
 colnames(hlpr) <- c("prv_long", "prv_lat")
