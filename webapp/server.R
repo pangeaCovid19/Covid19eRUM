@@ -533,12 +533,15 @@ output$fitCasesIta <- renderPlotly({
       datiIta$tipo <- factor(datiIta$tipo, levels=c("veri", "predetti"))
 
 			indmax <- which.max(datiIta$casi)
-			datiIta <-datiIta[datiIta$data <= datiIta$data[indmax],]
+      vdate <- datiIta$data[indmax]
+		  datiIta <-datiIta[datiIta$data <= vdate,]
+      datiIta$label <- c(rep("", nrow(datiIta)-1), "picco\n previsto")
 
       p <- ggplot() + my_ggtheme() +
-  					geom_bar(data=datiIta, aes(x=data, y=casi, fill=tipo,
+  					geom_bar(data=datiIta, aes(x=data, y=casi, fill=tipo, label=label,
               text = paste('Data:', strftime(data, format="%d-%m-%Y"),
                '<br>Casi: ', round(casi))), stat="identity", width = 0.8)+
+            geom_text(data=datiIta, aes(x=data, y=casi, label=label), cex=2.5, color="black", fontface = "bold") +
   					scale_fill_manual(values=d3hexcols) +
             theme(axis.text.x=element_text(angle=45,hjust=1)) +
             labs(x="")
