@@ -610,26 +610,36 @@ output$terapiaIntPlotPercPrev<- renderPlotly({
 	nahead <-3
 	oggi <- isolate(reacval$dateRange_reg)[2]
 
-	prevFin <- prevDT[between(prevDT$data,oggi+1,oggi+nahead),]
+  prevFin <- prevDT[between(prevDT$data,oggi+1,oggi+nahead),]
 	prevFin$Attesi 		<-round(prevFin$Attesi*percTI)
-	prevFin$UpperRange	<-round(prevFin$UpperRange*percTI)
-	prevFin$LowerRange	<-round(prevFin$LowerRange*percTI)
-	prevFin$data	<-as.character(prevFin$data)
+
+	prevFin$UpperRange	<-prevFin$UpperRange*percTI
+	prevFin$LowerRange	<-prevFin$LowerRange*percTI
+	prevFin$data <- strftime(prevFin$data, format="%d-%m-%Y")
+  prevFin[,c("dataind","data2")]<-NULL
+  prevFin$ttip <- paste('Data:', prevFin$data,
+          '<br>Regione:', prevFin$regione,
+          '<br>Ricover attesi:', round(prevFin$Attesi),
+          '<br>Intervallo previsione:', paste0('[', round(prevFin$LowerRange,2), ', ', round(prevFin$UpperRange,2),']')
+        )
 
 	Ntint <- nrow(tint)
-  postiLetto <- data.frame(data=rep("posti disponibili",Ntint), Attesi= tint$lettiTI,
+  postiLetto <- data.frame(data=rep("posti disponibili", Ntint), Attesi= tint$lettiTI,
                 UpperRange=rep(0,Ntint), LowerRange=rep(0,Ntint),
                 regione=tint$denominazione_regione, stringsAsFactors=F)
-	prevFin[,c("dataind","data2")]<-NULL
+  postiLetto$ttip <- paste0('Regione: ', postiLetto$regione,
+          '<br>Posti disponibili: ', round(postiLetto$Attesi))
 
-	out <- rbind(prevFin,postiLetto )
-	p <-ggplot(data=out, aes(x=regione, y=Attesi, fill=data)) +
+	out <- rbind(prevFin, postiLetto)
+  out$data <- factor(out$data, levels=c(unique(prevFin$data[order(strptime(prevFin$data, format="%d-%m-%Y"))]), "posti disponibili"))
+	p <-ggplot(data=out, aes(x=regione, y=Attesi, fill=data,
+                text = ttip)) +
         geom_bar(stat="identity", position=position_dodge()) + my_ggtheme() +
 	      theme(axis.text.x=element_text(angle=45,hjust=1)) +
 	      geom_errorbar(aes(ymin=LowerRange, ymax=UpperRange), width=.2, position=position_dodge(.9))+
         scale_fill_manual(values=d3hexcols) +
-        labs(x="", y="numero letti")
-  ggplotly(p) %>% config(locale = 'it')
+        labs(x="", y="numero letti", fill="")
+  ggplotly(p, tooltip = c("text")) %>% config(locale = 'it')
 
 })
 
