@@ -510,6 +510,7 @@ output$fitCasesIta <- renderPlotly({
   					geom_bar(data=datiIta, aes(x=data, y=casi, fill=tipo), stat="identity", width = 0.8)+
   					scale_fill_manual(values=d3hexcols) +
             theme(axis.text.x=element_text(angle=45,hjust=1)) +
+            labs(x="")
             theme(legend.title = element_blank())
       ggplotly(p) %>% config(locale = 'it')
    }

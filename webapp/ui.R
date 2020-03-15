@@ -8,7 +8,7 @@ fitTab <- tabItem(tabName = "fitPlots",
 									h4("Sia gli andamenti totali che quelli delle regioni maggiormente colpite si stanno staccando dall'andamento esponenziale, questo sembra indicare che le misure preventive iniziano ad avere effetto."),
 									 br(),
 									fluidRow(
-										column(width=4, selectizeInput("regionSelFit", label="Regione", choices=regioniList, selected = regioni2fit, multiple=TRUE, width='400px')),
+										column(width=4, selectizeInput("regionSelFit", label="Seleziona regioni", choices=regioniList, selected = regioni2fit, multiple=TRUE, width='400px')),
 										column(width=4, selectizeInput("regionLinLogFit", label="Tipo Grafico", choices=c("Lineare", "Logaritmico"), selected = "Lineare", width='200px'))
 									),
 									fluidRow(
@@ -91,7 +91,7 @@ prvTab <- tabItem(tabName = "prvPlots",
               fluidRow(
                 box(width=6, title = tagList(shiny::icon("globe-europe"), "Mappa dei casi confermati"), status = "primary", solidHeader = F,
                     collapsible = T,
-										selectInput("regionSel", label="Regione", choices=regioniList, selected = "Lombardia"),
+										selectInput("regionSel", label="Seleziona regione", choices=regioniList, selected = "Lombardia"),
 										#plotOutput(outputId="mapProvinceGG", height = 800),
                     leafletOutput(outputId="mapProvince"),
 										spiegaMappa
