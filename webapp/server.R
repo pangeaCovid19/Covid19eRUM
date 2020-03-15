@@ -1,6 +1,11 @@
 
 shinyServer(function(input, output, session) {
 
+  DT_lang_opt <- list(language = list(lengthMenu="Mostra _MENU_ righe per pagina",
+                info="Vista da _START_ a _END_ di _TOTAL_ elementi",
+                infoEmpty="Vista da 0 a 0 di 0 elementi",
+                infoFiltered="(filtrati da _MAX_ elementi totali)",
+                paginate=list(previous="Precedente",`next`="Successivo")))
 ## AGGIORNAMENTI
 
   autoInvalidate <- reactiveTimer(3600000)
@@ -101,7 +106,7 @@ output$lineRegion <- renderPlotly({
     p <- ggplot(allDataReg) + my_ggtheme() +
           geom_line(aes(x=data, y=`casi totali`, color=regione)) +
           scale_color_manual(values=d3hexcols20)
-    p
+    ggplotly(p) %>% config(locale = 'it')
   }
 })
 
@@ -116,7 +121,7 @@ output$tabRegionNEW <- renderDT({
 
     datatable(out,
       selection = list(target = NULL),
-      options=list(paging = T, searching = F, info=F, ordering=T, order=list(list(2, 'desc'))),
+      options= c(list(paging = T, searching = F, info=F, ordering=T, order=list(list(2, 'desc'))), DT_lang_opt),
       rownames=F)
   }
 })
@@ -137,7 +142,7 @@ output$tabRegion <- renderDT({
 
     datatable(latestDataReg,
       selection = list(target = NULL),
-      options=list(paging = T, searching = F, info=F, ordering=T, order=list(list(2, 'desc'))),
+      options= c(list(paging = T, searching = F, info=F, ordering=T, order=list(list(2, 'desc'))), DT_lang_opt),
       rownames=F)
   }
 })
@@ -206,7 +211,7 @@ output$lineProvince <- renderPlotly({
     p <- ggplot(allDataProv) + my_ggtheme() +
           geom_line(aes(x=data, y=`casi totali`, color=provincia)) +
           scale_color_manual(values=d3hexcols20)
-    p
+    ggplotly(p) %>% config(locale = 'it')
   }
 })
 
@@ -231,7 +236,7 @@ output$tabProvince <- renderDT({
 
     datatable(latestDataProv,
       selection = list(target = NULL),
-      options=list(paging = T, searching = F, info=F, ordering=T, order=list(list(2, 'desc'))),
+      options= c(list(paging = T, searching = F, info=F, ordering=T, order=list(list(2, 'desc'))), DT_lang_opt),
       rownames=F)
   }
 })
@@ -366,7 +371,7 @@ output$fitRegion <- renderPlotly({
 
     if (tipoGraph == "Logaritmico") p <- p + scale_y_log10()
 
-		p
+    ggplotly(p) %>% config(locale = 'it')
     ###
     #allDataReg$UpperRange<-0
     #allDataReg$LowerRange<-0
@@ -439,7 +444,7 @@ if(verbose) cat("\n renderPlotly:fitIta")
 
     if (tipoGraph == "Logaritmico") p <- p + scale_y_log10()
 
-		p
+    ggplotly(p) %>% config(locale = 'it')
 
     #tmp$UpperRange<-NA
     #tmp$LowerRange<-NA
@@ -497,7 +502,7 @@ output$fitCasesIta <- renderPlotly({
       p <- ggplot() + my_ggtheme() +
   					geom_bar(data=datiIta, aes(x=data, y=casi, fill=tipo), stat="identity", width = 0.8)+
   					scale_fill_manual(values=d3hexcols) + theme(legend.title = element_blank())
-      p
+      ggplotly(p) %>% config(locale = 'it')
    }
 })
 
@@ -539,7 +544,7 @@ output$terapiaIntPlotNow<- renderPlotly({
 	      theme(axis.text.x=element_text(angle=45,hjust=1))+
         scale_fill_manual(values=d3hexcols) +
 	      xlab("")+ylab("numero letti")
-	p
+  ggplotly(p) %>% config(locale = 'it')
 })
 
 output$terapiaIntPlotPercPrev<- renderPlotly({
@@ -578,7 +583,7 @@ output$terapiaIntPlotPercPrev<- renderPlotly({
 	      geom_errorbar(aes(ymin=LowerRange, ymax=UpperRange), width=.2, position=position_dodge(.9))+
         scale_fill_manual(values=d3hexcols) +
 	      xlab("")+ylab("numero letti")
-	p
+  ggplotly(p) %>% config(locale = 'it')
 
 })
 
