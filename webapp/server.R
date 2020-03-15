@@ -314,6 +314,12 @@ output$updatePrevisioniUI <- renderUI({
 })
 
 
+output$updateTIUI <- renderUI({
+	if(verbose) cat("\n renderUI:updateTIUI")
+  h3(paste("Dati aggiornati al giorno:", get_last_date()))
+})
+
+
 get_predictions <- function(modelli, datiTS, nahead, alldates=FALSE) {
   previsioni <- mapply(FUN=predictNextDays, datiTS, modelli, nahead=nahead, all=alldates, SIMPLIFY=F)
   previsioniDT <- rbindlist(previsioni)
