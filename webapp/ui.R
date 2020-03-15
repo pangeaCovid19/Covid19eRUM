@@ -12,7 +12,7 @@ fitTab <- tabItem(tabName = "fitPlots",
 										column(width=4, selectizeInput("regionLinLogFit", label="Tipo Grafico", choices=c("Lineare", "Logaritmico"), selected = "Lineare", width='200px'))
 									),
 									fluidRow(
-										box(width=6, title = tagList(shiny::icon("globe-europe"), "Totali Positivi per regione con previsione a 3 giorni"), status = "primary", solidHeader = F,
+										box(width=6, title = tagList(shiny::icon("globe-europe"), "Andamento casi positivi per regione con previsione a 3 giorni"), status = "primary", solidHeader = F,
 												collapsible = T, plotlyOutput(outputId="fitRegion"), spiegaFitPos
 										),
 										box(width=6, title =  "Andamenti globali in Italia con previsione a 3 giorni", status = "primary", solidHeader = F,

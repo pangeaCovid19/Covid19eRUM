@@ -353,7 +353,7 @@ output$fitRegion <- renderPlotly({
 	regioniSel <- input$regionSelFit
   tipoGraph <- input$regionLinLogFit
 
-  if (!is.null(allDataReg)) {
+  if (!is.null(allDataReg) & length(regioniSel) > 0) {
 		tsReg <- getTimeSeriesReact()[which(names(getTimeSeriesReact())%in%regioniSel)]
 		if(saveRDSout) saveRDS(file="fitRegionList.RDS",list(tsReg, allDataReg))
 
