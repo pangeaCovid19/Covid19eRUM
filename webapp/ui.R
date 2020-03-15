@@ -12,6 +12,11 @@ fitTab <- tabItem(tabName = "fitPlots",
 										column(width=4, selectizeInput("regionLinLogFit", label="Tipo Grafico", choices=c("Lineare", "Logaritmico"), selected = "Lineare", width='200px'))
 									),
 									uiOutput('graficiPrevisioniUI'),
+									fluidRow(
+										box(width=12, title = tagList(shiny::icon("globe-europe"), "Previsione del numero di casi con modello esponenziale quadratico"), status = "primary", solidHeader = F,
+												collapsible = T, plotlyOutput(outputId="fitCasesIta")
+										)
+									),
 	                fluidRow(
 	                	box(width=12,
 											title = tagList(shiny::icon("globe-europe"), "Percentuale in terapia intensiva occupati da pazienti con CoVid19 (posti letto aggiornati al 2018)"),

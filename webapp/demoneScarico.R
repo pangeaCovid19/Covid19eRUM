@@ -72,7 +72,7 @@ while (i==0) {
 		d2<- digest(reg)
 		if (length(reg)>=length(currentreg) && (is.na(hashes["Regioni"]) || d2!=hashes["Regioni"])) {
 			writeLog("Scarico Regioni\n",logdemone)
-			writeBin(reg,reglocalpathcsv)	
+			writeBin(reg,reglocalpathcsv)
 			hashes["Regioni"]<-d2
 		}
 	}
@@ -84,10 +84,10 @@ while (i==0) {
 	modelliIta <- list()
 
 	for(i in  1:length(campiPrevisioni)){
-		modelliIta[[i]]<-loglinmodel2(tsReg$Italia, var=campiPrevisioni[i], rangepesi=c(0,1))
+		modelliIta[[i]]<-loglinmodel3(tsReg$Italia, var=campiPrevisioni[i], rangepesi=c(0,1), quadratico=T)
 	}
 	names(modelliIta) <- campiPrevisioni
-	modelliReg <-lapply( tsReg[which(names(tsReg)!='Italia')], loglinmodel2)
+	modelliReg <-lapply( tsReg[which(names(tsReg)!='Italia')], loglinmodel3, quadratico=T)
 
 
 	writeLog("Scrivendo i dati",logdemone)
