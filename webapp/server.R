@@ -512,6 +512,9 @@ output$fitCasesIta <- renderPlotly({
       datiIta$tipo <- c(rep("veri", num_rows), rep("predetti", nrow(datiIta) - num_rows))
       datiIta$tipo <- factor(datiIta$tipo, levels=c("veri", "predetti"))
 
+			indmax <- which.max(datiIta$casi)
+			datiIta <-datiIta[datiIta$data <= datiIta$data[indmax],]
+
       p <- ggplot() + my_ggtheme() +
   					geom_bar(data=datiIta, aes(x=data, y=casi, fill=tipo), stat="identity", width = 0.8)+
   					scale_fill_manual(values=d3hexcols) +
