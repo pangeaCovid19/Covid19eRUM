@@ -74,6 +74,10 @@ mtimeReg 	<-file.info(paste0(dir_reg,regRDS))$mtime
 modelliReg <- readRDS("www/modelliReg.RDS")
 modelliIta <-readRDS("www/modelliIta.RDS")
 
+if(file.exists("www/modelliRegExp.RDS"))
+	modelliRegExp <- readRDS("www/modelliRegExp.RDS")
+if(file.exists("www/modelliItaExp.RDS"))
+	modelliItaExp <-readRDS("www/modelliItaExp.RDS")
 
 date_range 			<- range(allData$data)
 date_range_reg 	<- range(allData_reg$data)

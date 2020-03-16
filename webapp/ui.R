@@ -11,18 +11,19 @@ fitTab <- tabItem(tabName = "fitPlots",
 									 br(),
 									fluidRow(
 										column(width=4, selectizeInput("regionSelFit", label="Seleziona regioni", choices=regioniList, selected = regioni2fit, multiple=TRUE, width='400px')),
-										column(width=4, selectizeInput("regionLinLogFit", label="Tipo Grafico", choices=c("Lineare", "Logaritmico"), selected = "Lineare", width='200px'))
+										column(width=2, selectizeInput("regionLinLogFit", label="Tipo Grafico", choices=c("Lineare", "Logaritmico"), selected = "Lineare")),
+										column(width=3, selectizeInput("modelloFit", label="Tipo Grafico", choices=c("Esponenziale", "Exp. quadratico"), selected = "Exp. quadratico"))
 									),
 									fluidRow(
-										box(width=6, title = tagList(shiny::icon("globe-europe"), "Andamento casi positivi per regione con previsione a 3 giorni"), status = "primary", solidHeader = F,
+										column(width=6, title = tagList(shiny::icon("globe-europe"), "Andamento casi positivi per regione con previsione a 3 giorni"), status = "primary", solidHeader = F,
 												collapsible = T, plotlyOutput(outputId="fitRegion"), spiegaFitPos
 										),
-										box(width=6, title =  "Andamenti globali in Italia con previsione a 3 giorni", status = "primary", solidHeader = F,
+										column(width=6, title =  "Andamenti globali in Italia con previsione a 3 giorni", status = "primary", solidHeader = F,
 												collapsible = T,  plotlyOutput(outputId="fitIta"), spiegaFitTot
 										)
 									),
 									fluidRow(
-										box(width=12, title = tagList(shiny::icon("globe-europe"), "Previsione del numero di casi con modello esponenziale quadratico"), status = "primary", solidHeader = F,
+										box(width=12, title = tagList(shiny::icon("globe-europe"), "Previsione del numero di casi totali a medio termine con modello esponenziale qudratico"), status = "primary", solidHeader = F,
 												collapsible = T, plotlyOutput(outputId="fitCasesIta")
 										)
 									),
@@ -129,21 +130,21 @@ dashboardPage(
 
 ## Sidebar content
 	dashboardSidebar(
-			sidebarMenu(id='spiegazione',
-				menuItem2("Introduzione", tabName = "intro", icon = icon("air-freshener"))
-			),
 			sidebarMenu(id='fitCFG',
-				menuItem2("CoVid-19 previsioni", tabName = "fitPlots", icon = icon("vials"))
+				menuItem2("Previsioni", tabName = "fitPlots", icon = icon("chart-line"))
 			),
       sidebarMenu(id='tiCFG',
-        menuItem2("CoVid-19 e Terapia Intensiva", tabName = "tiPlots", icon = icon("vials"))
+        menuItem2("Terapia Intensiva", tabName = "tiPlots", icon = icon("stethoscope"))
       ),
       sidebarMenu(id='regCFG',
-        menuItem2("CoVid-19 per regione", tabName = "regPlots", icon = icon("vials"))
+        menuItem2("Regioni", tabName = "regPlots", icon = icon("atlas"))
       ),
       sidebarMenu(id='prvCFG',
-        menuItem2("CoVid-19 per provincia", tabName = "prvPlots", icon = icon("vials"))
-      )#,
+        menuItem2("Province", tabName = "prvPlots", icon = icon("atlas"))
+      ),
+			sidebarMenu(id='spiegazione',
+				menuItem2("Descrizione modelli", tabName = "intro", icon = icon("bandcamp"))
+			)#,
 		 #selectInput("regionSel", label="Regione", choices=regioniList, selected = "Lombardia")
 	),
 
@@ -151,10 +152,10 @@ dashboardPage(
         tags$head(tags$link(rel = "stylesheet", type = "text/css", href = "pangea.css")),
 
     tabItems(
-    				introTab,
 				fitTab,
 				tiTab,
         regTab,
-        prvTab
+        prvTab,
+		    introTab
 	))
 )

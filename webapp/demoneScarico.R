@@ -82,12 +82,16 @@ while (i==0) {
 
 	tsReg <- getTimeSeries(due)
 	modelliIta <- list()
-
+	modelliItaExp <- list()
 	for(i in  1:length(campiPrevisioni)){
-		modelliIta[[i]]<-loglinmodel3(tsReg$Italia, var=campiPrevisioni[i], rangepesi=c(0,1), quadratico=T)
+		modelliIta[[i]]<-loglinmodel3(tsReg$Italia, var=campiPrevisioni[i], rangepesi=c(0,1), quadratico=TRUE)
+		modelliItaExp[[i]]<-loglinmodel3(tsReg$Italia, var=campiPrevisioni[i], rangepesi=c(0,1), quadratico=FALSE)
+
 	}
 	names(modelliIta) <- campiPrevisioni
-	modelliReg <-lapply( tsReg[which(names(tsReg)!='Italia')], loglinmodel3, quadratico=T)
+	names(modelliItaExp) <- campiPrevisioni
+	modelliReg <-lapply( tsReg[which(names(tsReg)!='Italia')], loglinmodel3, quadratico=TRUE)
+	modelliRegExp <-lapply( tsReg[which(names(tsReg)!='Italia')], loglinmodel3, quadratico=FALSE)
 
 
 	writeLog("Scrivendo i dati",logdemone)
@@ -96,4 +100,6 @@ while (i==0) {
 	writeLog("Scrivendo i modelli",logdemone)
 	saveRDS(modelliReg,"www/modelliReg.RDS")
 	saveRDS(modelliIta,"www/modelliIta.RDS")
+	saveRDS(modelliRegExp,"www/modelliRegExp.RDS")
+	saveRDS(modelliItaExp,"www/modelliItaExp.RDS")
 }

@@ -23,7 +23,9 @@ shinyServer(function(input, output, session) {
             dateRange_reg=date_range_reg,
 						mdataReg=mtimeReg,
 						modelliIta=modelliIta,
-						modelliReg=modelliReg
+						modelliReg=modelliReg,
+						modelliItaExp=modelliItaExp,
+						modelliRegExp=modelliRegExp
 					)
 
   observe({
@@ -44,18 +46,38 @@ shinyServer(function(input, output, session) {
 			reacval$dateRange_reg 	<- max(regData$data)
 
 			tsReg <- getTimeSeries(regData)
+#			modelliIta <- list()
+#			for(i in  1:length(campiPrevisioni)){
+#				modelliIta<-loglinmodel2(tsReg$Italia, var="totale_casi", rangepesi=c(0,1))
+#			}
+#			names(modelliIta) <- campiPrevisioni
+#			modelliReg <-lapply( tsReg[which(names(tsReg)!='Italia')], loglinmodel2)
+
+#################
+
 			modelliIta <- list()
+			modelliItaExp <- list()
+
 			for(i in  1:length(campiPrevisioni)){
-				modelliIta<-loglinmodel2(tsReg$Italia, var="totale_casi", rangepesi=c(0,1))
+				modelliIta[[i]]<-loglinmodel3(tsReg$Italia, var=campiPrevisioni[i], rangepesi=c(0,1), quadratico=TRUE)
+				modelliItaExp[[i]]<-loglinmodel3(tsReg$Italia, var=campiPrevisioni[i], rangepesi=c(0,1), quadratico=FALSE)
+
 			}
 			names(modelliIta) <- campiPrevisioni
-			modelliReg <-lapply( tsReg[which(names(tsReg)!='Italia')], loglinmodel2)
+			names(modelliItaExp) <- campiPrevisioni
 
+			modelliReg <-lapply( tsReg[which(names(tsReg)!='Italia')], loglinmodel3, quadratico=TRUE)
+			modelliRegExp <-lapply( tsReg[which(names(tsReg)!='Italia')], loglinmodel3, quadratico=FALSE)
+#################
 			reacval$modelliIta 	<- modelliIta
 			reacval$modelliReg 	<- modelliReg
+			reacval$modelliItaExp 	<- modelliItaExp
+			reacval$modelliRegExp 	<- modelliRegExp
 			assign("allData_reg",regData,envir=.GlobalEnv)
 			assign("modelliReg",modelliReg,envir=.GlobalEnv)
 			assign("modelliIta",modelliIta,envir=.GlobalEnv)
+			assign("modelliRegExp",modelliRegExp,envir=.GlobalEnv)
+			assign("modelliItaExp",modelliItaExp,envir=.GlobalEnv)
 		}
   })
 
@@ -342,6 +364,7 @@ get_predictions <- function(modelli, datiTS, nahead, alldates=FALSE) {
     previsioniDT[, outName:=rep(names(modelli), each=nrow(datiTS[[1]])+nahead)]
   else
     previsioniDT[, outName:=rep(names(modelli), each=nahead)]
+		setDF(previsioniDT)
   previsioniDT
 }
 
@@ -349,8 +372,15 @@ get_predictions <- function(modelli, datiTS, nahead, alldates=FALSE) {
 prevRegion <- reactive({
 	if(verbose) cat("\n reactive:prevRegion")
 	allDataReg <- copy( reacval$dataTables_reg)
-	modelliReg <- isolate(reacval$modelliReg)
+  tipoModello <- input$modelloFit
 	nahead=3
+	cat("\ttipoModello:", tipoModello)
+
+	if(is.null(tipoModello)) return(NULL)
+	if(tipoModello=="Exp. quadratico"){
+		modelliReg=isolate(reacval$modelliReg)
+	} else modelliReg <- isolate(reacval$modelliRegExp)
+
 
 	if (!is.null(allDataReg)) {
 		tsReg <- getTimeSeriesReact()
@@ -430,8 +460,14 @@ output$fitRegion <- renderPlotly({
 prevIta <- reactive({
 	if(verbose) cat("\n reactive:prevIta")
 	allDataReg <- copy(reacval$dataTables_reg)
-	modelliIta <- isolate(reacval$modelliIta)
+	tipoModello <- input$modelloFit
 	nahead=3
+	cat("\ttipoModello:", tipoModello)
+
+	if(is.null(tipoModello)) return(NULL)
+	if(tipoModello=="Exp. quadratico"){
+		modelliIta=isolate(reacval$modelliIta)
+	} else modelliIta <- isolate(reacval$modelliItaExp)
 
 	if (!is.null(allDataReg)) {
 		tsIta <- getTimeSeriesReact()["Italia"]
@@ -514,9 +550,9 @@ if(verbose) cat("\n renderPlotly:fitIta")
 prevItaLongTerm <- reactive({
 	if(verbose) cat("\n reactive:prevIta")
 	allDataReg <- copy(reacval$dataTables_reg)
-	modelliIta <- isolate(reacval$modelliIta)
-	nahead=20
+	nahead=10
 
+	modelliIta=isolate(reacval$modelliIta)
 	if (!is.null(allDataReg)) {
 		tsIta <- getTimeSeriesReact()["Italia"]
 
@@ -531,7 +567,10 @@ prevItaLongTerm <- reactive({
 output$fitCasesIta <- renderPlotly({
   if(verbose) cat("\n renderPlotly:fitCasesIta")
   prevItaDT <- copy(prevItaLongTerm())
-  tsIta <- getTimeSeriesReact()[["Italia"]]
+  tsIta <- copy(getTimeSeriesReact()[["Italia"]])
+	assign('tsIta',tsIta,envir=.GlobalEnv)
+	assign('prevItaDT',prevItaDT,envir=.GlobalEnv)
+	assign('gts',getTimeSeriesReact(),envir=.GlobalEnv)
 
   if (!is.null(prevItaDT) & !is.null(tsIta)) {
   		setnames(prevItaDT, old=c('Attesi'), new=c('casi'))
@@ -550,7 +589,7 @@ output$fitCasesIta <- renderPlotly({
   					suppressWarnings(geom_bar(data=datiIta, aes(x=data, y=casi, fill=tipo,
               text = paste('Data:', strftime(data, format="%d-%m-%Y"),
                '<br>Casi: ', round(casi))), stat="identity", width = 0.8))+
-            geom_text(data=datiIta, aes(x=data, y=casi, label=label), cex=2.5, color="black", fontface = "bold") +
+  #          geom_text(data=datiIta, aes(x=data, y=casi, label=label), cex=2.5, color="black", fontface = "bold") +
   					scale_fill_manual(values=d3hexcols) +
             theme(axis.text.x=element_text(angle=45,hjust=1)) +
             labs(x="") +
