@@ -7,12 +7,13 @@ fitTab <- tabItem(tabName = "fitPlots",
 #							h1("Analisi previsionale nelle province italiane"), br(), br(),
 							fluidRow(
 								box(width=12,
-									h4("Sia gli andamenti totali che quelli delle regioni maggiormente colpite si stanno staccando dall'andamento esponenziale, questo sembra indicare che le misure preventive iniziano ad avere effetto. Infatti, il ritmo di crescita attuale sembra meglio descritto da un andamento esponenziale con rate che diminuisce linearmente nel tempo (modello esponenziale quadratico)."),
+									h4("In questa pagina proponiamo il confronto tra i dati registrati, sia regionali che nazionali e due modelli di crescita. Il primo modello (esponenziale) descrive una diffusione incontrollata, mentre il secondo (esponenziale quadratico) tenta di tenere conto dell'effetto di misure contenitive. Per maggiori dettagli, controlla la sezione di approfondimento"),
+									#h4("Sia gli andamenti totali che quelli delle regioni maggiormente colpite si stanno staccando dall'andamento esponenziale, questo sembra indicare che le misure preventive iniziano ad avere effetto. Infatti, il ritmo di crescita attuale sembra meglio descritto da un andamento esponenziale con rate che diminuisce linearmente nel tempo (modello esponenziale quadratico)."),
 									 br(),
 									fluidRow(
 										column(width=4, selectizeInput("regionSelFit", label="Seleziona regioni", choices=regioniList, selected = regioni2fit, multiple=TRUE, width='400px')),
 										column(width=2, selectizeInput("regionLinLogFit", label="Tipo Grafico", choices=c("Lineare", "Logaritmico"), selected = "Lineare")),
-										column(width=3, selectizeInput("modelloFit", label="Tipo Grafico", choices=c("Esponenziale", "Exp. quadratico"), selected = "Exp. quadratico"))
+										column(width=3, selectizeInput("modelloFit", label="Tipologia Modello", choices=c("Esponenziale", "Exp. quadratico"), selected = "Exp. quadratico"))
 									),
 									fluidRow(
 										column(width=6, title = tagList(shiny::icon("globe-europe"), "Andamento casi positivi per regione con previsione a 3 giorni"), status = "primary", solidHeader = F,

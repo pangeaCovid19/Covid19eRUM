@@ -24,7 +24,7 @@ Qualitativamente, quello che ci aspettiamo se andassimo a monitorare il numero d
 Il comportamento descritto sopra corrisponde all'andamento di una <a href="https://it.wikipedia.org/wiki/Equazione_logistica">funzione logistica</a>. Essa &egrave; la soluzione di un'equazione differenziale, detta di <i>equazione di Verhulst</i> che descrive i comportamenti del virus o di altri fenomeni di diffusione. Ad esempio, la diffusione di un nuovo prodotto si comporta analogamente.
 </p>
 <p>
-Anche il Coronavirus seguir&agrave; ineluttabilmente questo percorso. S&igrave; e no; vediamo perch&egrave;.
+Anche il Coronavirus seguir&agrave; ineluttabilmente questo percorso? S&igrave; e no; vediamo perch&egrave;.
 <ul>
 <li>L'equazione logistica presuppone che il rate di trasmissione (il <a href="https://www.iss.it/primo-piano/-/asset_publisher/o4oGR9qmvUz9/content/id/5268851">famoso parametro R0</a>) sia costante nel tempo. Esso dipende da quante interazioni i soggetti hanno. Se la popolazione cambia comportamenti, diminuendo quindi i contatti, tale parametro si abbassa.</li>
 <li>Il valore di <i>plateau</i> non &egrave; noto. Non sappiamo che percentuale della popolazione potrebbe rimanere contagiata.</li>
@@ -42,9 +42,9 @@ Tuttavia si potrebbe tentare di scoprire quale sia l'andamento del numero dei co
 <p>
 Altro problema legato a tecniche di machine learning &egrave; legato all'<a href="https://medium.com/@ODSC/opening-the-black-box-interpretability-in-deep-learning-13ecc80ae34e">interpretabilit&agrave;</a>. Ammesso che il modello sia in grado di predire i dati futuri, spesso il valore risiede nel capire come tali previsioni sono effettuate. 
 </p>
-<h2>Modello implementato</h2>
+<h2>Modelli implementati</h2>
 <p>
-Per questi motivi, abbiamo scelto di implementare un modello che abbia le seguenti propriet&agrave;.
+Per questi motivi, abbiamo scelto di implementare due modelli che abbiano le seguenti propriet&agrave;.
 <ul>
 <li>Capacit&agrave; di ricostruire i dati passati.</li>
 <li>Semplicit&agrave;. Il modello deve essere dotato di pochi parametri interpretabili.</li>
@@ -52,14 +52,15 @@ Per questi motivi, abbiamo scelto di implementare un modello che abbia le seguen
 </ul>
 </p>
 <p>
-Considerato che, alla data attuale (15 marzo 2020), l'andamento esponenziale non &egrave; pi&ugrave; nei dati, abbiamo scelto di implementare un modello di questo tipo:
+Il primo modello &egrave; costituito da un esponenziale puro. Esso ha la primaria utilit&agrave; di monitorare l'esistenza o meno dell'effetto delle misure contenitive. Se quest'ultimo fosse nullo, registreremmo dati con un andamento in pieno accordo con la crescita esponenziale. Se il dato si attesta sotto tale andamento, allora si pu&ograve; pensare che vi siano degli effetti di rallentamento.
+Il secondo modello &egrave; una semplice generalizzazione del modello esponenziale ed &egrave; descritto dalla seguente equazione:
 <br>
 <img src="https://latex.codecogs.com/gif.latex?log(N) = a+bt+ct^2" border="0"/>
 <br>
-Dove N &egrave; il numero di persone contagiate e t &egrave; il tempo. Tale andamento non &egrave; altro che una correzione a quello esponenziale, in quanto prevede che il rate di crescita possa diminuire (o aumentare) linearmente nel tempo. Inoltre, tale modello &egrave; anche un'approssimazione dell'andamento logistico in prossimit&agrave; del regime non esponenziale. Il parametro c mi dice quanto la crescita esponenziale sta rallentando. Mi dice, nel nostro caso, quanto bene le cose stanno andando. Un valore di zero indica un andamento esponenziale puro (le cose vanno male). Un valore negativo rappresenta un rallentamento, mentre uno positivo addirittura un'accelerazione nell'espansione.
+dove N &egrave; il numero di persone contagiate e t &egrave; il tempo. Tale andamento prevede che il rate esponenziale di crescita possa diminuire (o aumentare) linearmente nel tempo. Inoltre, tale modello &egrave; anche un'approssimazione dell'andamento logistico in prossimit&agrave; del regime non esponenziale. Il parametro c mi dice quanto la crescita esponenziale sta rallentando. Mi dice, nel nostro caso, quanto bene le cose stanno andando. Un valore di zero indica un andamento esponenziale puro (le cose vanno male). Un valore negativo rappresenta un rallentamento, mentre uno positivo addirittura un'accelerazione nell'espansione. Ad oggi (16 marzo 2020), questo secondo modello &egrave; in grado di descrivere i dati osservati meglio del primo.
 </p>
 <p>
-Le previsioni fatte dal modello sono quindi pi&ugrave; da intendersi come <a href="https://it.wikipedia.org/wiki/Estrapolazione">estrapolazioni</a>. In particolare, ci si deve aspettare che questo modello abbia imprecisioni sia nelle fasi iniziali dell'espansione,  in quanto potrebbe non essere in grado di prevedere l'interruzione dell'andamento esponenziale, sia in quelle successive, in quanto un andamento quadratico pu&ograve; risultare troppo veloce verso il raggiungimento del picco. Nel nostro caso ci dobbiamo quindi aspettare che:
+Va osservato che lee previsioni fatte da questi modelli sono  pi&ugrave; da intendersi come <a href="https://it.wikipedia.org/wiki/Estrapolazione">estrapolazioni</a>. In particolare, ci si deve aspettare che il secondo modello abbia imprecisioni sia nelle fasi iniziali dell'espansione,  in quanto potrebbe non essere in grado di prevedere l'interruzione dell'andamento esponenziale, sia in quelle successive, in quanto un andamento quadratico pu&ograve; risultare troppo veloce verso il raggiungimento del picco. Nel nostro caso ci dobbiamo quindi aspettare che:
 <ul>
 <li>le nostre estrapolazioni sovrastimino il numero dei decessi;</li>
 <li>viceversa, il numero dei contagiati potrebbe essere sottostimato.</li>
@@ -69,17 +70,18 @@ Il primo punto &egrave; dovuto al fatto che i decessi, poich&egrave; seguono lo 
 Il secondo punto invece estrapola una situazione di rallentamento esponenziale consolidata, ma lo fa in maniera troppo veloce. Il modello potrebbe essere troppo ottimista nel prevedere il picco. 
 </p>
 
-<h3>Utilizzo del modello</h3>
+<h3>Come confrontare le estrapolazioni con i dati reali</h3>
 
-Come utilizzare quindi le estrapolazioni del modello? Ecco alcuni spunti.
+L'applicazione permette di confrontare ci&ograve; che i due modelli prevedevano al giorno prima con il dato reale. A seconda dello scostamento previsione - dato reale, possiamo ricavare diverse considerazioni. Premettiamo che nessuna di esse pu&ograve; ritenersi conclusiva per via della non totale affidabilit&agrave; del dato, delle naturali oscillazioni statistiche, delle assunzioni dei modelli e cos&igrave; via.
 
 <ul>
-<li>Confrontiamo il valore previsto con quello reale, una volta disponibile. Se il numero dei decessi risulta decisamente inferiore, &egrave; un segno dell'efficacia delle misure. Anche solo un lieve scostamento verso l'alto dei numeri di contagi potrebbe essere un segnale positivo, mentre una valore sotto la previsione sarebbe un segnale molto positivo (ma attenzione al numero dei contagi che spesso &egrave; riportato in modo parziale).</li>
-<li>Studiamo l'andamento dei contagi nelle varie regioni. Specialmente rilevatore &egrave; l'andamento in scala logaritmica. Gli andamenti che sembrano rette in tale scala sono in realt&agrave; esponenziali, e quindi cattive notizie. Viceversa, andamenti parabolici sono incoraggianti.</li>
-<li>Occhio alle previsioni sui posti letto di terapia intensiva. Possono anticipare situazioni critiche.</li>
-<li>Altro segnale positivo sar&agrave; quando l'andamento dei decessi in scala logaritmica prender&agrave; una chiara strada parabolica.</li>
+<li>Un accordo tra modello esponenziale e dato (o peggio ancora un dato superiore al modello esponenziale) &egrave; un segno negativo, indice che probabilmente le misure stanno tardando ad avere gli effetti sperati.</li>
+<li>Ogni dato al di sotto del secondo modello pu&ograve; essere interpretato come segnale positivo.</li>
+<li>Non &egrave; necessariamente un cattivo segnale se il secondo modello sottostima un dato. Infatti, il modello cerca di tenere conto del rallentamento contenitivo, ma potrebbe farlo in maniera troppo (o troppo poco) aggressiva.</li>
 </ul>
 
-Enjoy!
+Se avete domande o richieste di approfondimenti, contattate <a href="info@pangeformazione.it">info@pangeformazione.it</a>
+
+
 <br><br><br><br><br><br><br><br><br><br><br><br><br>
 </body>

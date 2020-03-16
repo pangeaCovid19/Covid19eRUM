@@ -100,15 +100,14 @@ risultatiFit <- HTML("<div style='padding-top:10px;'></div>")
 
 spiegaFitPos <- HTML("<div style='padding-top:10px;'>In questo grafico mostriamo la serie storica dei casi confermati di
 CoVid19 nelle regioni selezionate ed una previsione che si estende fino a tre giorni, linea tratteggiata.
-Abbiamo utilizzando un fit esponenziale dando maggiore importanza ai dati pi&ugrave; recenti. Se si seleziona l'opzione
-&quot;Logaritmico&quot; come tipo di grafico, l'asse delle ordinate diventa logaritmico ed &egrave; possibile
-rimappare l'andamento esponenziale su una retta.</div>")
+Abbiamo utilizzando modelli esponenziali dando maggiore importanza ai dati pi&ugrave; recenti. Se si seleziona l'opzione
+&quot;Logaritmico&quot; come tipo di grafico, l'asse delle ordinate diventa logaritmico e un andamento esponenziale &egrave; rappresentato da una retta.</div>")
 
 spiegaFitTot <- HTML("<div style='padding-top:10px;'>In questo grafico mostriamo la serie storica dei casi confermati,
 dei pazienti ospedalizzati, dei pazienti in terapia intensiva e dei defunti a causa del CoVid19 in Italia ed una
-previsione che si estende fino a tre giorni, linea tratteggiata. Abbiamo utilizzando un fit esponenziale dando maggiore
+previsione che si estende fino a tre giorni, linea tratteggiata. Abbiamo utilizzando modelli esponenziali dando maggiore
 importanza ai dati pi&ugrave; recenti. Se si seleziona l'opzione &quot;Logaritmico&quot; come tipo di grafico, l'asse delle ordinate
-diventa logaritmico ed &egrave; possibile rimappare l'andamento esponenziale su una retta.</div>")
+diventa logaritmico e un andamento esponenziale &egrave; rappresentato da una retta.</div>")
 
 
 spiegaMappa <- HTML("<div style='padding-top:10px;'>In questa mappa mostriamo la diffusione sul territorio dei casi confermati
