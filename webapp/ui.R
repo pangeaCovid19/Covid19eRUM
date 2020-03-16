@@ -1,35 +1,52 @@
 library(shinydashboard)
+library(shinyWidgets)
 source("dashboardPangea.R")
 #HTML(readChar("../docs/intro.html",file.info("../docs/intro.html")$size))
+# dashboardBody(
+# 		tags$style(".fa-atlas color: #ff00ff ; }"
+# 	)
 introTab<-tabItem(tabName="intro",fluidRow(box(width=12,HTML(readChar("../docs/intro.html",file.info("../docs/intro.html")$size)))))
 
-fitTab <- tabItem(tabName = "fitPlots",
-#							h1("Analisi previsionale nelle province italiane"), br(), br(),
-							fluidRow(
-								box(width=12,
-									h4("In questa pagina proponiamo il confronto tra i dati registrati, sia regionali che nazionali e due modelli di crescita. Il primo modello (esponenziale) descrive una diffusione incontrollata, mentre il secondo (esponenziale quadratico) tenta di tenere conto dell'effetto di misure contenitive. Per maggiori dettagli, controlla la sezione di approfondimento"),
-									#h4("Sia gli andamenti totali che quelli delle regioni maggiormente colpite si stanno staccando dall'andamento esponenziale, questo sembra indicare che le misure preventive iniziano ad avere effetto. Infatti, il ritmo di crescita attuale sembra meglio descritto da un andamento esponenziale con rate che diminuisce linearmente nel tempo (modello esponenziale quadratico)."),
-									 br(),
-									fluidRow(
-										column(width=4, selectizeInput("regionSelFit", label="Seleziona regioni", choices=regioniList, selected = regioni2fit, multiple=TRUE, width='400px')),
-										column(width=2, selectizeInput("regionLinLogFit", label="Tipo Grafico", choices=c("Lineare", "Logaritmico"), selected = "Lineare")),
-										column(width=3, selectizeInput("modelloFit", label="Tipologia Modello", choices=c("Esponenziale", "Exp. quadratico"), selected = "Exp. quadratico"))
-									),
-									fluidRow(
-										column(width=6, title = tagList(shiny::icon("globe-europe"), "Andamento casi positivi per regione con previsione a 3 giorni"), status = "primary", solidHeader = F,
-												collapsible = T, plotlyOutput(outputId="fitRegion"), spiegaFitPos
-										),
-										column(width=6, title =  "Andamenti globali in Italia con previsione a 3 giorni", status = "primary", solidHeader = F,
-												collapsible = T,  plotlyOutput(outputId="fitIta"), spiegaFitTot
-										)
-									),
-									fluidRow(
-										box(width=12, title = tagList(shiny::icon("globe-europe"), "Previsione del numero di casi totali a medio termine con modello esponenziale qudratico"), status = "primary", solidHeader = F,
-												collapsible = T, plotlyOutput(outputId="fitCasesIta")
-										)
-									),
-								)
-							),
+fitTab <- tabItem(tabName = "fitPlots",#style="background-color:#ffc2b3",
+							uiOutput("tab_desktop"),
+							# fluidRow(style="padding-left:30px;padding-right:30px;border-style: solid;border-color:#009933;",#" border-color :#009933;",
+							# 	#box(width=12,
+							# 	h1("Analisi previsionale nelle province italiane"),
+							# 	fluidRow(
+							# 		column(10,h4("In questa pagina proponiamo il confronto tra i dati registrati, sia regionali che nazionali e due modelli di crescita. Il primo modello (esponenziale) descrive una diffusione incontrollata, mentre il secondo (esponenziale quadratico) tenta di tenere conto dell'effetto di misure contenitive. Per maggiori dettagli, controlla la sezione di approfondimento")),
+							# 		column(2,radioButtons("modelloFit", label="Tipologia Modello", choices=c("Esponenziale", "Exp. quadratico")))
+							# 	),
+							#
+							# 		#h4("Sia gli andamenti totali che quelli delle regioni maggiormente colpite si stanno staccando dall'andamento esponenziale, questo sembra indicare che le misure preventive iniziano ad avere effetto. Infatti, il ritmo di crescita attuale sembra meglio descritto da un andamento esponenziale con rate che diminuisce linearmente nel tempo (modello esponenziale quadratico)."),
+							# 		 br(),
+							# 		# fluidRow(
+							# 		# 	#column(width=4, selectizeInput("regionSelFit", label="Seleziona regioni", choices=regioniList, selected = regioni2fit, multiple=TRUE, width='400px')),
+							# 		# 	column(width=2, selectizeInput("regionLinLogFit", label="Tipo Grafico", choices=c("Lineare", "Logaritmico"), selected = "Lineare")),
+							# 		# 	#column(width=3, selectizeInput("modelloFit", label="Tipologia Modello", choices=c("Esponenziale", "Exp. quadratico"), selected = "Exp. quadratico"))
+							# 		# ),
+							# 		fluidRow(style="padding:30px;background-color:#ffffff",
+							# 			column(2,fluidRow(selectizeInput("regionLinLogFit", label="Tipo Grafico", choices=c("Lineare", "Logaritmico"), selected = "Lineare")),checkboxGroupInput("regionSelFit", label="Seleziona regioni", choices=regioniList, selected = regioni2fit)),
+							# 		column(10,
+							#
+							# 			fluidRow(column(6,align="center",h4("Andamento casi positivi per regione con previsione a 3 giorni")),column(6,align="center",h4("Andamenti globali in Italia con previsione a 3 giorni"))),
+							# 			fluidRow(
+							# 				column(width=6,align="left", plotlyOutput(outputId="fitRegion"), #spiegaFitPos
+							# 				),br(),
+							# 				column(width=6,align="left",plotlyOutput(outputId="fitIta"), #spiegaFitTot
+							# 				),br(),fluidRow(style="padding:20px;",spiegaFitTotePos)
+							#
+							# 			)
+							#
+							# 		),
+							#
+							#
+							# 		),br(),br(),
+							# 		fluidRow(style="padding:30px;background-color:#ffffff",width=12,  h2("Previsione del numero di casi totali a medio termine con modello esponenziale quadratico"), plotlyOutput(outputId="fitCasesIta")
+							#
+							# 		),
+							# 		br(),
+							# 	#)
+							# ),
               fluidRow(
                 box(width=12, uiOutput("updatePrevisioniUI"), fontiDati
                 )
@@ -37,8 +54,8 @@ fitTab <- tabItem(tabName = "fitPlots",
             )
 
 
-tiTab <- tabItem(tabName = "tiPlots",
-							fluidRow(
+tiTab <- tabItem(tabName = "tiPlots",h1("Terapia Intensiva"),
+							fluidRow(#style="background-color :#cc0000;",
 								box(width=12,
 									h4("I dati relativi al numero di posti letto in terapia intensiva per regione sono aggiornati al 2018 e non vengono riaggiornati in base agli sforzi che il sistema sanitario sta portando avanti in questi giorni. Non ha scopo allarmistico ma solo di mostrare quali siano le criticità che il nostro paese sta affrontando a causa del CoVid19 "),
 									 br(),
@@ -66,8 +83,8 @@ tiTab <- tabItem(tabName = "tiPlots",
 
 
 regTab <- tabItem(tabName = "regPlots",
-#							h1("Diffusione nelle regioni italiane"), br(), br(),
-              fluidRow(
+							h1("Diffusione nelle regioni italiane"),
+              fluidRow(#style="background-color :#0086b3;",
 								box(width=6, title = tagList(shiny::icon("globe-europe"), "Mappa dei casi confermati"), status = "primary", solidHeader = F,
 										collapsible = T,
 										#plotOutput(outputId="mapRegionGG", height = 800),
@@ -131,20 +148,20 @@ dashboardPage(
 
 ## Sidebar content
 	dashboardSidebar(
-			sidebarMenu(id='fitCFG',
-				menuItem2("Previsioni", tabName = "fitPlots", icon = icon("chart-line"))
-			),
-      sidebarMenu(id='tiCFG',
-        menuItem2("Terapia Intensiva", tabName = "tiPlots", icon = icon("stethoscope"))
-      ),
-      sidebarMenu(id='regCFG',
-        menuItem2("Regioni", tabName = "regPlots", icon = icon("atlas"))
-      ),
-      sidebarMenu(id='prvCFG',
-        menuItem2("Province", tabName = "prvPlots", icon = icon("atlas"))
-      ),
+						sidebarMenu(id='fitCFG',
+							menuItem2("Previsioni", tabName = "fitPlots", icon = icon("fas fa-chart-line"))
+						),
+			      sidebarMenu(id='tiCFG',
+			        menuItem2("Terapia Intensiva", tabName = "tiPlots", icon = icon("fas fa-heartbeat"))
+			      ),
+			      sidebarMenu(id='regCFG',
+			        menuItem2('Per Regione', tabName = "regPlots", icon = icon("far fa-chart-bar"))
+			      ),#HTML('<font color="#0086b3">Per regione</font>')
+			      sidebarMenu(id='prvCFG',
+			        menuItem2("Per Provincia", tabName = "prvPlots", icon = icon("far fa-chart-bar"))#("vials"))
+			      ),
 			sidebarMenu(id='spiegazione',
-				menuItem2("Descrizione modelli", tabName = "intro", icon = icon("bandcamp"))
+				menuItem2("Descrizione modelli", tabName = "intro", icon = icon("fas fa-atlas"))
 			)#,
 		 #selectInput("regionSel", label="Regione", choices=regioniList, selected = "Lombardia")
 	),

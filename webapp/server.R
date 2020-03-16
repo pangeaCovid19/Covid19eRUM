@@ -1,5 +1,15 @@
 
 shinyServer(function(input, output, session) {
+  reacval<-reactiveValues(mobile=F)
+
+
+  observe({
+  		if (!is.null(input$GetNavUserAgent)){
+  			if (grepl("mobile",tolower(input$GetNavUserAgent)) || grepl("android",tolower(input$GetNavUserAgent)))
+  			reacval$mobile<-T
+  		}
+  	})
+
 
   DT_lang_opt <- list(language = list(lengthMenu="Mostra _MENU_ righe per pagina",
                 info="Vista da _START_ a _END_ di _TOTAL_ elementi",
@@ -692,6 +702,68 @@ output$terapiaIntPlotPercPrev<- renderPlotly({
   ggplotly(p, tooltip = c("text")) %>% config(locale = 'it')
 
 })
+
+
+
+output$tab_desktop<-renderUI({
+
+  fluidRow(style="padding-left:30px;padding-right:30px;border-style: solid;border-color:#009933;",#" border-color :#009933;",
+  	h1("Analisi previsionale nelle province italiane"),
+  	fluidRow(
+  		column(10,h4("In questa pagina proponiamo il confronto tra i dati registrati, sia regionali che nazionali e due modelli di crescita. Il primo modello (esponenziale) descrive una diffusione incontrollata, mentre il secondo (esponenziale quadratico) tenta di tenere conto dell'effetto di misure contenitive. Per maggiori dettagli, controlla la sezione di approfondimento")),
+  		column(2,radioButtons("modelloFit", label="Tipologia Modello", choices=c("Esponenziale", "Exp. quadratico")))
+  	),
+
+  		 br(),
+  		fluidRow(style="padding:30px;background-color:#ffffff",
+  			column(2,fluidRow(selectizeInput("regionLinLogFit", label="Tipo Grafico", choices=c("Lineare", "Logaritmico"), selected = "Lineare")),checkboxGroupInput("regionSelFit", label="Seleziona regioni", choices=regioniList, selected = regioni2fit)),
+  		column(10,
+
+  			fluidRow(column(6,align="center",h4("Andamento casi positivi per regione con previsione a 3 giorni")),column(6,align="center",h4("Andamenti globali in Italia con previsione a 3 giorni"))),
+  			fluidRow(
+  				column(width=6,align="left", plotlyOutput(outputId="fitRegion"), #spiegaFitPos
+  				),br(),
+  				column(width=6,align="left",plotlyOutput(outputId="fitIta"), #spiegaFitTot
+  				),br(),fluidRow(style="padding:20px;",spiegaFitTotePos)
+  			)
+      )
+  		),br(),br(),
+  		fluidRow(style="padding:30px;background-color:#ffffff",width=12,  h2("Previsione del numero di casi totali a medio termine con modello esponenziale quadratico"), plotlyOutput(outputId="fitCasesIta")
+
+  		),br()
+  	)
+
+  })
+
+  output$tab_mobile<-renderUI({
+
+    fluidRow(style="padding-left:30px;padding-right:30px;border-style: solid;border-color:#009933;",#" border-color :#009933;",
+    	h1("Analisi previsionale nelle province italiane"),
+    	fluidRow(
+    		column(10,h4("In questa pagina proponiamo il confronto tra i dati registrati, sia regionali che nazionali e due modelli di crescita. Il primo modello (esponenziale) descrive una diffusione incontrollata, mentre il secondo (esponenziale quadratico) tenta di tenere conto dell'effetto di misure contenitive. Per maggiori dettagli, controlla la sezione di approfondimento")),
+    		column(2,radioButtons("modelloFit", label="Tipologia Modello", choices=c("Esponenziale", "Exp. quadratico")))
+    	),
+
+    		 br(),
+    		fluidRow(style="padding:30px;background-color:#ffffff",
+    			column(2,fluidRow(selectizeInput("regionLinLogFit", label="Tipo Grafico", choices=c("Lineare", "Logaritmico"), selected = "Lineare")),checkboxGroupInput("regionSelFit", label="Seleziona regioni", choices=regioniList, selected = regioni2fit)),
+    		column(10,
+
+    			fluidRow(column(6,align="center",h4("Andamento casi positivi per regione con previsione a 3 giorni")),column(6,align="center",h4("Andamenti globali in Italia con previsione a 3 giorni"))),
+    			fluidRow(
+    				column(width=6,align="left", plotlyOutput(outputId="fitRegion"), #spiegaFitPos
+    				),br(),
+    				column(width=6,align="left",plotlyOutput(outputId="fitIta"), #spiegaFitTot
+    				),br(),fluidRow(style="padding:20px;",spiegaFitTotePos)
+    			)
+        )
+    		),br(),br(),
+    		fluidRow(style="padding:30px;background-color:#ffffff",width=12,  h2("Previsione del numero di casi totali a medio termine con modello esponenziale quadratico"), plotlyOutput(outputId="fitCasesIta")
+
+    		),br()
+    	)
+
+    })
 
 
 

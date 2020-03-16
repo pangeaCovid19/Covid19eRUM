@@ -109,6 +109,12 @@ previsione che si estende fino a tre giorni, linea tratteggiata. Abbiamo utilizz
 importanza ai dati pi&ugrave; recenti. Se si seleziona l'opzione &quot;Logaritmico&quot; come tipo di grafico, l'asse delle ordinate
 diventa logaritmico e un andamento esponenziale &egrave; rappresentato da una retta.</div>")
 
+spiegaFitTotePos<- HTML("<div style='padding-top:10px;'>In entrambi i grafici mostriamo la serie storica dei casi confermati di
+CoVid19 nelle regioni selezionate ed una previsione che si estende fino a tre giorni, linea tratteggiata. Nel primo sono rappresentati per regione selezionata e nel secondo sono suddivisi tra
+pazienti ospedalizzati, pazienti in terapia intensiva e dei defunti.
+Abbiamo utilizzando modelli esponenziali dando maggiore importanza ai dati pi&ugrave; recenti. Se si seleziona l'opzione
+&quot;Logaritmico&quot; come tipo di grafico, l'asse delle ordinate diventa logaritmico e un andamento esponenziale &egrave; rappresentato da una retta.</div>")
+
 
 spiegaMappa <- HTML("<div style='padding-top:10px;'>In questa mappa mostriamo la diffusione sul territorio dei casi confermati
 di CoVid19.
