@@ -6,6 +6,7 @@ shinyServer(function(input, output, session) {
                 infoEmpty="Vista da 0 a 0 di 0 elementi",
                 infoFiltered="(filtrati da _MAX_ elementi totali)",
                 paginate=list(previous="Precedente",`next`="Successivo")))
+
 ## AGGIORNAMENTI
 
   autoInvalidate <- reactiveTimer(3600000)
@@ -104,10 +105,10 @@ output$lineRegion <- renderPlotly({
     colnames(allDataReg)[2] <- "regione"
     colnames(allDataReg)[3] <- "casi totali"
     p <- ggplot(allDataReg) + my_ggtheme() +
-          geom_line(group=1, # group=1 serve per aggirare un bug di ggplotly con tooltip = c("text")
+          suppressWarnings(geom_line(group=1, # group=1 serve per aggirare un bug di ggplotly con tooltip = c("text")
             aes(x=data, y=`casi totali`, color=regione,
             text = paste('Regione:', regione, '<br>Data:', strftime(data, format="%d-%m-%Y"),
-             '<br>Casi: ', `casi totali`))) +
+             '<br>Casi: ', `casi totali`)))) +
           scale_color_manual(values=d3hexcols20) +
           theme(axis.text.x=element_text(angle=45, hjust=1)) +
           labs(x="")
@@ -165,13 +166,17 @@ output$mapRegion <- renderLeaflet({
     latestDataReg <- allDataReg[allDataReg$data==max(allDataReg$data),]
     latestDataReg$densita_casi <- round(latestDataReg$totale_casi / latestDataReg$pop * 10000, 3)
     pltRegioni <- merge(regioni, latestDataReg[,c("codice_regione", "totale_casi", "densita_casi")], by.x="COD_REG", by.y="codice_regione")
-    pal <- colorBin("YlOrRd", domain = log10(pltRegioni$totale_casi))
+    pal <- colorNumeric("YlOrRd", domain = log10(pltRegioni$totale_casi))
 
-		leaflet(data = pltRegioni, options = leafletOptions(zoomControl = FALSE,minZoom = 3, maxZoom = 6)) %>%
+		suppressWarnings(leaflet(data = pltRegioni, options = leafletOptions(zoomControl = FALSE,minZoom = 3, maxZoom = 6)) %>%
 			addTiles()%>%
 			addProviderTiles("CartoDB.Positron") %>% setView(lng=12.5, lat=41.3, zoom=5)  %>%
 			addPolygons(fillColor = ~pal(log10(totale_casi)), weight = 1, stroke = TRUE, color="lightgrey", fillOpacity=.7,
-		  label = ~paste(DEN_REG, "- casi:", totale_casi))
+		            label = ~paste(DEN_REG, "- casi:", totale_casi)) %>%
+      addLegend(pal = pal, values = ~log10(totale_casi), opacity = 0.7,
+                labFormat = labelFormat(transform = function(x) round(10^x), big.mark = "."),
+                position = 'bottomleft',
+                title = paste0("casi")))
   }
 })
 
@@ -214,10 +219,10 @@ output$lineProvince <- renderPlotly({
     colnames(allDataProv)[2] <- "provincia"
     colnames(allDataProv)[3] <- "casi totali"
     p <- ggplot(allDataProv) + my_ggtheme() +
-          geom_line(group=1, # group=1 serve per aggirare un bug di ggplotly con tooltip = c("text")
+          suppressWarnings(geom_line(group=1, # group=1 serve per aggirare un bug di ggplotly con tooltip = c("text")
             aes(x=data, y=`casi totali`, color=provincia,
             text = paste('Provincia:', provincia, '<br>Data:', strftime(data, format="%d-%m-%Y"),
-             '<br>Casi: ', `casi totali`))) +
+             '<br>Casi: ', `casi totali`)))) +
           scale_color_manual(values=d3hexcols20) +
           theme(axis.text.x=element_text(angle=45, hjust=1)) +
           labs(x="")
@@ -267,11 +272,15 @@ output$mapProvince <- renderLeaflet({
     pltProvince <- merge(province, latestDataProv[,c("codice_provincia", "totale_casi", "densita_casi")], by.x="COD_PROV", by.y="codice_provincia")
     my_frame <- st_drop_geometry(regioni[regioni$COD_REG == unique(pltProvince$COD_REG), c("reg_long", "reg_lat")])
     #pltProvince <- merge(province, latestDataProv[,c("codice_regione", "reg_long", "reg_lat")], by.x="COD_REG", by.y="codice_regione")
-    pal <- colorBin("YlOrRd", domain = log10(pltProvince$totale_casi))
-    leaflet(data = pltProvince, options = leafletOptions(zoomControl = FALSE,minZoom = 7, maxZoom = 7)) %>% addTiles() %>%
+    pal <- colorNumeric("YlOrRd", domain = log10(pltProvince$totale_casi))
+    suppressWarnings(leaflet(data = pltProvince, options = leafletOptions(zoomControl = FALSE,minZoom = 7, maxZoom = 7)) %>% addTiles() %>%
         addProviderTiles("CartoDB.Positron") %>% setView(lng=my_frame$reg_long, lat=my_frame$reg_lat, zoom=7)  %>%
         addPolygons(fillColor = ~pal(log10(totale_casi)), weight = 1, stroke = TRUE, color="lightgrey", fillOpacity = .7,
-                 label = ~paste(DEN_UTS, "- casi:", totale_casi))
+                 label = ~paste(DEN_UTS, "- casi:", totale_casi)) %>%
+        addLegend(pal = pal, values = ~log10(totale_casi), opacity = 0.7,
+                labFormat = labelFormat(transform = function(x) round(10^x), big.mark = "."),
+                position = 'bottomright',
+                title = paste0("casi")))
 
   }
 })
@@ -377,15 +386,15 @@ output$fitRegion <- renderPlotly({
 		setDF(allDataReg)
 
 		p <- ggplot() + my_ggtheme() +
-       geom_line(data=prevDT[which(prevDT$regione%in%regioniSel),], linetype=2, group=1, # group=1 serve per aggirare un bug di ggplotly con tooltip = c("text")
+       suppressWarnings(geom_line(data=prevDT[which(prevDT$regione%in%regioniSel),], linetype=2, group=1, # group=1 serve per aggirare un bug di ggplotly con tooltip = c("text")
            aes(x=data, y=`casi totali`, color=regione,
              text = paste('Data:', strftime(data, format="%d-%m-%Y"),
               '<br>Casi (fit): ', round(`casi totali`),
-              '<br>Regione: ', regione))) +
-       geom_point(data=allDataReg[which(allDataReg$regione%in%regioniSel),], aes(x=data, y=`casi totali`, color=regione,
+              '<br>Regione: ', regione)))) +
+       suppressWarnings(geom_point(data=allDataReg[which(allDataReg$regione%in%regioniSel),], aes(x=data, y=`casi totali`, color=regione,
              text = paste('Data:', strftime(data, format="%d-%m-%Y"),
               '<br>Casi: ', `casi totali`,
-              '<br>Regione: ', regione))) +
+              '<br>Regione: ', regione)))) +
 			 scale_color_manual(values=d3hexcols20) +
 			 #geom_rect(aes(xmin=mindataprev-0.5, xmax=max(prevDT$data+1), ymin=0, ymax=max(prevDT$casi)*1.05),fill="grey", alpha=0.3)+xlim(c(min(prevDT$data),max(prevDT$data+1)))+
 			 theme(axis.text.x=element_text(angle=45,hjust=1)) +
@@ -462,15 +471,15 @@ if(verbose) cat("\n renderPlotly:fitIta")
     )
 
 		p <- ggplot() + my_ggtheme() +
-			 geom_line(data=prevItaDT, linetype=2, group=1, # group=1 serve per aggirare un bug di ggplotly con tooltip = c("text")
+			 suppressWarnings(geom_line(data=prevItaDT, linetype=2, group=1, # group=1 serve per aggirare un bug di ggplotly con tooltip = c("text")
               aes(x=data, y=casi, color=variabilePrevista,
                 text = paste('Data:', strftime(data, format="%d-%m-%Y"),
                  '<br>Casi (fit): ', round(casi),
-                 '<br>Variabile: ', variabilePrevista))) +
-			 geom_point(data=tmp, aes(x=data, y=casi, color=variabilePrevista,
+                 '<br>Variabile: ', variabilePrevista)))) +
+			 suppressWarnings(geom_point(data=tmp, aes(x=data, y=casi, color=variabilePrevista,
                 text = paste('Data:', strftime(data, format="%d-%m-%Y"),
                  '<br>Casi: ', casi,
-                 '<br>Variabile: ', variabilePrevista))) +
+                 '<br>Variabile: ', variabilePrevista)))) +
 			 scale_color_manual(values=d3hexcols20) +
        theme(axis.text.x = element_text(angle=45,hjust=1)) +
        labs(x="", color = "variabile prevista")
@@ -538,13 +547,13 @@ output$fitCasesIta <- renderPlotly({
       datiIta$label <- c(rep("", nrow(datiIta)-1), "picco\n previsto")
 
       p <- ggplot() + my_ggtheme() +
-  					geom_bar(data=datiIta, aes(x=data, y=casi, fill=tipo, label=label,
+  					suppressWarnings(geom_bar(data=datiIta, aes(x=data, y=casi, fill=tipo,
               text = paste('Data:', strftime(data, format="%d-%m-%Y"),
-               '<br>Casi: ', round(casi))), stat="identity", width = 0.8)+
+               '<br>Casi: ', round(casi))), stat="identity", width = 0.8))+
             geom_text(data=datiIta, aes(x=data, y=casi, label=label), cex=2.5, color="black", fontface = "bold") +
   					scale_fill_manual(values=d3hexcols) +
             theme(axis.text.x=element_text(angle=45,hjust=1)) +
-            labs(x="")
+            labs(x="") +
             theme(legend.title = element_blank())
       ggplotly(p, tooltip = c("text")) %>% config(locale = 'it')
    }
@@ -568,8 +577,7 @@ output$terapiaIntPlotPercNow<- renderPlotly({
 	p <- ggplot(data=tint, aes(x=denominazione_regione, y=percTI,
                 text = paste('Regione:', denominazione_regione,
                   '<br>Percentuale: ', round(percTI)))) +
-          geom_bar(stat="identity", fill="steelblue",
-            ) + my_ggtheme() +
+          geom_bar(stat="identity", fill="steelblue") + my_ggtheme() +
 	        theme(axis.text.x=element_text(angle=45,hjust=1))+
           labs(x="", y="% letti occupati per CoVid19")
 	ggplotly(p, tooltip = c("text")) %>% config(locale = 'it')
