@@ -1,5 +1,4 @@
 
-source("funzionifit.R")
 shinyServer(function(input, output, session) {
   reacval<-reactiveValues(mobile=F)
 
@@ -377,7 +376,7 @@ prevRegion <- reactive({
 	cat("\ttipoModello:", tipoModello)
 
 	if(is.null(tipoModello)) return(NULL)
-	if(tipoModello=="Exp. quadratico"){
+	if(tipoModello=="Esp. quadratico"){
 		modelliReg=isolate(reacval$modelliReg)
 	} else modelliReg <- isolate(reacval$modelliRegExp)
 
@@ -459,7 +458,7 @@ prevIta <- reactive({
 	cat("\ttipoModello:", tipoModello)
 
 	if(is.null(tipoModello)) return(NULL)
-	if(tipoModello=="Exp. quadratico"){
+	if(tipoModello=="Esp. quadratico"){
 		modelliIta=isolate(reacval$modelliIta)
 	} else modelliIta <- isolate(reacval$modelliItaExp)
 
@@ -689,7 +688,7 @@ prevRegionCompare <- reactive({
 
 
 	if(is.null(tipoModello)) return(NULL)
-	if(tipoModello=="Exp. quadratico"){
+	if(tipoModello=="Esp. quadratico"){
 		modelliReg=isolate(reacval$modelliReg)
 	} else modelliReg <- isolate(reacval$modelliRegExp)
 
@@ -848,7 +847,9 @@ output$tab_desktop<-renderUI({
 
   		 br(),
   		fluidRow(style="padding:30px;background-color:#ffffff",
-  			column(2,fluidRow(selectizeInput("regionLinLogFit", label="Tipo Grafico", choices=c("Lineare", "Logaritmico"), selected = "Lineare")),radioButtons("modelloFit", label="Tipologia Modello", choices=c("Esponenziale", "Exp. quadratico")),checkboxGroupInput("regionSelFit", label="Seleziona regioni", choices=regioniList, selected = regioni2fit)),
+  			column(2,fluidRow(selectizeInput("regionLinLogFit", label="Tipo Grafico", choices=c("Lineare", "Logaritmico"), selected = "Lineare")),
+				radioButtons("modelloFit", label="Tipologia Modello", choices=c("Esp. quadratico","Esponenziale"), selected="Esp. quadratico"),
+				checkboxGroupInput("regionSelFit", label="Seleziona regioni", choices=regioniList, selected = regioni2fit)),
   		column(10,
 
   			fluidRow(column(6,align="center",h4("Andamento casi positivi per regione con previsione a 3 giorni")),column(6,align="center",h4("Andamenti globali in Italia con previsione a 3 giorni"))),
@@ -893,7 +894,7 @@ output$tab_desktop<-renderUI({
 
           column(5,pickerInput(inputId = "regionSelFit", label = "Seleziona regioni", choices = regioniList,selected=regioni2fit, options = list(size=10,`actions-box` = TRUE, `selected-text-format` = "count >20"), multiple = TRUE)),
           column(4,selectizeInput("regionLinLogFit", label="Tipo Grafico", choices=c("Lineare", "Logaritmico"), selected = "Lineare")),
-          column(2,radioButtons("modelloFit", label="Tipologia Modello", choices=c("Esponenziale", "Exp. quadratico")))),
+          column(2,radioButtons("modelloFit", label="Tipologia Modello", choices=c("Esp. quadratico", "Esponenziale" ), selected="Esp. quadratico"))),
 
           fluidRow(align="center",h4("Andamento casi positivi per regione con previsione a 3 giorni"),
            plotlyOutput(outputId="fitRegion"), spiegaFitPos
