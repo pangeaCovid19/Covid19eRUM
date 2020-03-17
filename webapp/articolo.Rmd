@@ -1,0 +1,42 @@
+---
+title: "I nuovi dati diramati dalla Protezione Civile sul Coronavirus"
+author: "Pangea"
+output:
+  html_document:
+    css: style.css
+---
+```{r ,results='hide', echo=FALSE}
+source("scriptMD.R")
+```
+Avrete probabilmente sentito che la Protezione Civile ha diramato gli ultimi dati relativi al `r fdata`. Nella giornata, sono stati registrati `r ultimidati$decedutiGiorni` nuovi decessi, portando il totale a `r ultimidati$deceduti`. I nuovi casi di contagio ammontano a `r ultimidati$totale_casi`, di cui `r ultimidati$nuovi_attualmente_positivi` nell'ultima giornata. Rispetto al giorno precedente, registriamo `r segno(tail(diffdeceduti,1))` di `r abs(tail(diffdeceduti,1))` per quanto riguarda i deceduti e `r segno(tail(diffcontagi,1))` di `r abs(tail(diffcontagi,1))` per i nuovi nuovi contagi. 
+
+
+Le tre regioni più colpite per numero di casi totali sono `r paste0(treregioni,c(", "," e ",""),collapse="")`. Insieme, queste regioni sommano al `r treregioniperc$totale_casi` per cento dei contagi e hanno registrato il `r treregioniperc$deceduti` per cento dei decessi nazionali. Nel dettaglio, di sotto riportiamo, per ogni regione, il numero dei contagi, dei decessi e la percentuale sul totale.
+
+```{r,echo=FALSE, results="show"}
+knitr::kable(tabellaregioni, caption = 'Deceduti e contagi per regione')
+```
+
+La crescita dei decessi e dei contagi, in assenza di misure restrittive e nel periodo iniziale di diffusione, si pensa sia descritta da un andamento esponenziale. Se denotiamo con $N(t)$ la grandezza che stiamo monitorando ($N$ potrebbe essere sia il numero dei deceduti che dei contagi, mentre $t$ è il tempo), allora l'evoluzione di $N$ è descritta dalla seguente formula:
+
+$$
+N(t) = N_0e^{Kt}.
+$$
+
+
+Nell'equazione precedente $K$ indica il ritmo a cui cresce $N$. In particolare, $T_2 = \log(2)/k$ è  il cosiddetto **tempo di raddoppio**. Ci aspettiamo che la popolazione in oggetto raddoppi ogni $T_2$. 
+
+Se consideriamo i dati fino al `r fldata` e cerchiamo di ricostruire l'andamento registrato dei casi di contagio con uno esponenziale, otteniamo una stima del parametro $K$ pari a `r round(coeffexptotalecasi[2],2)` che corrisponde a un tempo di raddoppio pari a `r trexptotalecasi ` giorni. In altre parole, mi aspetto che i contagiati raddoppino ogni `r trexptotalecasi` giorni. 
+
+Analogamente, per i decessi si ottiene un tempo di raddoppio pari a `r trexpdeceduti` giorni e un parametro $k$ pari a `r round(coeffexpdeceduti[2],2)`.
+
+Per valutare se l'andamento seguito è effettivamente esponenziale, possiamo confrontare i dati del `r fdata` con quelli che si sarebbero ottenuti estrapolando l'andamento esponenziale. Il valore previsto per i contagi risulta essere `r round(exp(previsioneesp[1]))`, a fronte di `r ultimidati$totale_casi` registrati. La differenza tra previsione e dato consuntivato di `r round(exp(previsioneesp[1]))-ultimidati$totale_casi` casi corrisponde a `r round(delta,1)` deviazioni standard lontano dalla previsione. La probabilità di ottenere un valore come quello registrato o più lontano dalla previsione, ammesso che la crescita sia effettivamente esponenziale, è pari al `r round(pv*100)` per cento.
+
+Con ogni probabilità, il modello esponenziale avrà previsto un valore più alto di quello registrato. Questo sperabilmente è dovuto alle misure restrittive in atto che hanno lo scopo di ritardare il contagio. Un modo per tenere traccia di questi effetti è quello di potenziare il modello esponenziale, inserendo un termine aggiuntivo che permette al rate di contagio, e conseguentemente al tempo di raddoppio, di diminuire linearmente nel tempo. Si ipotizza quindi un andamento del tipo:
+
+$$
+N(t) = N_0e^{Kt + Mt^2},
+$$
+
+che si riduce al modello esponenziale quando $M = 0$. 
+
