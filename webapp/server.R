@@ -1,4 +1,5 @@
 
+source("funzionifit.R")
 shinyServer(function(input, output, session) {
   reacval<-reactiveValues(mobile=F)
 
@@ -706,7 +707,6 @@ prevRegionCompare <- reactive({
   }
 })
 
-
 output$dateCompare <- renderUI({
 	if(verbose) cat("\n renderUI:dateCompare")
 	files <- list.files("www/pastModels/")
@@ -735,6 +735,9 @@ prevItaCompare <- reactive({
 
 	tsIta <- getTimeSeriesReact()["Italia"]
 
+	assign("tsIta",tsIta, envir=.GlobalEnv)
+	assign("dataMod",dataMod, envir=.GlobalEnv)
+
 	modelliItaPast <- readRDS(paste0("www/pastModels/modelliIta_", dataMod, ".RDS"))
 	modelliItaExpPast  <- readRDS(paste0("www/pastModels/modelliItaExp_", dataMod, ".RDS"))
 
@@ -749,15 +752,21 @@ prevItaCompare <- reactive({
 		prevDT$Modello 		<- "Esp. quadratico"
 		prevDTexp$Modello <- "Esponenziale"
 
-		prevDT$Vero 		<- unlist(vero)
-		prevDTexp$Vero  <- unlist(vero)
+		prevDT$Osservato 		<- unlist(vero)
+		prevDTexp$Osservato  <- unlist(vero)
 
-		setnames(prevDT, old=c('LowerRange', 'UpperRange', 'outName', 'Attesi'), new=c('Minimo', 'Massimo', 'Variabile', 'Atteso'))
-		setnames(prevDTexp, old=c('LowerRange', 'UpperRange', 'outName', 'Attesi'), new=c('Minimo', 'Massimo', 'Variabile', 'Atteso'))
+		prevDT$'Confidence Level68%' 		<- paste0(format(prevDT$LowerRange, big.mark="'"), ' - ', format(prevDT$UpperRange, big.mark="'"))
+		prevDTexp$'Confidence Level68%'  <- paste0(format(prevDTexp$LowerRange, big.mark="'"), ' - ', format(prevDTexp$UpperRange, big.mark="'"))
 
-		out <-rbind(prevDT[, c('data', 'Modello', 'Variabile', 'Minimo', 'Massimo', 'Atteso', 'Vero')],
-					prevDTexp[, c('data', 'Modello', 'Variabile', 'Minimo', 'Massimo', 'Atteso',  'Vero')])
-		out$Variazione <- paste0 (round((out$Vero-out$Atteso)/out$Vero*100, 2), " %")
+		setnames(prevDT, old=c('LowerRange', 'UpperRange', 'outName', 'Attesi'), new=c('Minimo', 'Massimo', 'Variabile', 'Previsto'))
+		setnames(prevDTexp, old=c('LowerRange', 'UpperRange', 'outName', 'Attesi'), new=c('Minimo', 'Massimo', 'Variabile', 'Previsto'))
+
+		out <-rbind(prevDT[, c('data', 'Modello', 'Variabile', 'Confidence Level68%', 'Previsto', 'Osservato')],
+					prevDTexp[, c('data', 'Modello', 'Variabile', 'Confidence Level68%', 'Previsto',  'Osservato')])
+
+		out$Variazione <- paste0 (round((out$Osservato-out$Previsto)/out$Osservato*100, 2), " %")
+		out$Previsto 		<- format(out$Previsto, big.mark="'")
+		out$Osservato 		<- format(out$Osservato, big.mark="'")
 
 		out
 
@@ -765,17 +774,17 @@ prevItaCompare <- reactive({
 		veroMod <-unlist(tsIta$Italia[tsIta$Italia$data==(dataMod), c('totale_casi', 'deceduti', 'totale_ospedalizzati', 'terapia_intensiva')])
 		vero <-unlist(tsIta$Italia[tsIta$Italia$data==(dataMod+1), c('totale_casi', 'deceduti', 'totale_ospedalizzati', 'terapia_intensiva')])
 
-		DVero <- vero -veroMod
+		DVero <- vero - veroMod
 
-		tsIta$Italia <- tsIta$Italia[ tsIta$Italia$data<dataMod, ]
+		tsIta$Italia <- tsIta$Italia[ tsIta$Italia$data<=dataMod, ]
 
 	  prevDT <- get_predictions(modelliIta, tsIta, nahead=1, alldates=FALSE)
 		prevDTexp <- get_predictions(modelliItaExp, tsIta, nahead=1, alldates=FALSE)
 		prevDT$Modello 		<- "Esp. quadratico"
 		prevDTexp$Modello <- "Esponenziale"
 
-		prevDT$Vero 		<- unlist(DVero)
-		prevDTexp$Vero  <- unlist(DVero)
+		prevDT$Osservato 		<- unlist(DVero)
+		prevDTexp$Osservato  <- unlist(DVero)
 
 		prevDT$VarPrev 			<- prevDT$Attesi - veroMod
 		prevDTexp$VarPrev  	<- prevDTexp$Attesi - veroMod
@@ -789,32 +798,37 @@ prevItaCompare <- reactive({
 		prevDT$Variazione    <- prevDT$VarPrev - DVero
 		prevDTexp$Variazione <- prevDTexp$VarPrev - DVero
 
-		setnames(prevDT, old=c('VarMin', 'VarMax', 'outName', 'VarPrev'), new=c('Minimo', 'Massimo', 'Variabile', 'Atteso'))
-		setnames(prevDTexp, old=c('VarMin', 'VarMax', 'outName', 'VarPrev'), new=c('Minimo', 'Massimo', 'Variabile', 'Atteso'))
+		prevDT$'Confidence Level68%' 		<- paste0(format(prevDT$VarMin, big.mark="'"), ' - ', format(prevDT$VarMax, big.mark="'"))
+		prevDTexp$'Confidence Level68%'  <- paste0(format(prevDTexp$VarMin, big.mark="'"), ' - ', format(prevDTexp$VarMax, big.mark="'"))
 
-		outPerc <-rbind(prevDT[, c('data', 'Modello', 'Variabile', 'Minimo', 'Massimo', 'Atteso', 'Vero')],
-					prevDTexp[, c('data', 'Modello', 'Variabile', 'Minimo', 'Massimo', 'Atteso',  'Vero')])
+		setnames(prevDT, old=c('VarMin', 'VarMax', 'outName', 'VarPrev'), new=c('Minimo', 'Massimo', 'Variabile', 'Previsto'))
+		setnames(prevDTexp, old=c('VarMin', 'VarMax', 'outName', 'VarPrev'), new=c('Minimo', 'Massimo', 'Variabile', 'Previsto'))
 
-		outPerc$Variazione <- paste0 (round((outPerc$Vero-outPerc$Atteso)/outPerc$Vero*100, 2), " %")
+		outPerc <-rbind(prevDT[, c('data', 'Modello', 'Variabile', 'Confidence Level68%', 'Previsto', 'Osservato')],
+					prevDTexp[, c('data', 'Modello', 'Variabile', 'Confidence Level68%', 'Previsto',  'Osservato')])
+
+		outPerc$Variazione <- paste0 (round((outPerc$Osservato-outPerc$Previsto)/outPerc$Osservato*100, 2), " %")
+
+		outPerc$Previsto 		<- format(outPerc$Previsto, big.mark="'")
+		outPerc$Osservato 		<- format(outPerc$Osservato, big.mark="'")
 
 		outPerc
 	}
 
 
-
 })
-
 
 
 output$tabCompare <- renderDT({
 	if(verbose) cat("\n renderDT:tabCompare")
   out <- prevItaCompare()
 
+
   if (!is.null(out)) {
 
     datatable(out,
       selection = list(target = NULL),
-      options= c(list(paging = T, searching = F, info=F, ordering=F, order=list(list(2, 'desc'))), DT_lang_opt),
+      options= c(list(paging = F, searching = F, info=F, ordering=F, order=list(list(2, 'desc'))), DT_lang_opt),
       rownames=F)
   }
 })
