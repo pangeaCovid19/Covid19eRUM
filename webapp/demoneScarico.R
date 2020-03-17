@@ -90,6 +90,7 @@ while (i==0) {
 	}
 	names(modelliIta) <- campiPrevisioni
 	names(modelliItaExp) <- campiPrevisioni
+
 	modelliReg <-lapply( tsReg[which(names(tsReg)!='Italia')], loglinmodel3, quadratico=TRUE)
 	modelliRegExp <-lapply( tsReg[which(names(tsReg)!='Italia')], loglinmodel3, quadratico=FALSE)
 
@@ -98,8 +99,41 @@ while (i==0) {
 	saveRDS(due,"www/dati-regioni/dataRegioni.RDS")
 	saveRDS(uno,"www/pcm_data/dataProvince.RDS")
 	writeLog("Scrivendo i modelli",logdemone)
+
 	saveRDS(modelliReg,"www/modelliReg.RDS")
 	saveRDS(modelliIta,"www/modelliIta.RDS")
 	saveRDS(modelliRegExp,"www/modelliRegExp.RDS")
 	saveRDS(modelliItaExp,"www/modelliItaExp.RDS")
+
+	# salvo lo storico dei modelli
+	if(!dir.exists("www/pastModels/")) dir.create("www/pastModels/")
+	dataMax <- max(due$data, na.rm=T)
+	saveRDS(modelliReg,paste0("www/pastModels/modelliReg_", dataMax,".RDS"))
+	saveRDS(modelliIta,paste0("www/pastModels/modelliIta_", dataMax,".RDS"))
+	saveRDS(modelliRegExp,paste0("www/pastModels/modelliRegExp_", dataMax,".RDS"))
+	saveRDS(modelliItaExp,paste0("www/pastModels/modelliItaExp_", dataMax,".RDS"))
+
+}
+
+if ( TRUE) {
+	date <- seq(as.Date('2020-03-08'), dataMax, by=1)
+
+	longIta <- lapply(date, function(x){
+		modelliIta <- list()
+		modelliItaExp <- list()
+		for(i in  1:length(campiPrevisioni)){
+			modelliIta[[i]]<-loglinmodel4(tsReg$Italia, var=campiPrevisioni[i], rangepesi=c(0,1), quadratico=TRUE, dataMax=x)
+			modelliItaExp[[i]]<-loglinmodel4(tsReg$Italia, var=campiPrevisioni[i], rangepesi=c(0,1), quadratico=FALSE, dataMax=x)
+		}
+		names(modelliIta) <- campiPrevisioni
+		names(modelliItaExp) <- campiPrevisioni
+
+		modelliReg <-lapply( tsReg[which(names(tsReg)!='Italia')], loglinmodel4, quadratico=TRUE, dataMax=x)
+		modelliRegExp <-lapply( tsReg[which(names(tsReg)!='Italia')], loglinmodel4, quadratico=FALSE, dataMax=x)
+
+		saveRDS(modelliReg,paste0("www/pastModels/modelliReg_", x,".RDS"))
+		saveRDS(modelliIta,paste0("www/pastModels/modelliIta_", x,".RDS"))
+		saveRDS(modelliRegExp,paste0("www/pastModels/modelliRegExp_", x,".RDS"))
+		saveRDS(modelliItaExp,paste0("www/pastModels/modelliItaExp_", x,".RDS"))
+	})
 }

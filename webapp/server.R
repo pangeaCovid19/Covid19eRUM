@@ -1,4 +1,5 @@
 
+source("funzionifit.R")
 shinyServer(function(input, output, session) {
   reacval<-reactiveValues(mobile=F)
 
@@ -47,7 +48,6 @@ shinyServer(function(input, output, session) {
 			dataProv	<- readRDS(pathProv)
 			reacval$dataTables  <- dataProv
 			reacval$mdataProv 	<- file.info(pathProv)$mtime
-			assign("allData",dataProv,envir=.GlobalEnv)
 		}
 		if( file.info(pathReg)$mtime > isolate(reacval$mdataReg)  ) {
 			regData <- readRDS(pathReg)
@@ -367,16 +367,6 @@ output$updateTIUI <- renderUI({
 })
 
 
-get_predictions <- function(modelli, datiTS, nahead, alldates=FALSE) {
-  previsioni <- mapply(FUN=predictNextDays, datiTS, modelli, nahead=nahead, all=alldates, SIMPLIFY=F)
-  previsioniDT <- rbindlist(previsioni)
-  if (alldates)
-    previsioniDT[, outName:=rep(names(modelli), each=nrow(datiTS[[1]])+nahead)]
-  else
-    previsioniDT[, outName:=rep(names(modelli), each=nahead)]
-		setDF(previsioniDT)
-  previsioniDT
-}
 
 
 prevRegion <- reactive({
@@ -396,13 +386,11 @@ prevRegion <- reactive({
 		tsReg <- getTimeSeriesReact()
     tsReg["Italia"] <- NULL
 		if(saveRDSout) saveRDS(file="prevRegionList.RDS",list(tsReg, modelliReg, allDataReg))
-		if(assignout) assign("prevRegionList",list(tsReg, modelliReg, allDataReg), envir=.GlobalEnv)
 
 		prevDT <- get_predictions(modelliReg, tsReg, nahead=nahead, alldates=TRUE)
     setnames(prevDT, old=c("outName"), new=c("regione"))
 		setDF(prevDT)
 		prevDT[,c("dataind","data2")]<-NULL
-		if(assignout) assign("prevDT",prevDT, envir=.GlobalEnv)
 		prevDT
   }
 })
@@ -483,6 +471,7 @@ prevIta <- reactive({
     setnames(prevDT, old=c("outName"), new=c("variabilePrevista"))
     setDF(prevDT)
     prevDT[,c("dataind","data2")]<-NULL
+		if(assignout) assign("prevItaVar",list(tsIta=tsIta, modelliIta=modelliIta, nahead=nahead), envir=.GlobalEnv)
 		prevDT
   }
 })
@@ -571,9 +560,6 @@ output$fitCasesIta <- renderPlotly({
   if(verbose) cat("\n renderPlotly:fitCasesIta")
   prevItaDT <- copy(prevItaLongTerm())
   tsIta <- copy(getTimeSeriesReact()[["Italia"]])
-	assign('tsIta',tsIta,envir=.GlobalEnv)
-	assign('prevItaDT',prevItaDT,envir=.GlobalEnv)
-	assign('gts',getTimeSeriesReact(),envir=.GlobalEnv)
 
   if (!is.null(prevItaDT) & !is.null(tsIta)) {
   		setnames(prevItaDT, old=c('Attesi'), new=c('casi'))
@@ -695,6 +681,158 @@ output$terapiaIntPlotPercPrev<- renderPlotly({
   ggplotly(p, tooltip = c("text")) %>% config(locale = 'it')
 
 })
+
+prevRegionCompare <- reactive({
+	if(verbose) cat("\n reactive:prevRegion")
+	allDataReg <- copy( reacval$dataTables_reg)
+  tipoModello <- input$modelloFit
+
+
+	if(is.null(tipoModello)) return(NULL)
+	if(tipoModello=="Exp. quadratico"){
+		modelliReg=isolate(reacval$modelliReg)
+	} else modelliReg <- isolate(reacval$modelliRegExp)
+
+
+	if (!is.null(allDataReg)) {
+		tsReg <- getTimeSeriesReact()
+    tsReg["Italia"] <- NULL
+		if(saveRDSout) saveRDS(file="prevRegionList.RDS",list(tsReg, modelliReg, allDataReg))
+
+		prevDT <- get_predictions(modelliReg, tsReg, nahead=nahead, alldates=TRUE)
+    setnames(prevDT, old=c("outName"), new=c("regione"))
+		setDF(prevDT)
+		prevDT[,c("dataind","data2")]<-NULL
+		prevDT
+  }
+})
+
+output$dateCompare <- renderUI({
+	if(verbose) cat("\n renderUI:dateCompare")
+	files <- list.files("www/pastModels/")
+	dateTmp <- gsub("modelliIta_|modelliItaExp_|.RDS|modelliReg_|modelliRegExp_", "", files)
+	date <- as.Date(unique(dateTmp))
+	date <- sort(date[-which.max(date)])
+	selectizeInput("dataComparazione", label="Data Modello da comparare", choices=date, selected = max(date))
+
+})
+
+
+
+# compara previsioni
+prevItaCompare <- reactive({
+	if(verbose) cat("\n reactive:prevItaCompare")
+	inpData <- input$dataComparazione
+	tipoVariazione <-input$tipoCompare
+		if(verbose) cat("\n inpData", inpData)
+
+
+	if(is.null(inpData)) return(NULL)
+	if(is.null(tipoVariazione)) return(NULL)
+
+
+	dataMod <-as.Date(inpData)
+
+	tsIta <- getTimeSeriesReact()["Italia"]
+
+	assign("tsIta",tsIta, envir=.GlobalEnv)
+	assign("dataMod",dataMod, envir=.GlobalEnv)
+
+	modelliItaPast <- readRDS(paste0("www/pastModels/modelliIta_", dataMod, ".RDS"))
+	modelliItaExpPast  <- readRDS(paste0("www/pastModels/modelliItaExp_", dataMod, ".RDS"))
+
+	if(tipoVariazione=='Totale'){
+
+		vero <-tsIta$Italia[tsIta$Italia$data==(dataMod+1), c('totale_casi', 'deceduti', 'totale_ospedalizzati', 'terapia_intensiva')]
+
+		tsIta$Italia <- tsIta$Italia[ tsIta$Italia$data<=dataMod, ]
+
+	  prevDT <- get_predictions(modelliIta, tsIta, nahead=1, alldates=FALSE)
+		prevDTexp <- get_predictions(modelliItaExp, tsIta, nahead=1, alldates=FALSE)
+		prevDT$Modello 		<- "Esp. quadratico"
+		prevDTexp$Modello <- "Esponenziale"
+
+		prevDT$Osservato 		<- unlist(vero)
+		prevDTexp$Osservato  <- unlist(vero)
+
+		prevDT$'Confidence Level68%' 		<- paste0(format(prevDT$LowerRange, big.mark="'"), ' - ', format(prevDT$UpperRange, big.mark="'"))
+		prevDTexp$'Confidence Level68%'  <- paste0(format(prevDTexp$LowerRange, big.mark="'"), ' - ', format(prevDTexp$UpperRange, big.mark="'"))
+
+		setnames(prevDT, old=c('LowerRange', 'UpperRange', 'outName', 'Attesi'), new=c('Minimo', 'Massimo', 'Variabile', 'Previsto'))
+		setnames(prevDTexp, old=c('LowerRange', 'UpperRange', 'outName', 'Attesi'), new=c('Minimo', 'Massimo', 'Variabile', 'Previsto'))
+
+		out <-rbind(prevDT[, c('data', 'Modello', 'Variabile', 'Confidence Level68%', 'Previsto', 'Osservato')],
+					prevDTexp[, c('data', 'Modello', 'Variabile', 'Confidence Level68%', 'Previsto',  'Osservato')])
+
+		out$Variazione <- paste0 (round((out$Osservato-out$Previsto)/out$Osservato*100, 2), " %")
+		out$Previsto 		<- format(out$Previsto, big.mark="'")
+		out$Osservato 		<- format(out$Osservato, big.mark="'")
+
+		out
+
+	} else {
+		veroMod <-unlist(tsIta$Italia[tsIta$Italia$data==(dataMod), c('totale_casi', 'deceduti', 'totale_ospedalizzati', 'terapia_intensiva')])
+		vero <-unlist(tsIta$Italia[tsIta$Italia$data==(dataMod+1), c('totale_casi', 'deceduti', 'totale_ospedalizzati', 'terapia_intensiva')])
+
+		DVero <- vero - veroMod
+
+		tsIta$Italia <- tsIta$Italia[ tsIta$Italia$data<=dataMod, ]
+
+	  prevDT <- get_predictions(modelliIta, tsIta, nahead=1, alldates=FALSE)
+		prevDTexp <- get_predictions(modelliItaExp, tsIta, nahead=1, alldates=FALSE)
+		prevDT$Modello 		<- "Esp. quadratico"
+		prevDTexp$Modello <- "Esponenziale"
+
+		prevDT$Osservato 		<- unlist(DVero)
+		prevDTexp$Osservato  <- unlist(DVero)
+
+		prevDT$VarPrev 			<- prevDT$Attesi - veroMod
+		prevDTexp$VarPrev  	<- prevDTexp$Attesi - veroMod
+
+		prevDT$VarMin 			<- prevDT$LowerRange - veroMod
+		prevDTexp$VarMin  	<- prevDTexp$LowerRange - veroMod
+
+		prevDT$VarMax    <- prevDT$UpperRange - veroMod
+		prevDTexp$VarMax <- prevDTexp$UpperRange - veroMod
+
+		prevDT$Variazione    <- prevDT$VarPrev - DVero
+		prevDTexp$Variazione <- prevDTexp$VarPrev - DVero
+
+		prevDT$'Confidence Level68%' 		<- paste0(format(prevDT$VarMin, big.mark="'"), ' - ', format(prevDT$VarMax, big.mark="'"))
+		prevDTexp$'Confidence Level68%'  <- paste0(format(prevDTexp$VarMin, big.mark="'"), ' - ', format(prevDTexp$VarMax, big.mark="'"))
+
+		setnames(prevDT, old=c('VarMin', 'VarMax', 'outName', 'VarPrev'), new=c('Minimo', 'Massimo', 'Variabile', 'Previsto'))
+		setnames(prevDTexp, old=c('VarMin', 'VarMax', 'outName', 'VarPrev'), new=c('Minimo', 'Massimo', 'Variabile', 'Previsto'))
+
+		outPerc <-rbind(prevDT[, c('data', 'Modello', 'Variabile', 'Confidence Level68%', 'Previsto', 'Osservato')],
+					prevDTexp[, c('data', 'Modello', 'Variabile', 'Confidence Level68%', 'Previsto',  'Osservato')])
+
+		outPerc$Variazione <- paste0 (round((outPerc$Osservato-outPerc$Previsto)/outPerc$Osservato*100, 2), " %")
+
+		outPerc$Previsto 		<- format(outPerc$Previsto, big.mark="'")
+		outPerc$Osservato 		<- format(outPerc$Osservato, big.mark="'")
+
+		outPerc
+	}
+
+
+})
+
+
+output$tabCompare <- renderDT({
+	if(verbose) cat("\n renderDT:tabCompare")
+  out <- prevItaCompare()
+
+
+  if (!is.null(out)) {
+
+    datatable(out,
+      selection = list(target = NULL),
+      options= c(list(paging = F, searching = F, info=F, ordering=F, order=list(list(2, 'desc'))), DT_lang_opt),
+      rownames=F)
+  }
+})
+
 
 
 
