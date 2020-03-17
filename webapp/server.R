@@ -410,6 +410,7 @@ output$fitRegion <- renderPlotly({
 		prevDT <- copy(prevRegion())
 		setnames(prevDT, old=c('Attesi'), new=c('casi totali'))
     prevDT <- prevDT[which(prevDT$regione%in%regioniSel),]
+    assign("prevDTvedi",prevDT, envir=.GlobalEnv)
 
     setnames(allDataReg, old=c('denominazione_regione', 'totale_casi'), new=c('regione', 'casi totali'))
 		setDF(allDataReg)
@@ -425,6 +426,7 @@ output$fitRegion <- renderPlotly({
     ## parte di questo problema sembra cosa nota https://github.com/ropensci/plotly/issues/1164
     ## e non legata a 'ggplotly'
     ## per ora metto gli intervalli di previsione nei tooltip
+    datamax<-max(prevDT$data)
 		p <- ggplot() + my_ggtheme() +
        #geom_errorbar(data=prevDT, aes(x=data, y=`casi totali`, ymin=LowerRange, ymax=UpperRange, color=regione), width=0.1) +
        #geom_ribbon(data=prevDT, aes(x=data, y=`casi totali`, ymin=LowerRange, ymax=UpperRange, fill=regione), alpha=.35, guides=F) +
@@ -436,6 +438,13 @@ output$fitRegion <- renderPlotly({
               '<br>Casi (fit): ', round(`casi totali`),
               '<br>Intervallo previsione:', paste0('[', round(LowerRange,2), ', ', round(UpperRange,2),']')
               )))) +
+       suppressWarnings(geom_point(data=prevDT[which(prevDT$data>=datamax-2),], lty=2, group=1, # group=1 serve per aggirare un bug di ggplotly con tooltip = c("text")
+           aes(x=data, y=`casi totali`, color=regione,
+              text = paste('Data:', strftime(data, format="%d-%m-%Y"),
+              '<br>Regione: ', regione,
+              '<br>Casi (fit): ', round(`casi totali`),
+              '<br>Intervallo previsione:', paste0('[', round(LowerRange,2), ', ', round(UpperRange,2),']')
+            )), shape=22)) +
        suppressWarnings(geom_point(data=allDataReg, aes(x=data, y=`casi totali`, color=regione,
              text = paste('Data:', strftime(data, format="%d-%m-%Y"),
               '<br>Regione: ', regione,
@@ -512,6 +521,7 @@ if(verbose) cat("\n renderPlotly:fitIta")
     ## parte di questo problema sembra cosa nota https://github.com/ropensci/plotly/issues/1164
     ## e non legata a 'ggplotly'
     ## per ora metto gli intervalli di previsione nei tooltip
+    datamax<-max(prevItaDT$data)
 		p <- ggplot() + my_ggtheme() +
        #geom_errorbar(data=prevDT, aes(x=data, y=`casi totali`, ymin=LowerRange, ymax=UpperRange, color=regione), width=0.1) +
        #geom_ribbon(data=prevDT, aes(x=data, y=`casi totali`, ymin=LowerRange, ymax=UpperRange, fill=regione), alpha=.35, guides=F) +
@@ -523,6 +533,13 @@ if(verbose) cat("\n renderPlotly:fitIta")
                  '<br>Casi (fit): ', round(casi),
                  '<br>Intervallo previsione:', paste0('[', round(LowerRange,2), ', ', round(UpperRange,2),']')
                  )))) +
+       suppressWarnings(geom_point(data=prevItaDT[which(prevItaDT$data>=datamax-2),], lty=2, group=1, # group=1 serve per aggirare un bug di ggplotly con tooltip = c("text")
+                     aes(x=data, y=`casi`, color=variabilePrevista,
+                        text = paste('Data:', strftime(data, format="%d-%m-%Y"),
+                        '<br>Variabile: ', variabilePrevista,
+                        '<br>Casi (fit): ', round(`casi`),
+                        '<br>Intervallo previsione:', paste0('[', round(LowerRange,2), ', ', round(UpperRange,2),']')
+                      )), shape=22)) +
 			 suppressWarnings(geom_point(data=tmp,
               aes(x=data, y=casi, color=variabilePrevista,
                 text = paste('Data:', strftime(data, format="%d-%m-%Y"),
