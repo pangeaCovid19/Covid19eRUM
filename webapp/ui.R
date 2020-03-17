@@ -5,14 +5,22 @@ source("dashboardPangea.R")
 # dashboardBody(
 # 		tags$style(".fa-atlas color: #ff00ff ; }"
 # 	)
-introTab<-tabItem(tabName="intro",fluidRow(style="padding-left:30px;padding-right:30px;border-style: solid;border-color:#ffe066;background-color:#ffffff;",
-										HTML(readChar("../docs/intro.html",file.info("../docs/intro.html")$size))))
+introTab<-tabItem(tabName="intro",
+
+				uiOutput("spaces_mobile_intro"),
+
+							fluidRow(style="padding:30px;border-style: solid;border-color:#ffe066;",br(),br(),
+										#	h1("Quanto veloce si diffonde il Coronavirus in Italia "),
+
+											fluidRow(style="padding-left:30px;padding-right:30px;background-color:#ffffff;",
+											HTML(readChar("../docs/intro.html",file.info("../docs/intro.html")$size)))))
 
 fitTab <- tabItem(tabName = "fitPlots",#style="background-color:#ffc2b3",
+							uiOutput("spaces_mobile_prev"),
 
 							uiOutput("tab_mobile"),
 
-						
+
 
               fluidRow(
                 box(width=12, uiOutput("updatePrevisioniUI"), fontiDati
@@ -22,6 +30,7 @@ fitTab <- tabItem(tabName = "fitPlots",#style="background-color:#ffc2b3",
 
 
 tiTab <- tabItem(tabName = "tiPlots",
+					uiOutput("spaces_mobile_ti"),
 							fluidRow(style="padding-left:30px;padding-right:30px;border-style: solid;border-color:#cc0000;",#style="background-color :#cc0000;",
 							h1("Terapia Intensiva"),
 
@@ -51,6 +60,7 @@ tiTab <- tabItem(tabName = "tiPlots",
 
 
 regTab <- tabItem(tabName = "regPlots",
+					uiOutput("spaces_mobile_reg"),
 					fluidRow(style="padding-left:30px;padding-right:30px;border-style: solid;border-color:#0086b3;",
 					h1("Diffusione nelle regioni italiane"),
 					fluidRow(style="padding:20px;background-color:#ffffff",#style="background-color :#0086b3;",
@@ -81,6 +91,7 @@ regTab <- tabItem(tabName = "regPlots",
           )
 
 prvTab <- tabItem(tabName = "prvPlots",
+					uiOutput("spaces_mobile_prov"),
 					fluidRow(style="padding-left:30px;padding-right:30px;border-style: solid;border-color:#0086b3;",
 							h1("Diffusione nelle province italiane"), br(),
 							#
@@ -118,8 +129,8 @@ dashboardPage(
 	skin = "black",
 	dashboardHeader3(title="CoVid-19 in Italia", pagename="CoVid-19 in Italia", logo_img = "logo_pangea_esteso.png", width = 200),
 
-## Sidebar content
-	dashboardSidebar(
+## bbar content
+	dashboardSidebar(uiOutput('sidebar'),
 						sidebarMenu(id='fitCFG',
 							menuItem2("Previsioni", tabName = "fitPlots", icon = icon("fas fa-chart-line"))
 						),

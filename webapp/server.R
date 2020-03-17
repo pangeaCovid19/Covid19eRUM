@@ -1,7 +1,7 @@
 
 source("funzionifit.R")
 shinyServer(function(input, output, session) {
-  reacval<-reactiveValues(mobile=F)
+
 
 
   observe({
@@ -36,7 +36,8 @@ shinyServer(function(input, output, session) {
 						modelliIta=modelliIta,
 						modelliReg=modelliReg,
 						modelliItaExp=modelliItaExp,
-						modelliRegExp=modelliRegExp
+						modelliRegExp=modelliRegExp,
+            mobile=F
 					)
 
   observe({
@@ -441,7 +442,7 @@ output$fitRegion <- renderPlotly({
               '<br>Casi: ', `casi totali`
               )))) +
        scale_color_manual(values=d3hexcols20) +scale_x_date(date_breaks="2 day",date_labels="%b %d")+
-			 theme(axis.text.x=element_text(angle=45,hjust=1)) +
+			 theme(axis.text.x=element_text(angle=45,hjust=1)) +#theme(legend.position= c(0.7, 0.2))+
        labs(x="")
 
     if (tipoGraph == "Logaritmico") p <- p + scale_y_log10()
@@ -609,6 +610,11 @@ output$terapiaIntPlotPercNow<- renderPlotly({
 	        theme(axis.text.x=element_text(angle=45,hjust=1))+
           labs(x="", y="% letti occupati per CoVid19")
 	ggplotly(p, tooltip = c("text")) %>% config(locale = 'it')
+  if(reacval$mobile){
+    p<-p+coord_flip()
+  }
+  p
+
 })
 
 output$terapiaIntPlotNow<- renderPlotly({
@@ -630,6 +636,10 @@ output$terapiaIntPlotNow<- renderPlotly({
         scale_fill_manual(values=d3hexcols) +
         labs(x="", y="numero letti")
   ggplotly(p, tooltip = c("text")) %>% config(locale = 'it')
+  if(reacval$mobile){
+    p<- p+coord_flip()
+  }
+  p
 })
 
 output$terapiaIntPlotPercPrev<- renderPlotly({
@@ -679,6 +689,12 @@ output$terapiaIntPlotPercPrev<- renderPlotly({
         scale_fill_manual(values=d3hexcols) +
         labs(x="", y="numero letti", fill="")
   ggplotly(p, tooltip = c("text")) %>% config(locale = 'it')
+  if(reacval$mobile){
+    p<-p+coord_flip()
+  }
+  p
+
+
 
 })
 
@@ -826,9 +842,9 @@ output$tabCompare <- renderDT({
 
   if (!is.null(out)) {
 		out <- out[order(out$Variabile),]
-    datatable(out,
+    datatable(out,extensions = c('Scroller'),
       selection = list(target = NULL),
-      options= c(list(paging = F, searching = F, info=F, ordering=F, order=list(list(2, 'desc'))), DT_lang_opt),
+      options= c(list(dom = 't',scroller=T,scrollX="300",scrollY="300",paging = T, searching = F, info=F, ordering=F, order=list(list(2, 'desc'))), DT_lang_opt),
       rownames=F)
   }
 })
@@ -895,13 +911,13 @@ output$tab_desktop<-renderUI({
           column(4,selectizeInput("regionLinLogFit", label="Tipo Grafico", choices=c("Lineare", "Logaritmico"), selected = "Lineare")),
           column(2,radioButtons("modelloFit", label="Tipologia Modello", choices=c("Esponenziale", "Exp. quadratico")))),
 
-          fluidRow(align="center",h4("Andamento casi positivi per regione con previsione a 3 giorni"),
+          fluidRow(align="center",h4("Andamento casi positivi per regione con previsione a 3 giorni")),
            plotlyOutput(outputId="fitRegion"), spiegaFitPos
-          )),br(),
+          ),br(),
           fluidRow(style="padding:30px;background-color:#ffffff",
-          fluidRow(align="center",h4("Andamenti globali in Italia con previsione a 3 giorni"),
+          fluidRow(align="center",h4("Andamenti globali in Italia con previsione a 3 giorni")),
            plotlyOutput(outputId="fitIta"), spiegaFitTot
-          )
+
     		),br(),br(),
     		fluidRow(style="padding:30px;background-color:#ffffff",width=12,  h2("Previsione del numero di casi totali a medio termine con modello esponenziale quadratico"), plotlyOutput(outputId="fitCasesIta")
 
@@ -922,6 +938,66 @@ output$tab_desktop<-renderUI({
 
     })
 
+output$spaces_mobile_prev<-renderUI({
+  out<-NULL
+  if((length(reacval$mobile)>0)){
+    if(reacval$mobile){
+      out<-fluidRow(br(),br(),br())
+    }
+
+  }
+  })
+
+output$spaces_mobile_intro<-renderUI({
+  out<-NULL
+  if((length(reacval$mobile)>0)){
+    if(reacval$mobile){
+      out<-fluidRow(br(),br(),br())
+    }
+
+  }
+  })
+
+output$spaces_mobile_ti<-renderUI({
+  out<-NULL
+  if((length(reacval$mobile)>0)){
+    if(reacval$mobile){
+      out<-fluidRow(br(),br(),br())
+    }
+
+  }
+  })
+
+output$spaces_mobile_reg<-renderUI({
+  out<-NULL
+  if((length(reacval$mobile)>0)){
+    if(reacval$mobile){
+      out<-fluidRow(br(),br(),br())
+    }
+
+  }
+  })
+
+output$spaces_mobile_prov<-renderUI({
+  out<-NULL
+  if((length(reacval$mobile)>0)){
+    if(reacval$mobile){
+      out<-fluidRow(br(),br(),br())
+    }
+
+  }
+
+  })
+
+  output$sidebar <- renderUI({
+    out<-NULL
+    if((length(reacval$mobile)>0)){
+      if(reacval$mobile){
+        out<-list(br(),br(),br())
+      }
+    }
+
+       })
 
 
 

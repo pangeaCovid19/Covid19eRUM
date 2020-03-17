@@ -125,7 +125,7 @@ casi confermati e arriva al rosso per le aree con il maggior numero assoluto di 
 spiegaTabella <- HTML("<div style='padding-top:10px;'>In questa tabella mostriamo la diffusione sul territorio dei casi confermati
 di CoVid19.
 <br>La colonna &quot;casi totali&quot; riporta il numero totale di casi confermati di CoVid19
-nel territorio, mentre la colonna &quot;casi su 10^4 abit.&quot; riporta il numero di casi per ogni
+nel territorio, mentre la colonna &quot;casi su 10mila abit.&quot; riporta il numero di casi per ogni
 10mila abitanti cos&igrave; da contestualizzare la diffusione rispetto alla popolazione presente
 nel territorio.</div>")
 
@@ -134,7 +134,7 @@ di CoVid19. <br>Ciascuna area territoriale
 &egrave; indicata con un colore diverso. &Egrave; possibile ingrandire aree specifiche del grafico
 e disabilitare (o riabilitare) singoli territori interagendo con la legenda del grafico.</div>")
 
-spiegaTabellaCompare <- HTML("<div style='padding-top:10px;'>In questa tabella vengono confrontate le preisioni led i valori osservati del numero di casi totali, dei decessi, del numero di ospedalizzati e del numero di ricoverati in terapia intensiva.
+spiegaTabellaCompare <- HTML("<div style='padding-top:10px;'>In questa tabella vengono confrontate le previsioni ed i valori osservati del numero di casi totali, dei decessi, del numero di ospedalizzati e del numero di ricoverati in terapia intensiva.
 <br>Sono stati confrontati i due modelli, l'esponeziale quadratico e l'esponenziale puro. La forte discordanza tra previsioni e valori osservati nel modello esponenziale indica che siamo usciti da quel regime di crescita: le misure preventive adottate dal governo iniziano ad avere effetto!</div>")
 
 fontiDati <- HTML("<div>Dati provenienti da:
