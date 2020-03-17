@@ -723,6 +723,7 @@ output$dateCompare <- renderUI({
 prevItaCompare <- reactive({
 	if(verbose) cat("\n reactive:prevItaCompare")
 	inpData <- input$dataComparazione
+	tipoVariazione <-input$tipoCompare
 		if(verbose) cat("\n inpData", inpData)
 
 
@@ -731,7 +732,6 @@ prevItaCompare <- reactive({
 
 
 	dataMod <-as.Date(inpData)
-	tipoVariazione <-input$tipoCompare
 
 	tsIta <- getTimeSeriesReact()["Italia"]
 
