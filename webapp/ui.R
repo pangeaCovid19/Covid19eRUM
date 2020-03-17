@@ -5,48 +5,12 @@ source("dashboardPangea.R")
 # dashboardBody(
 # 		tags$style(".fa-atlas color: #ff00ff ; }"
 # 	)
-introTab<-tabItem(tabName="intro",fluidRow(box(width=12,HTML(readChar("../docs/intro.html",file.info("../docs/intro.html")$size)))))
+introTab<-tabItem(tabName="intro",fluidRow(style="padding-left:30px;padding-right:30px;border-style: solid;border-color:#ffe066;background-color:#ffffff;",
+										HTML(readChar("../docs/intro.html",file.info("../docs/intro.html")$size))))
 
 fitTab <- tabItem(tabName = "fitPlots",#style="background-color:#ffc2b3",
-							uiOutput("tab_desktop"),
-							# fluidRow(style="padding-left:30px;padding-right:30px;border-style: solid;border-color:#009933;",#" border-color :#009933;",
-							# 	#box(width=12,
-							# 	h1("Analisi previsionale nelle province italiane"),
-							# 	fluidRow(
-							# 		column(10,h4("In questa pagina proponiamo il confronto tra i dati registrati, sia regionali che nazionali e due modelli di crescita. Il primo modello (esponenziale) descrive una diffusione incontrollata, mentre il secondo (esponenziale quadratico) tenta di tenere conto dell'effetto di misure contenitive. Per maggiori dettagli, controlla la sezione di approfondimento")),
-							# 		column(2,radioButtons("modelloFit", label="Tipologia Modello", choices=c("Esponenziale", "Exp. quadratico")))
-							# 	),
-							#
-							# 		#h4("Sia gli andamenti totali che quelli delle regioni maggiormente colpite si stanno staccando dall'andamento esponenziale, questo sembra indicare che le misure preventive iniziano ad avere effetto. Infatti, il ritmo di crescita attuale sembra meglio descritto da un andamento esponenziale con rate che diminuisce linearmente nel tempo (modello esponenziale quadratico)."),
-							# 		 br(),
-							# 		# fluidRow(
-							# 		# 	#column(width=4, selectizeInput("regionSelFit", label="Seleziona regioni", choices=regioniList, selected = regioni2fit, multiple=TRUE, width='400px')),
-							# 		# 	column(width=2, selectizeInput("regionLinLogFit", label="Tipo Grafico", choices=c("Lineare", "Logaritmico"), selected = "Lineare")),
-							# 		# 	#column(width=3, selectizeInput("modelloFit", label="Tipologia Modello", choices=c("Esponenziale", "Exp. quadratico"), selected = "Exp. quadratico"))
-							# 		# ),
-							# 		fluidRow(style="padding:30px;background-color:#ffffff",
-							# 			column(2,fluidRow(selectizeInput("regionLinLogFit", label="Tipo Grafico", choices=c("Lineare", "Logaritmico"), selected = "Lineare")),checkboxGroupInput("regionSelFit", label="Seleziona regioni", choices=regioniList, selected = regioni2fit)),
-							# 		column(10,
-							#
-							# 			fluidRow(column(6,align="center",h4("Andamento casi positivi per regione con previsione a 3 giorni")),column(6,align="center",h4("Andamenti globali in Italia con previsione a 3 giorni"))),
-							# 			fluidRow(
-							# 				column(width=6,align="left", plotlyOutput(outputId="fitRegion"), #spiegaFitPos
-							# 				),br(),
-							# 				column(width=6,align="left",plotlyOutput(outputId="fitIta"), #spiegaFitTot
-							# 				),br(),fluidRow(style="padding:20px;",spiegaFitTotePos)
-							#
-							# 			)
-							#
-							# 		),
-							#
-							#
-							# 		),br(),br(),
-							# 		fluidRow(style="padding:30px;background-color:#ffffff",width=12,  h2("Previsione del numero di casi totali a medio termine con modello esponenziale quadratico"), plotlyOutput(outputId="fitCasesIta")
-							#
-							# 		),
-							# 		br(),
-							# 	#)
-							# ),
+							uiOutput("tab_mobile"),
+
               fluidRow(
                 box(width=12, uiOutput("updatePrevisioniUI"), fontiDati
                 )
@@ -54,27 +18,28 @@ fitTab <- tabItem(tabName = "fitPlots",#style="background-color:#ffc2b3",
             )
 
 
-tiTab <- tabItem(tabName = "tiPlots",h1("Terapia Intensiva"),
-							fluidRow(#style="background-color :#cc0000;",
-								box(width=12,
+tiTab <- tabItem(tabName = "tiPlots",
+							fluidRow(style="padding-left:30px;padding-right:30px;border-style: solid;border-color:#cc0000;",#style="background-color :#cc0000;",
+							h1("Terapia Intensiva"),
+
 									h4("I dati relativi al numero di posti letto in terapia intensiva per regione sono aggiornati al 2018 e non vengono riaggiornati in base agli sforzi che il sistema sanitario sta portando avanti in questi giorni. Non ha scopo allarmistico ma solo di mostrare quali siano le criticità che il nostro paese sta affrontando a causa del CoVid19 "),
 									 br(),
-	                fluidRow(
-										box(width=12,
-											title = tagList(shiny::icon("globe-europe"), "Previsione del numero di letti occupati da pazienti conCovid19 e disponibilità per regione (posti letto aggiornati al 2018)"),
+
+										fluidRow(style="padding:20px;background-color:#ffffff",
+											h3("Previsione del numero di letti occupati da pazienti conCovid19 e disponibilità per regione (posti letto aggiornati al 2018)"),
 											plotlyOutput("terapiaIntPlotPercPrev")
-										),
-	                	box(width=12,
-											title = tagList(shiny::icon("globe-europe"), "Percentuale in terapia intensiva occupati da pazienti con CoVid19 (posti letto aggiornati al 2018)"),
+										),br(),
+	                	fluidRow(style="padding:20px;background-color:#ffffff",
+											h3( "Percentuale in terapia intensiva occupati da pazienti con CoVid19 (posti letto aggiornati al 2018)"),
 											plotlyOutput("terapiaIntPlotPercNow")
-										),
-										box(width=12,
-											title = tagList(shiny::icon("globe-europe"), "Diponibilità di letti in terapia intensiva e numero di occupanti con CoVid19 (posti letto aggiornati al 2018)"),
+										),br(),
+										fluidRow(style="padding:20px;background-color:#ffffff",
+											h3("Diponibilità di letti in terapia intensiva e numero di occupanti con CoVid19 (posti letto aggiornati al 2018)"),
 											plotlyOutput("terapiaIntPlotNow")
-										)
-	                )
-								)
-							),
+										),
+
+
+							br()),br(),
               fluidRow(
                 box(width=12, uiOutput("updateTIUI"), fontiDati
                 )
@@ -83,52 +48,56 @@ tiTab <- tabItem(tabName = "tiPlots",h1("Terapia Intensiva"),
 
 
 regTab <- tabItem(tabName = "regPlots",
-							h1("Diffusione nelle regioni italiane"),
-              fluidRow(#style="background-color :#0086b3;",
-								box(width=6, title = tagList(shiny::icon("globe-europe"), "Mappa dei casi confermati"), status = "primary", solidHeader = F,
-										collapsible = T,
-										#plotOutput(outputId="mapRegionGG", height = 800),
-										leafletOutput(outputId="mapRegion"),
-										spiegaMappa
-								),
-								box(width=6, title = tagList(shiny::icon("table"), "Tabella con casi confermati"), status = "primary", solidHeader = F,collapsible = T,
-									DTOutput(outputId="tabRegion"),
-									spiegaTabella
-                )
-              ),
-              fluidRow(
-                box(width=12, title = tagList(shiny::icon("analytics"), "Andamento dei casi confermati"), status = "primary", solidHeader = F,collapsible = T,
-									plotlyOutput(outputId="lineRegion"),
-									spiegaLinePlot
-								)
-              ),fluidRow(
+					fluidRow(style="padding-left:30px;padding-right:30px;border-style: solid;border-color:#0086b3;",
+					h1("Diffusione nelle regioni italiane"),
+					fluidRow(style="padding:20px;background-color:#ffffff",#style="background-color :#0086b3;",
+						 h3("Mappa dei casi confermati"),
+								#plotOutput(outputId="mapRegionGG", height = 800),
+								leafletOutput(outputId="mapRegion"),
+								spiegaMappa
+						),br(),
+						fluidRow(style="padding:20px;background-color:#ffffff",
+							h3("Andamento dei casi confermati"),
+								plotlyOutput(outputId="lineRegion"),
+								spiegaLinePlot
+
+						)
+						,br(),
+						# box(width=6, title = tagList(shiny::icon("table"), "Tabella con casi confermati"), status = "primary", solidHeader = F,collapsible = T,
+						# 	DTOutput(outputId="tabRegion"),
+						# 	spiegaTabella
+						# )
+						fluidRow(style="padding:20px;background-color:#ffffff",
+						h3("Tabella con casi confermati"),DTOutput(outputId="tabRegion"),spiegaTabella
+
+						)
+					,br()),br(),fluidRow(
                 box(width=12, uiOutput("updateRegUI"), fontiDati
                 )
               )
           )
 
 prvTab <- tabItem(tabName = "prvPlots",
-#							h1("Diffusione nelle province italiane"), br(), br()
-#
-              fluidRow(
-                box(width=6, title = tagList(shiny::icon("globe-europe"), "Mappa dei casi confermati"), status = "primary", solidHeader = F,
-                    collapsible = T,
-										selectInput("regionSel", label="Seleziona regione", choices=regioniList, selected = "Lombardia"),
+					fluidRow(style="padding-left:30px;padding-right:30px;border-style: solid;border-color:#0086b3;",
+							h1("Diffusione nelle province italiane"), br(),
+							#
+							fluidRow(style="padding:20px;background-color:#ffffff",selectInput("regionSel", label="Seleziona regione", choices=regioniList, selected = "Lombardia"),
+								h3("Mappa dei casi confermati"),
 										#plotOutput(outputId="mapProvinceGG", height = 800),
-                    leafletOutput(outputId="mapProvince"),
+										leafletOutput(outputId="mapProvince"),
 										spiegaMappa
-                ),
-								box(width=6, title = tagList(shiny::icon("table"), "Tabella con casi confermati"), status = "primary", solidHeader = F,
-                    collapsible = T,
-											DTOutput(outputId="tabProvince"), spiegaTabella
-                )
-              ),
-              fluidRow(
-                box(width=12, title = tagList(shiny::icon("analytics"), "Andamento dei casi confermati"), status = "primary", solidHeader = F,
-                    collapsible = T,
-										plotlyOutput(outputId="lineProvince"), spiegaLinePlot
-                )
-              ),
+								),br(),
+								fluidRow(style="padding:20px;background-color:#ffffff",
+								h3("Andamento dei casi confermati"),plotlyOutput(outputId="lineProvince"), spiegaLinePlot
+								)
+
+							,br(),
+							fluidRow(style="padding:20px;background-color:#ffffff",
+								column(width=12, h3("Tabella con casi confermati"),DTOutput(outputId="tabProvince"), spiegaTabella
+								)
+
+
+							),br()),br(),
               fluidRow(
                 box(width=12, uiOutput("updatePrvUI"), fontiDati
                 )
