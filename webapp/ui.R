@@ -47,6 +47,18 @@ fitTab <- tabItem(tabName = "fitPlots",#style="background-color:#ffc2b3",
 							# 		br(),
 							# 	#)
 							# ),
+							fluidRow(
+                box(width=12,
+									column(width=4,
+										selectizeInput("tipoCompare", label="Tipo Comparazione", choices=c("Totale", "Incremento Giornaliero"), , selected = "Lineare")
+									),
+									column(width=4,
+										uiOutput("dateCompare")
+									),
+									DTOutput("tabCompare")
+
+                )
+              ),
               fluidRow(
                 box(width=12, uiOutput("updatePrevisioniUI"), fontiDati
                 )

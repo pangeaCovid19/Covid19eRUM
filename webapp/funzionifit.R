@@ -104,6 +104,33 @@ loglinmodel3<-function(dati, var="totale_casi", rangepesi=c(0,1), quadratico = F
 }
 
 
+loglinmodel4<-function(dati, var="totale_casi", rangepesi=c(0,1), quadratico = FALSE, dataMax=NULL) {
+	if(!is.null(dataMax)){
+		if(class(dataMax) == "Date") {
+			dati <- dati[(dati$data <=dataMax), ]
+		} else warning(paste0("dataMax non è di class 'Date': class(dataMax) è ", class(dataMax)))
+	}
+	regione <- copy(dati)
+	setnames(regione, old=var, new='var2fit')
+	regione$logcasi <- log(regione$var2fit)
+	regione<-regione[is.finite(regione$logcasi),]
+	pesi<-seq(rangepesi[1],rangepesi[2],length.out=nrow(regione))
+	if (quadratico) {
+		regione$dataind<-as.numeric(regione$data-min(regione$data))+1
+		regione$data2<-as.numeric(regione$dataind)^2
+		fit<-lm(logcasi~dataind+data2,regione,weights=pesi)
+		attr(fit,"quadratico")<-TRUE
+		attr(fit,"mindata")<-min(regione$data)
+	} else {
+		fit<-lm(logcasi~data,regione,weights=pesi)
+	}
+	setnames(regione, old='var2fit', new=var)
+	#plot(regione$data,regione$logcasi,col="red",lwd=2,ty="b")
+	#abline(fit2,col="green")
+	fit
+}
+
+
 ismodelloQuadratico<-function(modello) {
 	tmp<-attr(modello,"quadratico")
 	!is.null(tmp) && tmp
@@ -123,4 +150,18 @@ predictNextDays<-function(dati,modello,nahead=3, all=FALSE) {
 	newdata<-cbind(newdata,predizioni)
 	return(newdata)
 	newdata
+}
+
+
+
+
+get_predictions <- function(modelli, datiTS, nahead, alldates=FALSE) {
+  previsioni <- mapply(FUN=predictNextDays, datiTS, modelli, nahead=nahead, all=alldates, SIMPLIFY=F)
+  previsioniDT <- rbindlist(previsioni)
+  if (alldates)
+    previsioniDT[, outName:=rep(names(modelli), each=nrow(datiTS[[1]])+nahead)]
+  else
+    previsioniDT[, outName:=rep(names(modelli), each=nahead)]
+		setDF(previsioniDT)
+  previsioniDT
 }
