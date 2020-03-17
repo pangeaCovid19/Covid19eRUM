@@ -420,49 +420,45 @@ output$fitRegion <- renderPlotly({
 
 		prevDT <- copy(prevRegion())
 		setnames(prevDT, old=c('Attesi'), new=c('casi totali'))
-    #mindataprev <- max(prevDT$data) - 2
+    prevDT <- prevDT[which(prevDT$regione%in%regioniSel),]
 
     setnames(allDataReg, old=c('denominazione_regione', 'totale_casi'), new=c('regione', 'casi totali'))
 		setDF(allDataReg)
+    allDataReg <- allDataReg[which(allDataReg$regione%in%regioniSel),]
 
+    ## attenzione ai compromessi tra ggplot & plotly...
+    ## * per avere geom_line funzionante e i tooltip basati su testo
+    ##   dobbiamo aggiungere group=1 e aes text, ma questi rompono ggplot
+    ## * aggiungendo errorbar (che ha bisogno di aes y, anche se ggplot no) o ribbon,
+    ##   invece, rompiamo la legenda che non riesce più a mettere simboli e nomi giusti
+    ## * notare che una eventuale errorbar va messa prima delle altre geometrie,
+    ##   altrimenti copre i tooltip
+    ## parte di questo problema sembra cosa nota https://github.com/ropensci/plotly/issues/1164
+    ## e non legata a 'ggplotly'
+    ## per ora metto gli intervalli di previsione nei tooltip
 		p <- ggplot() + my_ggtheme() +
-       suppressWarnings(geom_line(data=prevDT[which(prevDT$regione%in%regioniSel),], linetype=2, group=1, # group=1 serve per aggirare un bug di ggplotly con tooltip = c("text")
+       #geom_errorbar(data=prevDT, aes(x=data, y=`casi totali`, ymin=LowerRange, ymax=UpperRange, color=regione), width=0.1) +
+       #geom_ribbon(data=prevDT, aes(x=data, y=`casi totali`, ymin=LowerRange, ymax=UpperRange, fill=regione), alpha=.35, guides=F) +
+       #scale_fill_manual(values=d3hexcols20) +
+       suppressWarnings(geom_line(data=prevDT, lty=2, group=1, # group=1 serve per aggirare un bug di ggplotly con tooltip = c("text")
            aes(x=data, y=`casi totali`, color=regione,
              text = paste('Data:', strftime(data, format="%d-%m-%Y"),
+              '<br>Regione: ', regione,
               '<br>Casi (fit): ', round(`casi totali`),
-              '<br>Regione: ', regione)))) +
-       suppressWarnings(geom_point(data=allDataReg[which(allDataReg$regione%in%regioniSel),], aes(x=data, y=`casi totali`, color=regione,
+              '<br>Intervallo previsione:', paste0('[', round(LowerRange,2), ', ', round(UpperRange,2),']')
+              )))) +
+       suppressWarnings(geom_point(data=allDataReg, aes(x=data, y=`casi totali`, color=regione,
              text = paste('Data:', strftime(data, format="%d-%m-%Y"),
-              '<br>Casi: ', `casi totali`,
-              '<br>Regione: ', regione)))) +
-			 scale_color_manual(values=d3hexcols20) +
-			 #geom_rect(aes(xmin=mindataprev-0.5, xmax=max(prevDT$data+1), ymin=0, ymax=max(prevDT$casi)*1.05),fill="grey", alpha=0.3)+xlim(c(min(prevDT$data),max(prevDT$data+1)))+
+              '<br>Regione: ', regione,
+              '<br>Casi: ', `casi totali`
+              )))) +
+       scale_color_manual(values=d3hexcols20) +
 			 theme(axis.text.x=element_text(angle=45,hjust=1)) +
-			 #geom_errorbar(data=prevDT,aes(x=data,ymin=LowerRange, ymax=UpperRange, color=regione),width=0.1)+
        labs(x="")
-
 
     if (tipoGraph == "Logaritmico") p <- p + scale_y_log10()
 
     ggplotly(p, tooltip = c("text")) %>% config(locale = 'it')
-    ###
-    #allDataReg$UpperRange<-0
-    #allDataReg$LowerRange<-0
-    #out <- rbind(allDataReg[, c('regione', 'casi totali', "data","UpperRange","LowerRange")], prevDT[, c('regione', 'casi totali', "data","UpperRange","LowerRange")])
- 		#out <- out[which(out$regione %in% regioniSel), ]
-
-    #out1<-out[which(out$data<mindataprev),]
-    #out2<-out[which(out$data>=mindataprev),]
-    ###
-    #q <- ggplot() + my_ggtheme() +
- 		#		 geom_line(data=out1,aes(x=data, y=`casi totali`, color=regione)) +
- 		#		 geom_point(data=out2,aes(x=data, y=`casi totali`, color=regione))+
- 		#		 scale_color_manual(values=d3hexcols20)+
- 		#		 geom_rect(aes(xmin=mindataprev-0.5, xmax=max(out$data+1), ymin=0, ymax=max(out$casi)*1.05),fill="grey", alpha=0.3)+xlim(c(min(out$data),max(out2$data+1)))+
- 		#		 theme(axis.text.x=element_text(angle=45,hjust=1))+
- 		#		 geom_errorbar(data=out2,aes(x=data,ymin=LowerRange, ymax=UpperRange, color=regione),width=0.1)+
- 		#		 xlab("")
- 	  #q
   }
 })
 
@@ -516,16 +512,33 @@ if(verbose) cat("\n renderPlotly:fitIta")
     		variabilePrevista=rep(unique(varPrev), each=nrow(dataIta))
     )
 
+    ## attenzione ai compromessi tra ggplot & plotly...
+    ## * per avere geom_line funzionante e i tooltip basati su testo
+    ##   dobbiamo aggiungere group=1 e aes text, ma questi rompono ggplot
+    ## * aggiungendo errorbar (che ha bisogno di aes y, anche se ggplot no) o ribbon,
+    ##   invece, rompiamo la legenda che non riesce più a mettere simboli e nomi giusti
+    ## * notare che una eventuale errorbar va messa prima delle altre geometrie,
+    ##   altrimenti copre i tooltip
+    ## parte di questo problema sembra cosa nota https://github.com/ropensci/plotly/issues/1164
+    ## e non legata a 'ggplotly'
+    ## per ora metto gli intervalli di previsione nei tooltip
 		p <- ggplot() + my_ggtheme() +
+       #geom_errorbar(data=prevDT, aes(x=data, y=`casi totali`, ymin=LowerRange, ymax=UpperRange, color=regione), width=0.1) +
+       #geom_ribbon(data=prevDT, aes(x=data, y=`casi totali`, ymin=LowerRange, ymax=UpperRange, fill=regione), alpha=.35, guides=F) +
+       #scale_fill_manual(values=d3hexcols20) +
 			 suppressWarnings(geom_line(data=prevItaDT, linetype=2, group=1, # group=1 serve per aggirare un bug di ggplotly con tooltip = c("text")
               aes(x=data, y=casi, color=variabilePrevista,
                 text = paste('Data:', strftime(data, format="%d-%m-%Y"),
+                 '<br>Variabile: ', variabilePrevista,
                  '<br>Casi (fit): ', round(casi),
-                 '<br>Variabile: ', variabilePrevista)))) +
-			 suppressWarnings(geom_point(data=tmp, aes(x=data, y=casi, color=variabilePrevista,
+                 '<br>Intervallo previsione:', paste0('[', round(LowerRange,2), ', ', round(UpperRange,2),']')
+                 )))) +
+			 suppressWarnings(geom_point(data=tmp,
+              aes(x=data, y=casi, color=variabilePrevista,
                 text = paste('Data:', strftime(data, format="%d-%m-%Y"),
-                 '<br>Casi: ', casi,
-                 '<br>Variabile: ', variabilePrevista)))) +
+                 '<br>Variabile: ', variabilePrevista,
+                 '<br>Casi: ', casi
+                 )))) +
 			 scale_color_manual(values=d3hexcols20) +
        theme(axis.text.x = element_text(angle=45,hjust=1)) +
        labs(x="", color = "variabile prevista")
@@ -533,26 +546,6 @@ if(verbose) cat("\n renderPlotly:fitIta")
     if (tipoGraph == "Logaritmico") p <- p + scale_y_log10()
 
     ggplotly(p, tooltip = c("text")) %>% config(locale = 'it')
-
-    #tmp$UpperRange<-NA
-    #tmp$LowerRange<-NA
-    #out <- rbind(tmp, prevItaDT)
-    #minprevdata <- max(prevItaDT$data)-2
-    #cat("\t", as.character(minprevdata))
-
-    #setnames(allDataReg, old=c('denominazione_regione', 'totale_casi'), new=c('regione', 'casi totali'))
-    #setDF(allDataReg)
-    #out1<-out[which(out$data<minprevdata),]
-    #out2<-out[which(out$data>=minprevdata),]
-
-    #p <- ggplot() + my_ggtheme() +
-    #      geom_line(data=out1, aes(x=data, y=casi, color=variabilePrevista)) +
-    #      geom_point(data=out2, aes(x=data, y=casi, color=variabilePrevista)) +
-    #      scale_color_manual(values=d3hexcols20)+
-    #      geom_rect(aes(xmin=minprevdata-0.5, xmax=max(out$data+1), ymin=0, ymax=max(out$casi)*1.05),fill="grey", #alpha=0.3)+xlim(c(min(out$data),max(out2$data+1)))+theme(axis.text.x=element_text(angle=45,hjust=1))  +
-    #      geom_errorbar(data=out2,aes(x=data,ymin=LowerRange, ymax=UpperRange, color=variabilePrevista),width=0.1)+
-    #      xlab("")
-    #p
   }
 })
 
