@@ -99,13 +99,13 @@ risultatiFit <- HTML("<div style='padding-top:10px;'></div>")
 
 
 spiegaFitPos <- HTML("<div style='padding-top:10px;'>In questo grafico mostriamo la serie storica dei casi confermati di
-CoVid19 nelle regioni selezionate ed una previsione che si estende fino a tre giorni, linea tratteggiata.
+CoVid19 nelle regioni selezionate ed una previsione che si estende fino a tre giorni, linea tratteggiata. I grafici sono interattivi, è possibile conoscere il valore esatto di punti e delle linee scorrendo con il mouse cu di essi.
 Abbiamo utilizzando modelli esponenziali dando maggiore importanza ai dati pi&ugrave; recenti. Se si seleziona l'opzione
 &quot;Logaritmico&quot; come tipo di grafico, l'asse delle ordinate diventa logaritmico e un andamento esponenziale &egrave; rappresentato da una retta.</div>")
 
 spiegaFitTot <- HTML("<div style='padding-top:10px;'>In questo grafico mostriamo la serie storica dei casi confermati,
 dei pazienti ospedalizzati, dei pazienti in terapia intensiva e dei defunti a causa del CoVid19 in Italia ed una
-previsione che si estende fino a tre giorni, linea tratteggiata. Abbiamo utilizzando modelli esponenziali dando maggiore
+previsione che si estende fino a tre giorni, linea tratteggiata. I grafici sono interattivi, è possibile conoscere il valore esatto di punti e delle linee scorrendo con il mouse cu di essi. Abbiamo utilizzando modelli esponenziali dando maggiore
 importanza ai dati pi&ugrave; recenti. Se si seleziona l'opzione &quot;Logaritmico&quot; come tipo di grafico, l'asse delle ordinate
 diventa logaritmico e un andamento esponenziale &egrave; rappresentato da una retta.</div>")
 
@@ -134,8 +134,10 @@ di CoVid19. <br>Ciascuna area territoriale
 &egrave; indicata con un colore diverso. &Egrave; possibile ingrandire aree specifiche del grafico
 e disabilitare (o riabilitare) singoli territori interagendo con la legenda del grafico.</div>")
 
+
 spiegaTabellaCompare <- HTML("<div style='padding-top:10px;'>In questa tabella vengono confrontate le previsioni ed i valori osservati del numero di casi totali, dei decessi, del numero di ospedalizzati e del numero di ricoverati in terapia intensiva.
 <br>Sono stati confrontati i due modelli, l'esponeziale quadratico e l'esponenziale puro. La forte discordanza tra previsioni e valori osservati nel modello esponenziale indica che siamo usciti da quel regime di crescita: le misure preventive adottate dal governo iniziano ad avere effetto!</div>")
+
 
 fontiDati <- HTML("<div>Dati provenienti da:
 <ul>
