@@ -289,9 +289,19 @@ output$tabProvince <- renderDT({
 })
 
 
+output$dateProvince <- renderUI({
+  allData <- reacval$dataTables
+  fluidRow(selectInput("regionSel", label="Seleziona regione", choices=regioniList, selected = "Lombardia"),
+      sliderInput("giornoPrv", "Giorno:",
+      min = min(allData$data) + 1, max = max(allData$data),
+      value = max(allData$data), animate = animationOptions(interval = 1500), timeFormat="%b %d"))
+})
+
+
 output$mapProvince <- renderLeaflet({
 	if(verbose) cat("\n renderLeaflet:mapProvince")
   myReg <- input$regionSel
+  myGiorno <- input$giornoPrv
   allData <- reacval$dataTables#get_data()
   if (!is.null(allData)) {
     allDataConf <- allData[!grepl("aggiornamento", allData$denominazione_provincia),]
@@ -299,18 +309,18 @@ output$mapProvince <- renderLeaflet({
     allDataProv <- aggregate(list(totale_casi=allDataConf$totale_casi, pop=allDataConf$pop),
                       by=list(data=allDataConf$data, denominazione_provincia=allDataConf$denominazione_provincia, codice_provincia=allDataConf$codice_provincia),
                       FUN=sum)
-    latestDataProv <- allDataProv[allDataProv$data==max(allDataProv$data),]
+    latestDataProv <- allDataProv[allDataProv$data == myGiorno,]
     latestDataProv$densita_casi <- round(latestDataProv$totale_casi / latestDataProv$pop * 10000, 3)
     pltProvince <- merge(province, latestDataProv[,c("codice_provincia", "totale_casi", "densita_casi")], by.x="COD_PROV", by.y="codice_provincia")
     my_frame <- st_drop_geometry(regioni[regioni$COD_REG == unique(pltProvince$COD_REG), c("reg_long", "reg_lat")])
     ##pltProvince <- merge(province, latestDataProv[,c("codice_regione", "reg_long", "reg_lat")], by.x="COD_REG", by.y="codice_regione")
     #pal <- colorNumeric("YlOrRd", domain = log10(pltProvince$totale_casi))
-    pal <- colorNumeric("YlOrRd", domain = log10(pmax(1,pltProvince$totale_casi)))
+    pal <- colorNumeric("YlOrRd", domain = log10(pmax(1,allDataProv$totale_casi)))
     suppressWarnings(leaflet(data = pltProvince, options = leafletOptions(zoomControl = FALSE,minZoom = 7, maxZoom = 7)) %>% addTiles() %>%
         addProviderTiles("CartoDB.Positron") %>% setView(lng=my_frame$reg_long, lat=my_frame$reg_lat, zoom=7)  %>%
         addPolygons(fillColor = ~pal(log10(totale_casi)), weight = 1, stroke = TRUE, color="lightgrey", fillOpacity = .7,
                  label = ~paste(DEN_UTS, "- casi:", totale_casi)) %>%
-        addLegend(pal = pal, values = ~log10(pmax(1,pltProvince$totale_casi)), opacity = 0.7,
+        addLegend(pal = pal, values = ~log10(pmax(1,allDataProv$totale_casi)), opacity = 0.7,
                 labFormat = labelFormat(transform = function(x) round(10^x), big.mark = "."),
                 position = 'bottomright',
                 title = paste0("casi")))
