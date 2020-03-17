@@ -823,15 +823,16 @@ output$tabCompare <- renderDT({
 	if(verbose) cat("\n renderDT:tabCompare")
   out <- prevItaCompare()
 
-  if (!is.null(out)) {
-	out <- out[order(out$Variabile),]
 
+  if (!is.null(out)) {
+		out <- out[order(out$Variabile),]
     datatable(out,
       selection = list(target = NULL),
       options= c(list(paging = F, searching = F, info=F, ordering=F, order=list(list(2, 'desc'))), DT_lang_opt),
       rownames=F)
   }
 })
+
 
 
 
