@@ -440,7 +440,7 @@ output$fitRegion <- renderPlotly({
               '<br>Regione: ', regione,
               '<br>Casi: ', `casi totali`
               )))) +
-       scale_color_manual(values=d3hexcols20) +scale_x_date(date_breaks="2 day",date_labels="Mar 09")+
+       scale_color_manual(values=d3hexcols20) +scale_x_date(date_breaks="2 day",date_labels="%b %d")+
 			 theme(axis.text.x=element_text(angle=45,hjust=1)) +
        labs(x="")
 
@@ -528,7 +528,7 @@ if(verbose) cat("\n renderPlotly:fitIta")
                  '<br>Variabile: ', variabilePrevista,
                  '<br>Casi: ', casi
                  )))) +
-			 scale_color_manual(values=d3hexcols20) +
+			 scale_color_manual(values=d3hexcols20) +scale_x_date(date_breaks="2 day",date_labels="%b %d")+
        theme(axis.text.x = element_text(angle=45,hjust=1)) +
        labs(x="", color = "variabile prevista")
 
@@ -566,8 +566,8 @@ output$fitCasesIta <- renderPlotly({
       setnames(tsIta, old=c('totale_casi'), new=c('casi'))
       num_rows <- nrow(tsIta)
       datiIta <- rbind(tsIta[, c("data", "casi")], prevItaDT[, c("data", "casi")])
-      datiIta$tipo <- c(rep("veri", num_rows), rep("predetti", nrow(datiIta) - num_rows))
-      datiIta$tipo <- factor(datiIta$tipo, levels=c("veri", "predetti"))
+      datiIta$tipo <- c(rep("osservati", num_rows), rep("predetti", nrow(datiIta) - num_rows))
+      datiIta$tipo <- factor(datiIta$tipo, levels=c("osservati", "predetti"))
 
 			indmax <- which.max(datiIta$casi)
       vdate <- datiIta$data[indmax]
@@ -579,7 +579,7 @@ output$fitCasesIta <- renderPlotly({
               text = paste('Data:', strftime(data, format="%d-%m-%Y"),
                '<br>Casi: ', round(casi))), stat="identity", width = 0.8))+
   #          geom_text(data=datiIta, aes(x=data, y=casi, label=label), cex=2.5, color="black", fontface = "bold") +
-  					scale_fill_manual(values=d3hexcols) +
+  					scale_fill_manual(values=d3hexcols) +#scale_x_date(date_breaks="2 day",date_labels="%b %d")+
             theme(axis.text.x=element_text(angle=45,hjust=1)) +
             labs(x="") +
             theme(legend.title = element_blank())
@@ -862,7 +862,19 @@ output$tab_desktop<-renderUI({
   		),br(),br(),
   		fluidRow(style="padding:30px;background-color:#ffffff",width=12,  h2("Previsione del numero di casi totali a medio termine con modello esponenziale quadratico"), plotlyOutput(outputId="fitCasesIta")
 
-  		),br()
+  		),br(),
+      fluidRow(
+        box(width=12,
+          column(width=4,
+            selectizeInput("tipoCompare", label="Tipo Comparazione", choices=c("Totale", "Incremento Giornaliero"), , selected = "Lineare")
+          ),
+          column(width=4,
+            uiOutput("dateCompare")
+          ),
+          DTOutput("tabCompare"),spiegaTabellaCompare
+
+        )
+      ),br(),
   	)
 
   })
@@ -893,7 +905,19 @@ output$tab_desktop<-renderUI({
     		),br(),br(),
     		fluidRow(style="padding:30px;background-color:#ffffff",width=12,  h2("Previsione del numero di casi totali a medio termine con modello esponenziale quadratico"), plotlyOutput(outputId="fitCasesIta")
 
-    		),br()
+    		),br(),
+        fluidRow(
+          box(width=12,
+            column(width=4,
+              selectizeInput("tipoCompare", label="Tipo Comparazione", choices=c("Totale", "Incremento Giornaliero"), , selected = "Lineare")
+            ),
+            column(width=4,
+              uiOutput("dateCompare")
+            ),
+            DTOutput("tabCompare"),spiegaTabellaCompare
+
+          )
+        ),br(),
     	)
 
     })
