@@ -166,8 +166,12 @@ dashboardPage(
 	),
 
 	dashboardBody(
-				tags$script(jscodescreen),
-        tags$head(tags$link(rel = "stylesheet", type = "text/css", href = "pangea.css")),
+		HTML('<script>
+				  $( document ).on("shiny:sessioninitialized", function(event) {
+					 var jsAgt = navigator.userAgent;
+					 Shiny.onInputChange("GetNavUserAgent",jsAgt);
+				 });</script>'),
+	    tags$head(tags$link(rel = "stylesheet", type = "text/css", href = "pangea.css")),
 
 
     tabItems(
