@@ -36,11 +36,11 @@ shinyServer(function(input, output, session) {
 					)
 
 observe({
-		print('sono dentro')
+		#print('sono dentro')
 
-		if (is.null(input$GetNavUserAgent)){
-      print(input$GetNavUserAgent)
-			#if (grepl("mobile",tolower(input$GetNavUserAgent)) || grepl("android",tolower(input$GetNavUserAgent)))
+		if (!is.null(input$GetNavUserAgent)){
+      #print(input$GetNavUserAgent)
+			if (grepl("mobile",tolower(input$GetNavUserAgent)) || grepl("android",tolower(input$GetNavUserAgent)))
 			reacval$mobile<-T
 		}
 	})
