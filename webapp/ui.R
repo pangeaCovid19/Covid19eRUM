@@ -5,6 +5,16 @@ source("dashboardPangea.R")
 # dashboardBody(
 # 		tags$style(".fa-atlas color: #ff00ff ; }"
 # 	)
+chisiamotab<-tabItem(tabName="chisiamo",
+
+				uiOutput("spaces_mobile_chisiamo"),
+
+							fluidRow(style="padding:30px;border-style: solid;border-color:#ffe066;",br(),br(),
+										#	h1("Quanto veloce si diffonde il Coronavirus in Italia "),
+
+											fluidRow(style="padding-left:30px;padding-right:30px;background-color:#ffffff;",
+											HTML(readChar("../docs/chisiamo.html",file.info("../docs/chisiamo.html")$size)))))
+											
 introTab<-tabItem(tabName="intro",
 
 				uiOutput("spaces_mobile_intro"),
@@ -147,7 +157,10 @@ dashboardPage(
 			      ),
 			sidebarMenu(id='spiegazione',
 				menuItem2("Descrizione modelli", tabName = "intro", icon = icon("fas fa-atlas"))
-			)#,
+			),
+			sidebarMenu(id='presentazione',
+				menuItem2("Chi Siamo", tabName = "chisiamo", icon = icon("fas fa-users"))
+			)
 		 #selectInput("regionSel", label="Regione", choices=regioniList, selected = "Lombardia")
 	),
 
@@ -160,5 +173,6 @@ dashboardPage(
         regTab,
         prvTab,
 		    introTab
+		    ,chisiamotab
 	))
 )
