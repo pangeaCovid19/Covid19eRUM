@@ -7,9 +7,9 @@ library(DT)
 source("funzionifit.R")
 options(bitmapType="cairo")
 
-
+animazione <- FALSE
 verbose <- TRUE
-assignout <- TRUE
+assignout <- FALSE
 saveRDSout <- FALSE
 
 regioni2fit <- c('Lombardia', 'Emilia Romagna', 'Veneto')
