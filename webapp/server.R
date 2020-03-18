@@ -743,9 +743,9 @@ output$terapiaIntPlotPercNow<- renderPlotly({
 	        theme(axis.text.x=element_text(angle=45,hjust=1))+
           labs(x="", y="% letti occupati per CoVid19")
 	ggplotly(p, tooltip = c("text")) %>% config(locale = 'it')
-  if(reacval$mobile){
-    p<-p+coord_flip()
-  }
+  # if(reacval$mobile){
+  #   p<-p+coord_flip()
+  # }
   p
 
 })
@@ -769,9 +769,9 @@ output$terapiaIntPlotNow<- renderPlotly({
         scale_fill_manual(values=d3hexcols) +
         labs(x="", y="numero letti")
   ggplotly(p, tooltip = c("text")) %>% config(locale = 'it')
-  if(reacval$mobile){
-    p<- p+coord_flip()
-  }
+  # if(reacval$mobile){
+  #   p<- p+coord_flip()
+  # }
   p
 })
 
@@ -822,9 +822,9 @@ output$terapiaIntPlotPercPrev<- renderPlotly({
         scale_fill_manual(values=d3hexcols) +
         labs(x="", y="numero letti", fill="")
   ggplotly(p, tooltip = c("text")) %>% config(locale = 'it')
-  if(reacval$mobile){
-    p<-p+coord_flip()
-  }
+  # if(reacval$mobile){
+  #   p<-p+coord_flip()
+  # }
   p
 
 
