@@ -46,14 +46,14 @@ shinyServer(function(input, output, session) {
 		pathReg 	<- paste0(dir_reg,regRDS)
 		if( file.info(pathProv)$mtime > isolate(reacval$mdataProv)  ) {
 			dataProv	<- readRDS(pathProv)
-			reacval$dataTables  <- dataProv
-			reacval$mdataProv 	<- file.info(pathProv)$mtime
+			reacval$dataTables <- dataProv
+			reacval$mdataProv <- file.info(pathProv)$mtime
 		}
 		if( file.info(pathReg)$mtime > isolate(reacval$mdataReg)  ) {
 			regData <- readRDS(pathReg)
-			reacval$dataTables_reg<- regData
+			reacval$dataTables_reg <- regData
 			reacval$mdataReg <- file.info(pathReg)$mtime
-			reacval$dateRange_reg 	<- max(regData$data)
+			reacval$dateRange_reg <- max(regData$data)
 
 			tsReg <- getTimeSeries(regData)
 #			modelliIta <- list()
@@ -91,21 +91,6 @@ shinyServer(function(input, output, session) {
 		}
   })
 
-  get_data <- reactive({
-		if(verbose) cat("\n REACTIVE:getDATA")
-    res <- reacval$dataTables
-    #if (!is.null(input$drangeSel)) res <- res[res$data >= input$drangeSel[1] & res$data <= input$drangeSel[2],]
-    res
-  })
-
-#DEPRECATA
-#	  get_data_reg <- reactive({
-#			if(verbose) cat("\n REACTIVE:getDATA")
-#	    res <- reacval$dataTables_reg
-	    #if (!is.null(input$drangeSel)) res <- res[res$data >= input$drangeSel[1] & res$data <= input$drangeSel[2],]
-#	    res
-#	  })
-
   get_last_date <- reactive({
 		if(verbose) cat("\n REACTIVE:get_last_date")
     strftime(max(reacval$dateRange), format="%d-%m-%Y")
@@ -128,9 +113,9 @@ output$updateRegUI <- renderUI({
   h4(paste("Dati aggiornati al giorno:", get_last_date()))
 })
 
-output$lineRegion <- renderPlotly({
-	if(verbose) cat("\n renderPlotly:lineRegion")
-  allData <- reacval$dataTables#get_data()
+output$lineRegioni <- renderPlotly({
+	if(verbose) cat("\n renderPlotly:lineRegioni")
+  allData <- reacval$dataTables
   if (!is.null(allData)) {
     allDataConf <- allData[!grepl("aggiornamento", allData$denominazione_provincia),]
     allDataReg <- aggregate(list(totale_casi=allDataConf$totale_casi), by=list(data=allDataConf$data, denominazione_regione=allDataConf$denominazione_regione), FUN=sum)
@@ -148,9 +133,9 @@ output$lineRegion <- renderPlotly({
   }
 })
 
-output$tabRegionNEW <- renderDT({
-	if(verbose) cat("\n renderDT:tabRegion")
-  allDataReg <- reacval$dataTables_reg#get_data()
+output$tabRegioniNEW <- renderDT({
+	if(verbose) cat("\n renderDT:tabRegioni")
+  allDataReg <- reacval$dataTables_reg
   if (!is.null(allData)) {
     regrdx <- allDataReg[allDataReg$data==max(allDataReg$data), ]
 		out <- regrdx[, c('denominazione_regione', 'tamponi', 'totale_casi', 'totale_ospedalizzati','terapia_intensiva','deceduti','dimessi_guariti')]
@@ -164,9 +149,9 @@ output$tabRegionNEW <- renderDT({
   }
 })
 
-output$tabRegion <- renderDT({
-	if(verbose) cat("\n renderDT:tabRegion")
-  allData <- reacval$dataTables#get_data()
+output$tabRegioni <- renderDT({
+	if(verbose) cat("\n renderDT:tabRegioni")
+  allData <- reacval$dataTables
   if (!is.null(allData)) {
     allDataConf <- allData[!grepl("aggiornamento", allData$denominazione_provincia),]
     allDataReg <- aggregate(list(totale_casi=allDataConf$totale_casi, pop=allDataConf$pop), by=list(data=allDataConf$data, denominazione_regione=allDataConf$denominazione_regione), FUN=sum)
@@ -186,10 +171,37 @@ output$tabRegion <- renderDT({
 })
 
 
-output$mapRegion <- renderLeaflet({
-	if(verbose) cat("\n renderLeaflet:mapRegion")
+output$selRegioni <- renderUI({
+  allData <- reacval$dataTables
+  fluidRow(sliderInput("giornoReg", "Giorno:",
+              min = min(allData$data) + 1, max = max(allData$data),
+              value = max(allData$data), animate = animationOptions(interval = 1500), timeFormat="%b %d")
+    )
+})
 
-  allData <- reacval$dataTables#get_data()
+
+observe({
+  myGiorno <- input$giornoReg
+  allData <- reacval$dataTables
+  if (!is.null(allData) & !is.null(myGiorno)) {
+    allDataConf <- allData[!grepl("aggiornamento", allData$denominazione_provincia),]
+    allDataReg <- aggregate(list(totale_casi=allDataConf$totale_casi),
+                      by=list(data=allDataConf$data, denominazione_regione=allDataConf$denominazione_regione, codice_regione=allDataConf$codice_regione),
+                      FUN=sum)
+    latestDataReg <- allDataReg[allDataReg$data==myGiorno,]
+    latestDataReg$totale_casi[latestDataReg$totale_casi==0] <- NA_integer_
+    pltRegioni <- merge(regioni, latestDataReg[,c("codice_regione", "totale_casi")], by.x="COD_REG", by.y="codice_regione")
+    pal <- colorNumeric("YlOrRd", domain = log10(pltRegioni$totale_casi))
+    leafletProxy(mapId="mapRegioni", data=pltRegioni) %>% clearShapes() %>%
+        addPolygons(fillColor = ~pal(log10(totale_casi)), weight = 1, stroke = TRUE, color="lightgrey", fillOpacity = .7,
+             label = ~paste(DEN_REG, "- casi:", totale_casi))
+  }
+})
+
+output$mapRegioni <- renderLeaflet({
+	if(verbose) cat("\n renderLeaflet:mapRegioni")
+
+  allData <- reacval$dataTables
   if (!is.null(allData)) {
     allDataConf <- allData[!grepl("aggiornamento", allData$denominazione_provincia),]
     allDataReg <- aggregate(list(totale_casi=allDataConf$totale_casi, pop=allDataConf$pop),
@@ -212,9 +224,9 @@ output$mapRegion <- renderLeaflet({
   }
 })
 
-output$mapRegionGG <- renderPlot({
-	if(verbose) cat("\n renderPlot:mapRegionGG")
-  allData <- reacval$dataTables#get_data()
+output$mapRegioniGG <- renderPlot({
+	if(verbose) cat("\n renderPlot:mapRegioniGG")
+  allData <- reacval$dataTables
   if (!is.null(allData)) {
     allDataConf <- allData[!grepl("aggiornamento", allData$denominazione_provincia),]
     allDataReg <- aggregate(list(totale_casi=allDataConf$totale_casi, pop=allDataConf$pop),
@@ -231,6 +243,8 @@ output$mapRegionGG <- renderPlot({
       geom_text(data = pltRegioni, aes(x=reg_long, y=reg_lat, label=paste(DEN_REG, "\n casi:", totale_casi)), cex=2.5, color="black", fontface = "bold")
   }
 })
+
+
 ## PROVINCE
 
 output$updatePrvUI <- renderUI({
@@ -241,8 +255,8 @@ output$updatePrvUI <- renderUI({
 output$lineProvince <- renderPlotly({
 	if(verbose) cat("\n renderPlotly:lineProvince")
   myReg <- input$regionSel
-  allData <- reacval$dataTables#get_data()
-  if (!is.null(allData)) {
+  allData <- reacval$dataTables
+  if (!is.null(allData) & !is.null(myReg)) {
     allDataConf <- allData[!grepl("aggiornamento", allData$denominazione_provincia),]
     allDataConf <- allDataConf[allDataConf$denominazione_regione == myReg,]
     allDataProv <- aggregate(list(totale_casi=allDataConf$totale_casi),
@@ -267,8 +281,8 @@ output$tabProvince <- renderDT({
 	if(verbose) cat("\n renderDT:tabProvince")
   myReg <- input$regionSel
 
-  if (!is.null(allData)) {
-    allData <- reacval$dataTables#get_data()
+  if (!is.null(allData) & !is.null(myReg)) {
+    allData <- reacval$dataTables
     allDataConf <- allData[!grepl("aggiornamento", allData$denominazione_provincia),]
     allDataConf <- allDataConf[allDataConf$denominazione_regione == myReg,]
     allDataProv <- aggregate(list(totale_casi=allDataConf$totale_casi, pop=allDataConf$pop),
@@ -289,32 +303,53 @@ output$tabProvince <- renderDT({
 })
 
 
-output$dateProvince <- renderUI({
+output$selProvince <- renderUI({
   allData <- reacval$dataTables
-  fluidRow(selectInput("regionSel", label="Seleziona regione", choices=regioniList, selected = "Lombardia"),
+  if (!is.null(allData)) {
+    fluidRow(selectInput("regionSel", label="Seleziona regione", choices=regioniList, selected = "Lombardia"),
       sliderInput("giornoPrv", "Giorno:",
-      min = min(allData$data) + 1, max = max(allData$data),
-      value = max(allData$data), animate = animationOptions(interval = 1500), timeFormat="%b %d"))
+        min = min(allData$data) + 1, max = max(allData$data),
+        value = max(allData$data), animate = animationOptions(interval = 1500), timeFormat="%b %d")
+    )
+  }
 })
 
+
+observe({
+  myGiorno <- input$giornoPrv
+  myReg <- isolate(input$regionSel)
+  allData <- reacval$dataTables
+  if (!is.null(allData) & !is.null(myGiorno) & !is.null(myReg)) {
+    allDataConf <- allData[!grepl("aggiornamento", allData$denominazione_provincia),]
+    allDataConf <- allDataConf[allDataConf$denominazione_regione == myReg,]
+    allDataProv <- aggregate(list(totale_casi=allDataConf$totale_casi),
+                      by=list(data=allDataConf$data, denominazione_provincia=allDataConf$denominazione_provincia, codice_provincia=allDataConf$codice_provincia),
+                      FUN=sum)
+    latestDataProv <- allDataProv[allDataProv$data == myGiorno,]
+    latestDataProv$totale_casi[latestDataProv$totale_casi==0] <- NA_integer_
+    pltProvince <- merge(province, latestDataProv[,c("codice_provincia", "totale_casi")], by.x="COD_PROV", by.y="codice_provincia")
+    pal <- colorNumeric("YlOrRd", domain = log10(pmax(1,allDataProv$totale_casi)))
+    leafletProxy(mapId="mapProvince", data=pltProvince) %>% clearShapes() %>%
+        addPolygons(fillColor = ~pal(log10(totale_casi)), weight = 1, stroke = TRUE, color="lightgrey", fillOpacity = .7,
+             label = ~paste(DEN_UTS, "- casi:", totale_casi))
+  }
+})
 
 output$mapProvince <- renderLeaflet({
 	if(verbose) cat("\n renderLeaflet:mapProvince")
   myReg <- input$regionSel
-  myGiorno <- input$giornoPrv
-  allData <- reacval$dataTables#get_data()
-  if (!is.null(allData)) {
+  allData <- reacval$dataTables
+  if (!is.null(allData) & !is.null(myReg)) {
     allDataConf <- allData[!grepl("aggiornamento", allData$denominazione_provincia),]
     allDataConf <- allDataConf[allDataConf$denominazione_regione == myReg,]
-    allDataProv <- aggregate(list(totale_casi=allDataConf$totale_casi, pop=allDataConf$pop),
+    allDataProv <- aggregate(list(totale_casi=allDataConf$totale_casi),
                       by=list(data=allDataConf$data, denominazione_provincia=allDataConf$denominazione_provincia, codice_provincia=allDataConf$codice_provincia),
                       FUN=sum)
-    latestDataProv <- allDataProv[allDataProv$data == myGiorno,]
-    latestDataProv$densita_casi <- round(latestDataProv$totale_casi / latestDataProv$pop * 10000, 3)
-    pltProvince <- merge(province, latestDataProv[,c("codice_provincia", "totale_casi", "densita_casi")], by.x="COD_PROV", by.y="codice_provincia")
+    latestDataProv <- allDataProv[allDataProv$data == max(allDataProv$data),]
+    latestDataProv$totale_casi[latestDataProv$totale_casi==0] <- NA_integer_
+    pltProvince <- merge(province, latestDataProv[,c("codice_provincia", "totale_casi")], by.x="COD_PROV", by.y="codice_provincia")
     my_frame <- st_drop_geometry(regioni[regioni$COD_REG == unique(pltProvince$COD_REG), c("reg_long", "reg_lat")])
     ##pltProvince <- merge(province, latestDataProv[,c("codice_regione", "reg_long", "reg_lat")], by.x="COD_REG", by.y="codice_regione")
-    #pal <- colorNumeric("YlOrRd", domain = log10(pltProvince$totale_casi))
     pal <- colorNumeric("YlOrRd", domain = log10(pmax(1,allDataProv$totale_casi)))
     suppressWarnings(leaflet(data = pltProvince, options = leafletOptions(zoomControl = FALSE,minZoom = 7, maxZoom = 7)) %>% addTiles() %>%
         addProviderTiles("CartoDB.Positron") %>% setView(lng=my_frame$reg_long, lat=my_frame$reg_lat, zoom=7)  %>%
@@ -331,8 +366,8 @@ output$mapProvince <- renderLeaflet({
 output$mapProvinceGG <- renderPlot({
 	if(verbose) cat("\n renderPlot:mapProvinceGG")
   myReg <- input$regionSel
-  allData <- reacval$dataTables#get_data()
-  if (!is.null(allData)) {
+  allData <- reacval$dataTables
+  if (!is.null(allData) & !is.null(myReg)) {
     allDataConf <- allData[!grepl("aggiornamento", allData$denominazione_provincia),]
     allDataConf <- allDataConf[allDataConf$denominazione_regione == myReg,]
     allDataProv <- aggregate(list(totale_casi=allDataConf$totale_casi, pop=allDataConf$pop),
@@ -355,7 +390,7 @@ output$mapProvinceGG <- renderPlot({
 
 getTimeSeriesReact <- reactive({
 	if(verbose) cat("\n reactive:getTimeSeriesReact")
-	allDataReg <- copy( reacval$dataTables_reg)
+	allDataReg <- copy(reacval$dataTables_reg)
 	if (!is.null(allDataReg)) {
 		tstot <- getTimeSeries(allDataReg)
 		if(saveRDSout) saveRDS(file="tstotOut.RDS",tstot)
@@ -382,7 +417,7 @@ output$updateTIUI <- renderUI({
 
 prevRegion <- reactive({
 	if(verbose) cat("\n reactive:prevRegion")
-	allDataReg <- copy( reacval$dataTables_reg)
+	allDataReg <- copy(reacval$dataTables_reg)
   tipoModello <- input$modelloFit
 	nahead=3
 	cat("\ttipoModello:", tipoModello)
@@ -673,7 +708,7 @@ output$terapiaIntPlotPercPrev<- renderPlotly({
 	if(verbose) cat("\n renderPlotly:terapiaIntPlot")
 
 	tint <- terapiaInt()
-	allDataReg <- copy( reacval$dataTables_reg)
+	allDataReg <- copy(reacval$dataTables_reg)
 	prevDT <-copy(prevRegion())
 	if(is.null(tint)) return(NULL)
 	if(is.null(allDataReg)) return(NULL)
@@ -727,7 +762,7 @@ output$terapiaIntPlotPercPrev<- renderPlotly({
 
 prevRegionCompare <- reactive({
 	if(verbose) cat("\n reactive:prevRegion")
-	allDataReg <- copy( reacval$dataTables_reg)
+	allDataReg <- copy(reacval$dataTables_reg)
   tipoModello <- input$modelloFit
 
 

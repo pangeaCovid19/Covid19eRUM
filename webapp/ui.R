@@ -64,24 +64,25 @@ regTab <- tabItem(tabName = "regPlots",
 					fluidRow(style="padding-left:30px;padding-right:30px;border-style: solid;border-color:#0086b3;",
 					h1("Diffusione nelle regioni italiane"),
 					fluidRow(style="padding:20px;background-color:#ffffff",#style="background-color :#0086b3;",
+						 uiOutput("selRegioni"),
 						 h3("Mappa dei casi confermati"),
-								#plotOutput(outputId="mapRegionGG", height = 800),
-								leafletOutput(outputId="mapRegion"),
+								#plotOutput(outputId="mapRegioniGG", height = 800),
+								leafletOutput(outputId="mapRegioni"),
 								spiegaMappa
 						),br(),
 						fluidRow(style="padding:20px;background-color:#ffffff",
 							h3("Andamento dei casi confermati"),
-								plotlyOutput(outputId="lineRegion"),
+								plotlyOutput(outputId="lineRegioni"),
 								spiegaLinePlot
 
 						)
 						,br(),
 						# box(width=6, title = tagList(shiny::icon("table"), "Tabella con casi confermati"), status = "primary", solidHeader = F,collapsible = T,
-						# 	DTOutput(outputId="tabRegion"),
+						# 	DTOutput(outputId="tabRegioni"),
 						# 	spiegaTabella
 						# )
 						fluidRow(style="padding:20px;background-color:#ffffff",
-						h3("Tabella con casi confermati"),DTOutput(outputId="tabRegion"),spiegaTabella
+						h3("Tabella con casi confermati"),DTOutput(outputId="tabRegioni"),spiegaTabella
 
 						)
 					,br()),br(),fluidRow(
@@ -96,10 +97,7 @@ prvTab <- tabItem(tabName = "prvPlots",
 							h1("Diffusione nelle province italiane"), br(),
 							#
 							fluidRow(style="padding:20px;background-color:#ffffff",
-								uiOutput("dateProvince"),
-								#sliderInput("giornoPrv", "Giorno:",
-								#					min = as.Date(min(allData$data)) + 1, max = as.Date(max(allData$data)),
-								#					value = as.Date(max(allData$data)), sep = "", animate=TRUE),
+								uiOutput("selProvince"),
 								h3("Mappa dei casi confermati"),
 										#plotOutput(outputId="mapProvinceGG", height = 800),
 										leafletOutput(outputId="mapProvince"),
