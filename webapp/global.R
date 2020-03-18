@@ -7,8 +7,19 @@ library(DT)
 source("funzionifit.R")
 options(bitmapType="cairo")
 
+
+
+jscodescreen <-
+        '$(document).on("shiny:sessioninitialized", function(e) {
+			 var jsAgt = navigator.userAgent;
+			 Shiny.onInputChange("GetNavUserAgent",jsAgt);
+});
+'
+
+
 animazione <- FALSE
 scalaSingolaProvincia <-FALSE
+
 verbose <- TRUE
 assignout <- FALSE
 saveRDSout <- FALSE
@@ -44,6 +55,13 @@ d3col1 <- d3hexcols[1]
 
 d3cols20 <- "1f77b4aec7e8ff7f0effbb782ca02c98df8ad62728ff98969467bdc5b0d58c564bc49c94e377c2f7b6d27f7f7fc7c7c7bcbd22dbdb8d17becf9edae5"
 d3hexcols20 <- paste0("#",regmatches(d3cols20, gregexpr(".{6}", d3cols20))[[1]])
+
+
+
+
+
+
+
 
 my_ggtheme <- function() {
   theme_minimal() +
