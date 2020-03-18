@@ -36,21 +36,21 @@ shinyServer(function(input, output, session) {
 					)
 
 observe({
-		#print('sono dentro')
 
+    print(input$GetNavUserAgent)
 		if (!is.null(input$GetNavUserAgent)){
-      #print(input$GetNavUserAgent)
+
 			if (grepl("mobile",tolower(input$GetNavUserAgent)) || grepl("android",tolower(input$GetNavUserAgent)))
 			reacval$mobile<-T
 		}
 	})
 
-  observe({
-  	if (reacval$mobile==T)
-  		print("SEI MOBILE")
-  	else
-  		print("NON SEI MOBILE")
-  })
+  # observe({
+  # 	if (reacval$mobile==T)
+  # 		print("SEI MOBILE")
+  # 	else
+  # 		print("NON SEI MOBILE")
+  # })
 
 
   observe({
@@ -1029,7 +1029,7 @@ output$tab_desktop<-renderUI({
           DTOutput("tabCompare"),spiegaTabellaCompare
 
         )
-      ),br(),
+      ),br()
   	)
 
   })
@@ -1072,7 +1072,7 @@ output$tab_desktop<-renderUI({
             DTOutput("tabCompare"),spiegaTabellaCompare
 
           )
-        ),br(),
+        ),br()
     	)
 
     })

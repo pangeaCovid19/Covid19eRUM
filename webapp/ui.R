@@ -3,26 +3,26 @@ library(shinyWidgets)
 source("dashboardPangea.R")
 #HTML(readChar("../docs/intro.html",file.info("../docs/intro.html")$size))
 # dashboardBody(
-# 		tags$style(".fa-atlas color: #ff00ff ; }"
+# 		tags$style(".fa-users color: #ff00ff ; }"
 # 	)
 chisiamotab<-tabItem(tabName="chisiamo",
 
 				uiOutput("spaces_mobile_chisiamo"),
 
-							fluidRow(style="padding:30px;border-style: solid;border-color:#ffe066;",br(),br(),
+							fluidRow(style="padding:30px;border-style: solid;border-color:#00cc99;",
 										#	h1("Quanto veloce si diffonde il Coronavirus in Italia "),
 
-											fluidRow(style="padding-left:30px;padding-right:30px;background-color:#ffffff;",
+											fluidRow(style="padding:30px;background-color:#ffffff;",
 											HTML(readChar("../docs/chisiamo.html",file.info("../docs/chisiamo.html")$size)))))
-											
+
 introTab<-tabItem(tabName="intro",
 
 				uiOutput("spaces_mobile_intro"),
 
-							fluidRow(style="padding:30px;border-style: solid;border-color:#ffe066;",br(),br(),
+							fluidRow(style="padding:30px;border-style: solid;border-color:#ffe066;",
 										#	h1("Quanto veloce si diffonde il Coronavirus in Italia "),
 
-											fluidRow(style="padding-left:30px;padding-right:30px;background-color:#ffffff;",
+											fluidRow(style="padding:30px;background-color:#ffffff;",
 											HTML(readChar("../docs/intro.html",file.info("../docs/intro.html")$size)))))
 
 fitTab <- tabItem(tabName = "fitPlots",#style="background-color:#ffc2b3",
@@ -73,17 +73,20 @@ regTab <- tabItem(tabName = "regPlots",
 					uiOutput("spaces_mobile_reg"),
 					fluidRow(style="padding-left:30px;padding-right:30px;border-style: solid;border-color:#0086b3;",
 					h1("Diffusione nelle regioni italiane"),
-					fluidRow(style="padding:20px;background-color:#ffffff",#style="background-color :#0086b3;",
-						 uiOutput("selRegioni"),
-						 h3("Mappa dei casi confermati"),
-								#plotOutput(outputId="mapRegioniGG", height = 800),
-								leafletOutput(outputId="mapRegioni"),
-								spiegaMappa
+					fluidRow(style="padding:20px;background-color:#ffffff",
+					fluidRow(align='center',h3("Mappa dei casi confermati")),
+					column(9,uiOutput("selRegioni"),
+					#h3("Mappa dei casi confermati"),
+						 #plotOutput(outputId="mapRegioniGG", height = 800),
+						 leafletOutput(outputId="mapRegioni")),#style="background-color :#0086b3;",
+						 column(3,spiegaMappa)
+							#	spiegaMappa
 						),br(),
 						fluidRow(style="padding:20px;background-color:#ffffff",
-							h3("Andamento dei casi confermati"),
-								plotlyOutput(outputId="lineRegioni"),
-								spiegaLinePlot
+						h3("Andamento dei casi confermati"),
+						column(9,plotlyOutput(outputId="lineRegioni")),
+							column(3,spiegaLinePlot)
+
 
 						)
 						,br(),
@@ -104,7 +107,7 @@ regTab <- tabItem(tabName = "regPlots",
 prvTab <- tabItem(tabName = "prvPlots",
 					uiOutput("spaces_mobile_prov"),
 					fluidRow(style="padding-left:30px;padding-right:30px;border-style: solid;border-color:#0086b3;",
-							h1("Diffusione nelle province italiane"), br(),
+							h1("Diffusione nelle province e nelle città metropolitane italiane"), br(),
 							#
 							fluidRow(style="padding:20px;background-color:#ffffff",
 								uiOutput("selProvince"),
