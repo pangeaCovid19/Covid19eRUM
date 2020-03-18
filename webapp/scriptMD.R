@@ -1,9 +1,36 @@
 require(data.table)
 require(rmarkdown)
+source("funzionifit.R")
 datiRegioni<-readRDS("www/dati-regioni/dataRegioni.RDS")
 pvalue<-function(x,mean,sd) {
 	y<-pnorm(x,mean,sd)
 	2*min(y,1-y)
+}
+#contagi deve avere due colonne: data e variabile di interesse
+confrontoModelloPrevisioni<-function(data, contagi, datastart=as.Date("2020-03-10")) {
+	datelist<-seq(datastart,to=data-1,by="day")
+	variabile<-setdiff(names(contagi),"data")
+	modelliquad<-lapply(datelist, function(x) readRDS(sprintf("www/pastModels/modelliIta_%s.RDS",x)))
+	modelliexp<-lapply(datelist, function(x) readRDS(sprintf("www/pastModels/modelliItaExp_%s.RDS",x)))
+	contagi2<-contagi[[variabile]][match(datelist+1,contagi$data)]
+	#contagi2<-contagi[data %in% datelist]
+	#setkey(contagi2,data)
+	funzione<-function(modexp, modquad, datoreale, currentdata, variabile) {
+		modexp<-modexp[[variabile]]
+		modquad<-modquad[[variabile]]
+		prevexp<-predict(modexp,data.frame(data=currentdata+1),interval="confidence")
+		prevquad<-predictNextDays(data.frame(data=currentdata),modquad,nahead=1)
+		sdexp<-prevexp[3]-prevexp[1]
+		delta<-abs(log(datoreale)-prevexp[1])/sdexp
+		pv<-pvalue(log(datoreale),prevexp[1],sdexp)
+		sdquad<-log(prevquad$UpperRange/prevquad$Attesi)
+		deltaquad<-abs(log(datoreale)-log(prevquad$Attesi))/sdquad
+		pvquad<-pvalue(log(datoreale),log(prevquad$Attesi),sdquad)
+		res<-data.frame(data = currentdata+1, variabile = format(datoreale), Esponenziale = round(exp(prevexp[1])), Delta_E = round(delta,1), `P-value_E` = round(pv,2) , Quadratico = format(prevquad$Attesi), Delta_q = round(deltaquad,1), `P-value_Q`= round(pvquad,2), stringsAsFactors=FALSE, check.names=FALSE)
+		names(res)[2]<-variabile
+		res
+	}
+	do.call(rbind,mapply(funzione, modelliexp, modelliquad, contagi2, datelist, MoreArgs=list(variabile=variabile),SIMPLIFY=FALSE))
 }
 #modello<-readRDS(sprintf("www/pastModels/modelliIta_%s.RDS"))
 #modelloexp<-readRDS(sprintf("www/pastModels/modelliItaExp_%s.RDS"))
@@ -47,3 +74,12 @@ previsioneesp<-predict(modelloexp[[1]],data.frame(data=data),interval="confidenc
 sdexp<-previsioneesp[3]-previsioneesp[1]
 delta<-abs(log(ultimidati$totale_casi)-previsioneesp[1])/sdexp
 pv<-pvalue(log(ultimidati$totale_casi),previsioneesp[1],sdexp)
+
+previsionequad<-predictNextDays(data.frame(data=ldata),modello[[1]],nahead=1)
+sdquad<-log(previsionequad$UpperRange/previsionequad$Attesi)
+deltaquad<-abs(log(ultimidati$totale_casi)-log(previsionequad$Attesi))/sdquad
+pvquad<-pvalue(log(ultimidati$totale_casi),log(previsionequad$Attesi),sdquad)
+
+
+tabuno<-confrontoModelloPrevisioni(data, italia[,.(data,totale_casi)])
+tabdue<-confrontoModelloPrevisioni(data, italia[,.(data,deceduti)])
