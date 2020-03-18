@@ -34,14 +34,24 @@ shinyServer(function(input, output, session) {
 						modelliRegExp=modelliRegExp,
             mobile=F
 					)
-          observe({
 
+observe({
+		print('sono dentro')
 
-          		if (!is.null(session$request$HTTP_USER_AGENT)){
-          			if (grepl("mobile",tolower(session$request$HTTP_USER_AGENT)) || grepl("iphone",tolower(session$request$HTTP_USER_AGENT)) )
-          			reacval$mobile<-T
-          		}
-          	})
+		if (is.null(input$GetNavUserAgent)){
+      print(input$GetNavUserAgent)
+			#if (grepl("mobile",tolower(input$GetNavUserAgent)) || grepl("android",tolower(input$GetNavUserAgent)))
+			reacval$mobile<-T
+		}
+	})
+
+  observe({
+  	if (reacval$mobile==T)
+  		print("SEI MOBILE")
+  	else
+  		print("NON SEI MOBILE")
+  })
+
 
   observe({
 		if(verbose) cat("\n OBSERVE:leggiDati")
@@ -174,6 +184,7 @@ output$tabRegioniNEW <- renderDT({
 })
 
 output$tabRegioni <- renderDT({
+
 	if(verbose) cat("\n renderDT:tabRegioni")
   allDataReg <- copy(reacval$dataTables_reg_flt)
 
@@ -659,9 +670,9 @@ output$terapiaIntPlotPercNow<- renderPlotly({
 	        theme(axis.text.x=element_text(angle=45,hjust=1))+
           labs(x="", y="% letti occupati per CoVid19")
 	ggplotly(p, tooltip = c("text")) %>% config(locale = 'it')
-  if(reacval$mobile){
-    p<-p+coord_flip()
-  }
+  # if(reacval$mobile){
+  #   p<-p+coord_flip()
+  # }
   p
 
 })
@@ -685,9 +696,9 @@ output$terapiaIntPlotNow<- renderPlotly({
         scale_fill_manual(values=d3hexcols) +
         labs(x="", y="numero letti")
   ggplotly(p, tooltip = c("text")) %>% config(locale = 'it')
-  if(reacval$mobile){
-    p<- p+coord_flip()
-  }
+  # if(reacval$mobile){
+  #   p<- p+coord_flip()
+  # }
   p
 })
 
@@ -738,9 +749,9 @@ output$terapiaIntPlotPercPrev<- renderPlotly({
         scale_fill_manual(values=d3hexcols) +
         labs(x="", y="numero letti", fill="")
   ggplotly(p, tooltip = c("text")) %>% config(locale = 'it')
-  if(reacval$mobile){
-    p<-p+coord_flip()
-  }
+  # if(reacval$mobile){
+  #   p<-p+coord_flip()
+  # }
   p
 
 

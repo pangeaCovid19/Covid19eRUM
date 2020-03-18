@@ -152,7 +152,9 @@ dashboardPage(
 	),
 
 	dashboardBody(
+				tags$script(jscodescreen),
         tags$head(tags$link(rel = "stylesheet", type = "text/css", href = "pangea.css")),
+
 
     tabItems(
 				fitTab,
