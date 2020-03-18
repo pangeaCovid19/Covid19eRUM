@@ -34,6 +34,8 @@ shinyServer(function(input, output, session) {
 						modelliRegExp=modelliRegExp,
             mobile=F
 					)
+          observe({
+
 
 observe({
 
@@ -44,13 +46,6 @@ observe({
 			reacval$mobile<-T
 		}
 	})
-
-  # observe({
-  # 	if (reacval$mobile==T)
-  # 		print("SEI MOBILE")
-  # 	else
-  # 		print("NON SEI MOBILE")
-  # })
 
 
   observe({
@@ -169,14 +164,18 @@ output$lineRegioni <- renderPlotly({
   }
 })
 
-output$tabRegioniNEW <- renderDT({
+output$tabRegioni <- renderDT({
 	if(verbose) cat("\n renderDT:tabRegioni")
   allDataReg <- reacval$dataTables_reg
-  if (!is.null(allData)) {
+  if (!is.null(allDataReg)) {
     regrdx <- allDataReg[allDataReg$data==max(allDataReg$data), ]
-		out <- regrdx[, c('denominazione_regione', 'tamponi', 'totale_casi', 'totale_ospedalizzati','terapia_intensiva','deceduti','dimessi_guariti')]
-		names(out) <- c('regione', 'tamponi', 'casi', 'ospedalizzati', 'Terapia intensiva','deceduti','guariti')
+		regrdx$casi10k <- round(regrdx$totale_casi / regrdx$pop * 10000, 2)
+		regrdx$casiTampone <- round(regrdx$totale_casi / regrdx$tamponi , 2)
+
+		out <- regrdx[, c('denominazione_regione', 'tamponi', 'totale_casi','casiTampone', 'totale_ospedalizzati','terapia_intensiva','deceduti','dimessi_guariti','casi10k')]
+		names(out) <- c('regione', 'tamponi', 'casi', 'casi x tampone', 'ospedalizzati', 'Terapia intensiva','deceduti','guariti', 'casi su 10mila abit.')
  #   out$`casi su 10mila abit` <- round(out$totale_casi / out$pop * 10000, 3)
+ #
 
     datatable(out,
       selection = list(target = NULL),
@@ -185,8 +184,7 @@ output$tabRegioniNEW <- renderDT({
   }
 })
 
-output$tabRegioni <- renderDT({
-
+output$tabRegioniOLD <- renderDT({
 	if(verbose) cat("\n renderDT:tabRegioni")
   allDataReg <- copy(reacval$dataTables_reg_flt)
 
@@ -743,9 +741,9 @@ output$terapiaIntPlotPercNow<- renderPlotly({
 	        theme(axis.text.x=element_text(angle=45,hjust=1))+
           labs(x="", y="% letti occupati per CoVid19")
 	ggplotly(p, tooltip = c("text")) %>% config(locale = 'it')
-  # if(reacval$mobile){
-  #   p<-p+coord_flip()
-  # }
+  if(reacval$mobile){
+    p<-p+coord_flip()
+  }
   p
 
 })
@@ -769,9 +767,9 @@ output$terapiaIntPlotNow<- renderPlotly({
         scale_fill_manual(values=d3hexcols) +
         labs(x="", y="numero letti")
   ggplotly(p, tooltip = c("text")) %>% config(locale = 'it')
-  # if(reacval$mobile){
-  #   p<- p+coord_flip()
-  # }
+  if(reacval$mobile){
+    p<- p+coord_flip()
+  }
   p
 })
 
@@ -822,9 +820,9 @@ output$terapiaIntPlotPercPrev<- renderPlotly({
         scale_fill_manual(values=d3hexcols) +
         labs(x="", y="numero letti", fill="")
   ggplotly(p, tooltip = c("text")) %>% config(locale = 'it')
-  # if(reacval$mobile){
-  #   p<-p+coord_flip()
-  # }
+  if(reacval$mobile){
+    p<-p+coord_flip()
+  }
   p
 
 
