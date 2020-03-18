@@ -35,8 +35,7 @@ shinyServer(function(input, output, session) {
             mobile=F
 					)
           observe({
-            print('ciao')
-            print(grepl("mobile",tolower(input$GetNavUserAgent)))
+
 
           		if (!is.null(session$request$HTTP_USER_AGENT)){
           			if (grepl("mobile",tolower(session$request$HTTP_USER_AGENT)) || grepl("iphone",tolower(session$request$HTTP_USER_AGENT)) )
@@ -135,8 +134,7 @@ shinyServer(function(input, output, session) {
 
 ## REGIONI
 output$updateRegUI <- renderUI({
-  print('ciao')
-  print((session$request$HTTP_USER_AGENT))
+
 	if(verbose) cat("\n renderUI:updateRegUI")
   h4(paste("Dati aggiornati al giorno:", get_last_date()))
 })
