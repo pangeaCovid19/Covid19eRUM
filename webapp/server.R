@@ -3,12 +3,7 @@ shinyServer(function(input, output, session) {
 
 
 
-  observe({
-  		if (!is.null(input$GetNavUserAgent)){
-  			if (grepl("mobile",tolower(input$GetNavUserAgent)) || grepl("android",tolower(input$GetNavUserAgent)))
-  			reacval$mobile<-T
-  		}
-  	})
+
 
 
   DT_lang_opt <- list(language = list(lengthMenu="Mostra _MENU_ righe per pagina",
@@ -39,6 +34,14 @@ shinyServer(function(input, output, session) {
 						modelliRegExp=modelliRegExp,
             mobile=F
 					)
+          observe({
+
+
+          		if (!is.null(session$request$HTTP_USER_AGENT)){
+          			if (grepl("mobile",tolower(session$request$HTTP_USER_AGENT)) || grepl("iphone",tolower(session$request$HTTP_USER_AGENT)) )
+          			reacval$mobile<-T
+          		}
+          	})
 
   observe({
 		if(verbose) cat("\n OBSERVE:leggiDati")
@@ -133,6 +136,7 @@ shinyServer(function(input, output, session) {
 
 ## REGIONI
 output$updateRegUI <- renderUI({
+
 	if(verbose) cat("\n renderUI:updateRegUI")
   h4(paste("Dati aggiornati al giorno:", get_last_date()))
 })
