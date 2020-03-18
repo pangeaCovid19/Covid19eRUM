@@ -34,7 +34,7 @@ shinyServer(function(input, output, session) {
 						modelliRegExp=modelliRegExp,
             mobile=F
 					)
-          observe({
+
 
 
 observe({

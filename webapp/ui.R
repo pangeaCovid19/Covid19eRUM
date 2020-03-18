@@ -74,19 +74,17 @@ regTab <- tabItem(tabName = "regPlots",
 					fluidRow(style="padding-left:30px;padding-right:30px;border-style: solid;border-color:#0086b3;",
 					h1("Diffusione nelle regioni italiane"),
 					fluidRow(style="padding:20px;background-color:#ffffff",
-					fluidRow(align='center',h3("Mappa dei casi confermati")),
-					column(9,uiOutput("selRegioni"),
-					#h3("Mappa dei casi confermati"),
-						 #plotOutput(outputId="mapRegioniGG", height = 800),
-						 leafletOutput(outputId="mapRegioni")),#style="background-color :#0086b3;",
-						 column(3,spiegaMappa)
-							#	spiegaMappa
+					#style="background-color :#0086b3;",
+						 uiOutput("selRegioni"),
+						 h3("Mappa dei casi confermati"),
+								#plotOutput(outputId="mapRegioniGG", height = 800),
+								leafletOutput(outputId="mapRegioni"),
+								spiegaMappa
 						),br(),
 						fluidRow(style="padding:20px;background-color:#ffffff",
-						h3("Andamento dei casi confermati"),
-						column(9,plotlyOutput(outputId="lineRegioni")),
-							column(3,spiegaLinePlot)
-
+							h3("Andamento dei casi confermati"),
+								plotlyOutput(outputId="lineRegioni"),
+								spiegaLinePlot
 
 						)
 						,br(),
