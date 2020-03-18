@@ -159,14 +159,18 @@ output$lineRegioni <- renderPlotly({
   }
 })
 
-output$tabRegioniNEW <- renderDT({
+output$tabRegioni <- renderDT({
 	if(verbose) cat("\n renderDT:tabRegioni")
   allDataReg <- reacval$dataTables_reg
-  if (!is.null(allData)) {
+  if (!is.null(allDataReg)) {
     regrdx <- allDataReg[allDataReg$data==max(allDataReg$data), ]
-		out <- regrdx[, c('denominazione_regione', 'tamponi', 'totale_casi', 'totale_ospedalizzati','terapia_intensiva','deceduti','dimessi_guariti')]
-		names(out) <- c('regione', 'tamponi', 'casi', 'ospedalizzati', 'Terapia intensiva','deceduti','guariti')
+		regrdx$casi10k <- round(regrdx$totale_casi / regrdx$pop * 10000, 2)
+		regrdx$casiTampone <- round(regrdx$totale_casi / regrdx$tamponi , 2)
+
+		out <- regrdx[, c('denominazione_regione', 'tamponi', 'totale_casi','casiTampone', 'totale_ospedalizzati','terapia_intensiva','deceduti','dimessi_guariti','casi10k')]
+		names(out) <- c('regione', 'tamponi', 'casi', 'casi x tampone', 'ospedalizzati', 'Terapia intensiva','deceduti','guariti', 'casi su 10mila abit.')
  #   out$`casi su 10mila abit` <- round(out$totale_casi / out$pop * 10000, 3)
+ #
 
     datatable(out,
       selection = list(target = NULL),
@@ -175,7 +179,7 @@ output$tabRegioniNEW <- renderDT({
   }
 })
 
-output$tabRegioni <- renderDT({
+output$tabRegioniOLD <- renderDT({
 	if(verbose) cat("\n renderDT:tabRegioni")
   allDataReg <- copy(reacval$dataTables_reg_flt)
 
