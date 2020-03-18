@@ -14,6 +14,18 @@ chisiamotab<-tabItem(tabName="chisiamo",
 
 											fluidRow(style="padding:30px;background-color:#ffffff;",
 											HTML(readChar("../docs/chisiamo.html",file.info("../docs/chisiamo.html")$size)))))
+											
+diariotab<-tabItem(tabName="diario",
+
+				uiOutput("spaces_mobile_diario"),
+
+							fluidRow(style="padding:30px;border-style: solid;border-color:#00cc99;",
+										#	h1("Quanto veloce si diffonde il Coronavirus in Italia "),
+
+											fluidRow(style="padding:30px;background-color:#ffffff;",
+											tags$iframe(src="../tabReport.html", style="border:none;", height="5000", width="100%")
+											)))										
+											
 
 introTab<-tabItem(tabName="intro",
 
@@ -159,6 +171,9 @@ dashboardPage(
 			sidebarMenu(id='spiegazione',
 				menuItem2("Descrizione modelli", tabName = "intro", icon = icon("fas fa-atlas"))
 			),
+#			sidebarMenu(id='diariodibordo',
+#				menuItem2("Diario della diffusione", tabName = "diario", icon = icon("fas fa-users"))
+#			),
 			sidebarMenu(id='presentazione',
 				menuItem2("Chi Siamo", tabName = "chisiamo", icon = icon("fas fa-users"))
 			)
@@ -180,6 +195,7 @@ dashboardPage(
         regTab,
         prvTab,
 		    introTab
+		    #,diariotab
 		    ,chisiamotab
 	))
 )

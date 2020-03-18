@@ -1,5 +1,6 @@
 require(digest)
 require(httr)
+require(rmarkdown)
 source("funzionifit.R")
 writeLog<-function(message, log) {
 	cat(sprintf("%s - %s\n",format(Sys.time()),message),file=log,append=TRUE)
@@ -137,3 +138,4 @@ if ( TRUE) {
 		saveRDS(modelliItaExp,paste0("www/pastModels/modelliItaExp_", x,".RDS"))
 	})
 }
+rmarkdown::render("articolo.Rmd",output_file="../tabReport.html")

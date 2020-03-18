@@ -1,16 +1,16 @@
 ---
 title: "I nuovi dati diramati dalla Protezione Civile sul Coronavirus"
 author: "Pangea"
-output:
-  html_document:
-    css: style.css
+output: 
+   html_document:
+      css: style.css
 ---
 ```{r ,results='hide', echo=FALSE}
 source("scriptMD.R")
 ```
 
 <span class="myclass"></span> 
-Avrete probabilmente sentito che la Protezione Civile ha diramato gli ultimi dati relativi al <span class="myclass">`r fdata`</span>. Nella giornata, sono stati registrati <span class="myclass">`r ultimidati$decedutiGiorni`</span> nuovi decessi, portando il totale a <span class="myclass">`r ultimidati$deceduti`</span>. I nuovi casi di contagio ammontano a <span class="myclass">`r ultimidati$totale_casi`</span>, di cui <span class="myclass">`r ultimidati$nuovi_attualmente_positivi`</span> nell'ultima giornata. Rispetto al giorno precedente, registriamo <span class="myclass">`r segno(tail(diffdeceduti,1))`</span> di <span class="myclass">`r abs(tail(diffdeceduti,1))`</span> per quanto riguarda i deceduti e <span class="myclass">`r segno(tail(diffcontagi,1))`</span> di <span class="myclass">`r abs(tail(diffcontagi,1))`</span> per i nuovi nuovi contagi. 
+Avrete probabilmente sentito la Protezione Civile diramare gli ultimi dati relativi al <span class="myclass">`r fdata`</span>. Nella giornata, sono stati registrati <span class="myclass">`r ultimidati$decedutiGiorni`</span> nuovi decessi, portando il totale a <span class="myclass">`r ultimidati$deceduti`</span>. I nuovi casi di contagio ammontano a <span class="myclass">`r ultimidati$totale_casi`</span>, di cui <span class="myclass">`r ultimidati$nuovi_attualmente_positivi`</span> nell'ultima giornata. Rispetto al giorno precedente, registriamo <span class="myclass">`r segno(tail(diffdeceduti,1))`</span> di <span class="myclass">`r abs(tail(diffdeceduti,1))`</span> per quanto riguarda i deceduti e <span class="myclass">`r segno(tail(diffcontagi,1))`</span> di <span class="myclass">`r abs(tail(diffcontagi,1))`</span> per i nuovi nuovi contagi. 
 
 
 Le tre regioni più colpite per numero di casi totali sono <span class="myclass">`r paste0(treregioni,c(", "," e ",""),collapse="")`</span>. Insieme, queste regioni sommano al <span class="myclass">`r treregioniperc$totale_casi`</span> per cento dei contagi e hanno registrato il <span class="myclass">`r treregioniperc$deceduti`</span> per cento dei decessi nazionali. Nel dettaglio, di sotto riportiamo, per ogni regione, il numero dei contagi, dei decessi e la percentuale sul totale.
@@ -32,7 +32,7 @@ Se consideriamo i dati fino al <span class="myclass">`r fldata`</span> e cerchia
 
 Analogamente, per i decessi si ottiene un tempo di raddoppio pari a <span class="myclass">`r trexpdeceduti`</span>  giorni e un parametro $k$ pari a <span class="myclass">`r round(coeffexpdeceduti[2],2)`</span> .
 
-Per valutare se l'andamento seguito è effettivamente esponenziale, possiamo confrontare i dati del<span class="myclass">`r fdata`</span>  con quelli che si sarebbero ottenuti estrapolando l'andamento esponenziale. Il valore previsto per i contagi risulta essere <span class="myclass">`r round(exp(previsioneesp[1]))`</span> , a fronte di <span class="myclass">`r ultimidati$totale_casi`</span> registrati. La differenza tra previsione e dato consuntivato di <span class="myclass">`r round(exp(previsioneesp[1]))-ultimidati$totale_casi`</span> casi corrisponde a <span class="myclass">`r round(delta,1)`</span>  deviazioni standard lontano dalla previsione. La probabilità di ottenere un valore come quello registrato o più lontano dalla previsione, ammesso che la crescita sia effettivamente esponenziale, è pari al <span class="myclass">`r round(pv*100)`</span> per cento.
+Per valutare se l'andamento seguito è effettivamente esponenziale, possiamo confrontare i dati del<span class="myclass">`r fdata`</span>  con quelli che si sarebbero ottenuti estrapolando l'andamento esponenziale. Il valore previsto per i contagi risulta essere <span class="myclass">`r format(round(exp(previsioneesp[1])))`</span> , a fronte di <span class="myclass">`r ultimidati$totale_casi`</span> registrati. La differenza tra previsione e dato consuntivato di <span class="myclass">`r round(exp(previsioneesp[1]))-ultimidati$totale_casi`</span> casi corrisponde a <span class="myclass">`r round(delta,1)`</span>  deviazioni standard lontano dalla previsione. La probabilità di ottenere un valore come quello registrato o più lontano dalla previsione, ammesso che la crescita sia effettivamente esponenziale, è pari al <span class="myclass">`r round(pv*100)`</span> per cento.
 
 Con ogni probabilità, il modello esponenziale avrà previsto un valore più alto di quello registrato. Questo sperabilmente è dovuto alle misure restrittive in atto che hanno lo scopo di ritardare il contagio. Un modo per tenere traccia di questi effetti è quello di potenziare il modello esponenziale, inserendo un termine aggiuntivo che permette al rate di contagio, e conseguentemente al tempo di raddoppio, di diminuire linearmente nel tempo. Si ipotizza quindi un andamento del tipo:
 
@@ -40,5 +40,17 @@ $$
 N(t) = N_0e^{Kt + Mt^2},
 $$
 
-che si riduce al modello esponenziale quando $M = 0$. 
+che si riduce al modello esponenziale quando $M = 0$. Se ripetiamo l'analisi effettuata per il modello esponenziale, otteniamo una previsione di <span class="myclass">`r format(round(previsionequad$Attesi))`</span> casi totali, valore lontano <span class="myclass">`r round(deltaquad,1)`</span> deviazioni standard da quello reale. La probabilità di ottenere di avere registrato un dato distante quanto o di più dalla previsione del dato reale, ammesso che il modello sia corretto, è pari a <span class="myclass">`r round(pvquad*100)`</span> per cento.
 
+
+Tracciamo le previsioni dal 10 Marzo 2020 per il totale dei casi e per i deceduti. Per ogni data, sono riportati i valori registrati, quelli previsti dai due modelli addestrati con i dati fino al giorno prima e le deviazioni dato reale - previsione in termini di incertezza 
+standard e P-value.
+
+```{r,echo=FALSE, results="show"}
+knitr::kable(tabuno, caption = 'Confronto previsione e dato reali per i casi totali')
+```
+
+```{r,echo=FALSE, results="show"}
+knitr::kable(tabdue, caption = 'Confronto previsione e dato reali per i deceduti')
+```
+ 
