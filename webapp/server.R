@@ -245,6 +245,7 @@ output$mapRegioni <- renderLeaflet({
   if (!is.null(allDataReg)) {
     allDataReg <- allDataReg[allDataReg$data==max(allDataReg$data),]
     pltRegioni <- merge(regioni, allDataReg[,c("codice_regione", "totale_casi")], by.x="COD_REG", by.y="codice_regione")
+		#pltRegioni$prova <- 10^log10(pltRegioni$totale_casi)
     #pal <- colorNumeric("YlOrRd", domain = log10(pltRegioni$totale_casi))
 		pal <- palRegioni()
 
@@ -392,6 +393,9 @@ output$mapProvince <- renderLeaflet({
   myReg <- input$regionSel
   allDataPrv <- copy(reacval$dataTables_prv)
 
+	assign("myReg",myReg, envir=.GlobalEnv)
+	assign("outallDataPrv",allDataPrv, envir=.GlobalEnv)
+
   if (!is.null(allDataPrv) & !is.null(myReg)) {
     allDataPrv <- allDataPrv[allDataPrv$denominazione_regione == myReg,]
     allDataPrv <- allDataPrv[allDataPrv$data == max(allDataPrv$data),]
@@ -399,7 +403,7 @@ output$mapProvince <- renderLeaflet({
     pltProvince <- merge(province, allDataPrv[,c("codice_provincia", "totale_casi")], by.x="COD_PROV", by.y="codice_provincia")
     my_frame <- st_drop_geometry(regioni[regioni$COD_REG == unique(pltProvince$COD_REG), c("reg_long", "reg_lat")])
 		pal <- palProvince()
-		#pal <- colorNumeric("YlOrRd", domain = log10(pmax(1,allDataPrv$totale_casi)))
+		if(scalaSingolaProvincia) pal <- colorNumeric("YlOrRd", domain = log10(pmax(1,allDataPrv$totale_casi)))
 
 		if (animazione){
     suppressWarnings(
@@ -976,7 +980,7 @@ output$tab_desktop<-renderUI({
   fluidRow(style="padding-left:30px;padding-right:30px;border-style: solid;border-color:#009933;",#" border-color :#009933;",
   	h1("Analisi previsionale nelle province italiane"),
   	fluidRow(
-  		column(12,h4("In questa pagina proponiamo il confronto tra i dati registrati, sia regionali che nazionali e due modelli di crescita. Il primo modello (esponenziale) descrive una diffusione incontrollata, mentre il secondo (esponenziale quadratico) tenta di tenere conto dell'effetto di misure contenitive. Per maggiori dettagli, controlla la sezione Descrizione Modelli"))
+  		column(12,h4("In questa pagina proponiamo il confronto tra i dati registrati, sia regionali che nazionali e due modelli di crescita. Il primo modello (esponenziale) descrive una diffusione incontrollata, mentre il secondo (esponenziale quadratico) tenta di tenere conto dell'effetto di misure contenitive. Per maggiori dettagli, controlla la sezione di approfondimento"))
 
   	),
 
@@ -1020,7 +1024,7 @@ output$tab_desktop<-renderUI({
     fluidRow(style="padding-left:30px;padding-right:30px;border-style: solid;border-color:#009933;",#" border-color :#009933;",
     	h1("Previsioni"),
     	fluidRow(
-    		column(12,h4("In questa pagina proponiamo il confronto tra i dati registrati, sia regionali che nazionali e due modelli di crescita. Il primo modello (esponenziale) descrive una diffusione incontrollata, mentre il secondo (esponenziale quadratico) tenta di tenere conto dell'effetto di misure contenitive. Per maggiori dettagli, controlla la sezione Descrizione Modelli"))
+    		column(12,h4("In questa pagina proponiamo il confronto tra i dati registrati, sia regionali che nazionali e due modelli di crescita. Il primo modello (esponenziale) descrive una diffusione incontrollata, mentre il secondo (esponenziale quadratico) tenta di tenere conto dell'effetto di misure contenitive. Per maggiori dettagli, controlla la sezione di approfondimento"))
 
     	),
     		 br(),

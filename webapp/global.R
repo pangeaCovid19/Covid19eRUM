@@ -8,6 +8,7 @@ source("funzionifit.R")
 options(bitmapType="cairo")
 
 animazione <- FALSE
+scalaSingolaProvincia <-FALSE
 verbose <- TRUE
 assignout <- FALSE
 saveRDSout <- FALSE
