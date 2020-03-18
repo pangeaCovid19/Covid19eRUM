@@ -138,4 +138,4 @@ if ( TRUE) {
 		saveRDS(modelliItaExp,paste0("www/pastModels/modelliItaExp_", x,".RDS"))
 	})
 }
-rmarkdown::render("articolo.Rmd",output_file="../tabReport.html")
+rmarkdown::render("articolo.Rmd",output_file="www/tabReport.html")
