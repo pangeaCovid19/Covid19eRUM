@@ -34,14 +34,19 @@ shinyServer(function(input, output, session) {
 						modelliRegExp=modelliRegExp,
             mobile=F
 					)
-          observe({
 
 
-          		if (!is.null(session$request$HTTP_USER_AGENT)){
-          			if (grepl("mobile",tolower(session$request$HTTP_USER_AGENT)) || grepl("iphone",tolower(session$request$HTTP_USER_AGENT)) )
-          			reacval$mobile<-T
-          		}
-          	})
+
+observe({
+
+    print(input$GetNavUserAgent)
+		if (!is.null(input$GetNavUserAgent)){
+
+			if (grepl("mobile",tolower(input$GetNavUserAgent)) || grepl("android",tolower(input$GetNavUserAgent)))
+			reacval$mobile<-T
+		}
+	})
+
 
   observe({
 		if(verbose) cat("\n OBSERVE:leggiDati")
@@ -1022,7 +1027,7 @@ output$tab_desktop<-renderUI({
           DTOutput("tabCompare"),spiegaTabellaCompare
 
         )
-      ),br(),
+      ),br()
   	)
 
   })
@@ -1065,7 +1070,7 @@ output$tab_desktop<-renderUI({
             DTOutput("tabCompare"),spiegaTabellaCompare
 
           )
-        ),br(),
+        ),br()
     	)
 
     })
