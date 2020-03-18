@@ -9,14 +9,6 @@ options(bitmapType="cairo")
 
 
 
-jscodescreen <-
-        '$(document).on("shiny:sessioninitialized", function(e) {
-			 var jsAgt = navigator.userAgent;
-			 Shiny.onInputChange("GetNavUserAgent",jsAgt);
-});
-'
-
-
 animazione <- FALSE
 scalaSingolaProvincia <-FALSE
 
