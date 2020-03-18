@@ -8,6 +8,7 @@ source("funzionifit.R")
 options(bitmapType="cairo")
 
 
+
 jscodescreen <-
         '$(document).on("shiny:sessioninitialized", function(e) {
 			 var jsAgt = navigator.userAgent;
@@ -15,8 +16,12 @@ jscodescreen <-
 });
 '
 
+
+animazione <- FALSE
+scalaSingolaProvincia <-FALSE
+
 verbose <- TRUE
-assignout <- TRUE
+assignout <- FALSE
 saveRDSout <- FALSE
 
 regioni2fit <- c('Lombardia', 'Emilia Romagna', 'Veneto')

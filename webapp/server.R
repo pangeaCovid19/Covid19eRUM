@@ -59,6 +59,7 @@ observe({
 		pathProv 	<- paste0(dir_prov,provRDS)
 		pathReg 	<- paste0(dir_reg,regRDS)
 		if (file.info(pathProv)$mtime > isolate(reacval$mdataProv)) {
+			if(verbose) cat("\t entro   file.info(pathProv)$mtime > isolate(reacval$mdataProv)  ")
       ## Qui creiamo anche i dati regionali con solo i confermati... capire se vogliamo usare questi per le previsioni...
 			prvData	<- readRDS(pathProv)
 			reacval$mdataProv <- file.info(pathProv)$mtime
@@ -81,10 +82,11 @@ observe({
       regDataFlt$`casi su 10mila abit` <- round(regDataFlt$totale_casi / regDataFlt$pop * 10000, 3)
       reacval$dataTables_reg_flt <- regDataFlt
 
-      #assign("allData_prv",prvData,envir=.GlobalEnv)
-      #assign("allData_reg_flt",regData,envir=.GlobalEnv)
+      if(assignout) assign("outallData_prv",prvData,envir=.GlobalEnv)
+      if(assignout) assign("outallData_reg_flt",regData,envir=.GlobalEnv)
 		}
 		if (file.info(pathReg)$mtime > isolate(reacval$mdataReg)) {
+			if(verbose) cat("\t entro   file.info(pathReg)$mtime > isolate(reacval$mdataReg)  ")
 			regData <- readRDS(pathReg)
 			reacval$dataTables_reg <- regData
 			reacval$mdataReg <- file.info(pathReg)$mtime
@@ -203,8 +205,14 @@ output$tabRegioni <- renderDT({
 
 
 output$selRegioni <- renderUI({
+	if(verbose) cat("\n renderUI:selRegioni")
   allDataReg <- reacval$dataTables_reg_flt
-  if (!is.null(allDataReg)) {
+	if (is.null(allDataReg)) {
+		if(verbose) cat("\t allDataReg è NULL")
+		return(NULL)
+	}
+  if (animazione) {
+		if(verbose) cat("\t animazione: ", animazione)
     fluidRow(sliderInput("giornoReg", "Giorno:",
               min = min(allDataReg$data) + 1, max = max(allDataReg$data),
               value = max(allDataReg$data), animate = animationOptions(interval = 1500), timeFormat="%b %d")
@@ -212,42 +220,72 @@ output$selRegioni <- renderUI({
   }
 })
 
-
 observe({
-  myGiorno <- input$giornoReg
-  allDataReg <- copy(reacval$dataTables_reg_flt)
+	if(verbose) cat("\n observe:tabRegioni<<<<<<<<<<<<<<<<<<<<")
+	allDataReg <- copy(reacval$dataTables_reg_flt)
+	if (is.null(allDataReg)) return(NULL)
+	if(assignout) assign('outallData_observe', allDataReg, envir=.GlobalEnv)
 
-  if (!is.null(allDataReg) & !is.null(myGiorno)) {
+	if(animazione){
+		if(verbose) cat("\t animazione: ", animazione)
+		myGiorno <- input$giornoReg
+	} else myGiorno <- max(allDataReg$data, na.rm=TRUE)
+
+  if (!is.null(myGiorno)) {
     allDataReg <- allDataReg[allDataReg$data==myGiorno,]
     allDataReg$totale_casi[allDataReg$totale_casi==0] <- NA_integer_
     pltRegioni <- merge(regioni, allDataReg[,c("codice_regione", "totale_casi")], by.x="COD_REG", by.y="codice_regione")
-    pal <- colorNumeric("YlOrRd", domain = log10(pltRegioni$totale_casi))
+    #pal <- colorNumeric("YlOrRd", domain = log10(pltRegioni$totale_casi))
+		pal <- palRegioni()
     leafletProxy(mapId="mapRegioni", data=pltRegioni) %>% clearShapes() %>%
         addPolygons(fillColor = ~pal(log10(totale_casi)), weight = 1, stroke = TRUE, color="lightgrey", fillOpacity = .7,
              label = ~paste(DEN_REG, "- casi:", totale_casi))
   }
 })
 
+palRegioni <- reactive({
+	if(verbose) cat("\n reactive:pal")
+	indDataMax <- which(reacval$dataTables_reg_flt$totale_casi > 0)
+	colorNumeric("YlOrRd", domain = log10(c(1, (reacval$dataTables_reg_flt$totale_casi[indDataMax] ))))
+})
+
 output$mapRegioni <- renderLeaflet({
-	if(verbose) cat("\n renderLeaflet:mapRegioni")
+	if(verbose) cat("\n renderLeaflet:mapRegioni --- ")
   allDataReg <- copy(reacval$dataTables_reg_flt)
 
   if (!is.null(allDataReg)) {
     allDataReg <- allDataReg[allDataReg$data==max(allDataReg$data),]
     pltRegioni <- merge(regioni, allDataReg[,c("codice_regione", "totale_casi")], by.x="COD_REG", by.y="codice_regione")
-    pal <- colorNumeric("YlOrRd", domain = log10(pltRegioni$totale_casi))
+		#pltRegioni$prova <- 10^log10(pltRegioni$totale_casi)
+    #pal <- colorNumeric("YlOrRd", domain = log10(pltRegioni$totale_casi))
+		pal <- palRegioni()
 
-		suppressWarnings(leaflet(data = pltRegioni, options = leafletOptions(zoomControl = FALSE,minZoom = 3, maxZoom = 6)) %>%
-			addTiles()%>%
-			addProviderTiles("CartoDB.Positron") %>% setView(lng=12.5, lat=41.3, zoom=5)  %>%
-      # i poligoni li mette l'observe sopra... se li mettiamo anche qui, sfarfalla all'avvio
-			#addPolygons(fillColor = ~pal(log10(totale_casi)), weight = 1, stroke = TRUE, color="lightgrey", fillOpacity=.7,
-		  #          label = ~paste(DEN_REG, "- casi:", totale_casi)) %>%
-      addLegend(pal = pal, values = ~log10(totale_casi), opacity = 0.7,
-                labFormat = labelFormat(transform = function(x) round(10^x), big.mark = "."),
-                position = 'bottomleft',
-                title = paste0("casi")))
-  }
+		if(animazione){
+
+			if(verbose) cat("\n animazione --- TRUE")
+			suppressWarnings(leaflet(data = pltRegioni, options = leafletOptions(zoomControl = FALSE,minZoom = 3, maxZoom = 6)) %>%
+				addTiles()%>%
+				addProviderTiles("CartoDB.Positron") %>% setView(lng=12.5, lat=41.3, zoom=5)  %>%
+	      # i poligoni li mette l'observe sopra... se li mettiamo anche qui, sfarfalla all'avvio
+				#addPolygons(fillColor = ~pal(log10(totale_casi)), weight = 1, stroke = TRUE, color="lightgrey", fillOpacity=.7,
+			  #          label = ~paste(DEN_REG, "- casi:", totale_casi)) %>%
+	      addLegend(pal = pal, values = ~log10(totale_casi), opacity = 0.7,
+	                labFormat = labelFormat(transform = function(x) round(10^x), big.mark = "."),
+	                position = 'bottomleft',
+	                title = paste0("casi")))
+		} else  {
+			if(verbose) cat("\n animazione --- FALSE")
+			suppressWarnings(leaflet(data = pltRegioni, options = leafletOptions(zoomControl = FALSE,minZoom = 3, maxZoom = 6)) %>%
+				addTiles()%>%
+				addProviderTiles("CartoDB.Positron") %>% setView(lng=12.5, lat=41.3, zoom=5)  %>%
+				# i poligoni li mette l'observe sopra... se li mettiamo anche qui, sfarfalla all'avvio
+				addPolygons(fillColor = ~pal(log10(totale_casi)), weight = 1, stroke = TRUE, color="lightgrey", fillOpacity=.7,          label = ~paste(DEN_REG, "- casi:", totale_casi)) %>%
+				addLegend(pal = pal, values = ~log10(10^(1:4)), opacity = 0.7,
+									labFormat = labelFormat(transform = function(x) round(10^x), big.mark = "."),
+									position = 'bottomleft',
+									title = paste0("casi")))
+		}
+	}
 })
 
 output$mapRegioniGG <- renderPlot({
@@ -314,33 +352,51 @@ output$tabProvince <- renderDT({
 })
 
 
+
 output$selProvince <- renderUI({
   allDataPrv <- reacval$dataTables_prv
   if (!is.null(allDataPrv)) {
-    fluidRow(selectInput("regionSel", label="Seleziona regione", choices=regioniList, selected = "Lombardia"),
-      sliderInput("giornoPrv", "Giorno:",
+		if(animazione){
+			fluidRow(
+				selectInput("regionSel", label="Seleziona regione", choices=regioniList, selected = "Lombardia"),
+	      sliderInput("giornoPrv", "Giorno:",
         min = min(allDataPrv$data) + 1, max = max(allDataPrv$data),
         value = max(allDataPrv$data), animate = animationOptions(interval = 1500), timeFormat="%b %d")
-    )
+    	)
+		} else {
+			fluidRow(
+				selectInput("regionSel", label="Seleziona regione", choices=regioniList, selected = "Lombardia")
+    	)
+		}
   }
+})
+
+palProvince <- reactive({
+	if(verbose) cat("\n reactive:palProvince")
+	indDataMax <- which(reacval$dataTables_prv$totale_casi > 0)
+	colorNumeric("YlOrRd", domain = log10(c(1, (reacval$dataTables_prv$totale_casi[indDataMax] ))))
 })
 
 
 observe({
-  myGiorno <- input$giornoPrv
-  myReg <- isolate(input$regionSel)
-  allDataPrv <- copy(reacval$dataTables_prv)
+	if(verbose) cat("\n observe:animaProvince")
+	if (animazione){
+	  myGiorno <- input$giornoPrv
+	  myReg <- isolate(input$regionSel)
+	  allDataPrv <- copy(reacval$dataTables_prv)
 
-  if (!is.null(allDataPrv) & !is.null(myGiorno) & !is.null(myReg)) {
-    allDataPrv <- allDataPrv[allDataPrv$denominazione_regione == myReg,]
-    allDataPrv <- allDataPrv[allDataPrv$data == myGiorno,]
-    allDataPrv$totale_casi[allDataPrv$totale_casi==0] <- NA_integer_
-    pltProvince <- merge(province, allDataPrv[,c("codice_provincia", "totale_casi")], by.x="COD_PROV", by.y="codice_provincia")
-    pal <- colorNumeric("YlOrRd", domain = log10(pmax(1,allDataPrv$totale_casi)))
-    leafletProxy(mapId="mapProvince", data=pltProvince) %>% clearShapes() %>%
-        addPolygons(fillColor = ~pal(log10(totale_casi)), weight = 1, stroke = TRUE, color="lightgrey", fillOpacity = .7,
-             label = ~paste(DEN_UTS, "- casi:", totale_casi))
-  }
+	  if (!is.null(allDataPrv) & !is.null(myGiorno) & !is.null(myReg)) {
+	    allDataPrv <- allDataPrv[allDataPrv$denominazione_regione == myReg,]
+	    allDataPrv <- allDataPrv[allDataPrv$data == myGiorno,]
+	    allDataPrv$totale_casi[allDataPrv$totale_casi==0] <- NA_integer_
+	    pltProvince <- merge(province, allDataPrv[,c("codice_provincia", "totale_casi")], by.x="COD_PROV", by.y="codice_provincia")
+			pal <- palProvince()
+			#pal <- colorNumeric("YlOrRd", domain = log10(pmax(1,allDataPrv$totale_casi)))
+	    leafletProxy(mapId="mapProvince", data=pltProvince) %>% clearShapes() %>%
+	        addPolygons(fillColor = ~pal(log10(totale_casi)), weight = 1, stroke = TRUE, color="lightgrey", fillOpacity = .7,
+	             label = ~paste(DEN_UTS, "- casi:", totale_casi))
+  		}
+		} else if(verbose) cat("\t non eseguito")
 })
 
 output$mapProvince <- renderLeaflet({
@@ -348,14 +404,21 @@ output$mapProvince <- renderLeaflet({
   myReg <- input$regionSel
   allDataPrv <- copy(reacval$dataTables_prv)
 
+	assign("myReg",myReg, envir=.GlobalEnv)
+	assign("outallDataPrv",allDataPrv, envir=.GlobalEnv)
+
   if (!is.null(allDataPrv) & !is.null(myReg)) {
     allDataPrv <- allDataPrv[allDataPrv$denominazione_regione == myReg,]
     allDataPrv <- allDataPrv[allDataPrv$data == max(allDataPrv$data),]
     allDataPrv$totale_casi[allDataPrv$totale_casi==0] <- NA_integer_
     pltProvince <- merge(province, allDataPrv[,c("codice_provincia", "totale_casi")], by.x="COD_PROV", by.y="codice_provincia")
     my_frame <- st_drop_geometry(regioni[regioni$COD_REG == unique(pltProvince$COD_REG), c("reg_long", "reg_lat")])
-    pal <- colorNumeric("YlOrRd", domain = log10(pmax(1,allDataPrv$totale_casi)))
-    suppressWarnings(leaflet(data = pltProvince, options = leafletOptions(zoomControl = FALSE,minZoom = 7, maxZoom = 7)) %>% addTiles() %>%
+		pal <- palProvince()
+		if(scalaSingolaProvincia) pal <- colorNumeric("YlOrRd", domain = log10(pmax(1,allDataPrv$totale_casi)))
+
+		if (animazione){
+    suppressWarnings(
+			out <- leaflet(data = pltProvince, options = leafletOptions(zoomControl = FALSE,minZoom = 7, maxZoom = 7)) %>% addTiles() %>%
         addProviderTiles("CartoDB.Positron") %>% setView(lng=my_frame$reg_long, lat=my_frame$reg_lat, zoom=7)  %>%
         # i poligoni li mette l'observe sopra... se li mettiamo anche qui, sfarfalla all'avvio
         #addPolygons(fillColor = ~pal(log10(totale_casi)), weight = 1, stroke = TRUE, color="lightgrey", fillOpacity = .7,
@@ -363,7 +426,19 @@ output$mapProvince <- renderLeaflet({
         addLegend(pal = pal, values = ~log10(pmax(1,allDataPrv$totale_casi)), opacity = 0.7,
                 labFormat = labelFormat(transform = function(x) round(10^x), big.mark = "."),
                 position = 'bottomright',
-                title = paste0("casi")))
+                title = paste0("casi"))
+		)} else {suppressWarnings(
+			out <-leaflet(data = pltProvince, options = leafletOptions(zoomControl = FALSE,minZoom = 7, maxZoom = 7)) %>% addTiles() %>%
+        addProviderTiles("CartoDB.Positron") %>% setView(lng=my_frame$reg_long, lat=my_frame$reg_lat, zoom=7)  %>%
+        # i poligoni li mette l'observe sopra... se li mettiamo anche qui, sfarfalla all'avvio
+        addPolygons(fillColor = ~pal(log10(totale_casi)), weight = 1, stroke = TRUE, color="lightgrey", fillOpacity = .7,
+                 label = ~paste(DEN_UTS, "- casi:", totale_casi)) %>%
+        addLegend(pal = pal, values = ~log10(pmax(1,allDataPrv$totale_casi)), opacity = 0.7,
+                labFormat = labelFormat(transform = function(x) round(10^x), big.mark = "."),
+                position = 'bottomright',
+                title = paste0("casi"))
+		)}
+		(out)
 
   }
 })
@@ -411,8 +486,6 @@ output$updateTIUI <- renderUI({
 })
 
 
-
-
 prevRegion <- reactive({
 	if(verbose) cat("\n reactive:prevRegion")
 	allDataReg <- copy(reacval$dataTables_reg)
@@ -453,7 +526,7 @@ output$fitRegion <- renderPlotly({
 		prevDT <- copy(prevRegion())
 		setnames(prevDT, old=c('Attesi'), new=c('casi totali'))
     prevDT <- prevDT[which(prevDT$regione%in%regioniSel),]
-    assign("prevDTvedi",prevDT, envir=.GlobalEnv)
+ #   assign("prevDTvedi",prevDT, envir=.GlobalEnv)
 
     setnames(allDataReg, old=c('denominazione_regione', 'totale_casi'), new=c('regione', 'casi totali'))
 		setDF(allDataReg)
@@ -800,22 +873,26 @@ prevItaCompare <- reactive({
 	if(verbose) cat("\n reactive:prevItaCompare")
 	inpData <- input$dataComparazione
 	tipoVariazione <-input$tipoCompare
-		if(verbose) cat("\n inpData", inpData)
-
+	if(verbose) cat("\n inpData", inpData)
 
 	if(is.null(inpData)) return(NULL)
 	if(is.null(tipoVariazione)) return(NULL)
-
 
 	dataMod <-as.Date(inpData)
 
 	tsIta <- getTimeSeriesReact()["Italia"]
 
-	assign("tsIta",tsIta, envir=.GlobalEnv)
-	assign("dataMod",dataMod, envir=.GlobalEnv)
+	if(assignout) assign("tsIta",tsIta, envir=.GlobalEnv)
+	if(assignout) assign("dataMod",dataMod, envir=.GlobalEnv)
 
-	modelliItaPast <- readRDS(paste0("www/pastModels/modelliIta_", dataMod, ".RDS"))
-	modelliItaExpPast  <- readRDS(paste0("www/pastModels/modelliItaExp_", dataMod, ".RDS"))
+	pathModIta    <-paste0("www/pastModels/modelliIta_", dataMod, ".RDS")
+	pathModItaExp <-paste0("www/pastModels/modelliItaExp_", dataMod, ".RDS")
+
+	modelliItaPast <- readRDS(pathModIta)
+	modelliItaExpPast  <- readRDS(pathModItaExp)
+
+	if(verbose) cat("\n\t pathModIta ", pathModIta)
+	if(verbose) cat("\n\t pathModItaExp ", pathModItaExp)
 
 	if(tipoVariazione=='Totale'){
 
@@ -823,8 +900,8 @@ prevItaCompare <- reactive({
 
 		tsIta$Italia <- tsIta$Italia[ tsIta$Italia$data<=dataMod, ]
 
-	  prevDT <- get_predictions(modelliIta, tsIta, nahead=1, alldates=FALSE)
-		prevDTexp <- get_predictions(modelliItaExp, tsIta, nahead=1, alldates=FALSE)
+	  prevDT <- get_predictions(modelliItaPast, tsIta, nahead=1, alldates=FALSE)
+		prevDTexp <- get_predictions(modelliItaExpPast, tsIta, nahead=1, alldates=FALSE)
 		prevDT$Modello 		<- "Esp. quadratico"
 		prevDTexp$Modello <- "Esponenziale"
 
