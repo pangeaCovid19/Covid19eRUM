@@ -177,9 +177,11 @@ output$tabRegioni <- renderDT({
  #   out$`casi su 10mila abit` <- round(out$totale_casi / out$pop * 10000, 3)
  #
 
-    datatable(out,
+
+
+    datatable(out,extensions = c('Scroller'),
       selection = list(target = NULL),
-      options= c(list(paging = T, searching = F, info=F, ordering=T, order=list(list(2, 'desc'))), DT_lang_opt),
+      options= c(list(dom = 't',scroller=T,scrollX="300",scrollY="300",paging = T, searching = F, info=F, ordering=T, order=list(list(2, 'desc'))), DT_lang_opt),
       rownames=F)
   }
 })
