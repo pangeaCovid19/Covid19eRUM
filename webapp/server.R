@@ -862,12 +862,10 @@ prevItaCompare <- reactive({
 	if(verbose) cat("\n reactive:prevItaCompare")
 	inpData <- input$dataComparazione
 	tipoVariazione <-input$tipoCompare
-		if(verbose) cat("\n inpData", inpData)
-
+	if(verbose) cat("\n inpData", inpData)
 
 	if(is.null(inpData)) return(NULL)
 	if(is.null(tipoVariazione)) return(NULL)
-
 
 	dataMod <-as.Date(inpData)
 
@@ -876,8 +874,14 @@ prevItaCompare <- reactive({
 	if(assignout) assign("tsIta",tsIta, envir=.GlobalEnv)
 	if(assignout) assign("dataMod",dataMod, envir=.GlobalEnv)
 
-	modelliItaPast <- readRDS(paste0("www/pastModels/modelliIta_", dataMod, ".RDS"))
-	modelliItaExpPast  <- readRDS(paste0("www/pastModels/modelliItaExp_", dataMod, ".RDS"))
+	pathModIta    <-paste0("www/pastModels/modelliIta_", dataMod, ".RDS")
+	pathModItaExp <-paste0("www/pastModels/modelliItaExp_", dataMod, ".RDS")
+
+	modelliItaPast <- readRDS(pathModIta)
+	modelliItaExpPast  <- readRDS(pathModItaExp)
+
+	if(verbose) cat("\n\t pathModIta ", pathModIta)
+	if(verbose) cat("\n\t pathModItaExp ", pathModItaExp)
 
 	if(tipoVariazione=='Totale'){
 
@@ -885,8 +889,8 @@ prevItaCompare <- reactive({
 
 		tsIta$Italia <- tsIta$Italia[ tsIta$Italia$data<=dataMod, ]
 
-	  prevDT <- get_predictions(modelliIta, tsIta, nahead=1, alldates=FALSE)
-		prevDTexp <- get_predictions(modelliItaExp, tsIta, nahead=1, alldates=FALSE)
+	  prevDT <- get_predictions(modelliItaPast, tsIta, nahead=1, alldates=FALSE)
+		prevDTexp <- get_predictions(modelliItaExpPast, tsIta, nahead=1, alldates=FALSE)
 		prevDT$Modello 		<- "Esp. quadratico"
 		prevDTexp$Modello <- "Esponenziale"
 
