@@ -901,17 +901,17 @@ prevItaCompare <- reactive({
 		prevDT$Osservato 		<- unlist(vero)
 		prevDTexp$Osservato  <- unlist(vero)
 
-		prevDT$'Confidence Level68%' 		<- paste0(format(prevDT$LowerRange, big.mark="'"), ' - ', format(prevDT$UpperRange, big.mark="'"))
-		prevDTexp$'Confidence Level68%'  <- paste0(format(prevDTexp$LowerRange, big.mark="'"), ' - ', format(prevDTexp$UpperRange, big.mark="'"))
+		prevDT$'Valore atteso +- incertezza standard' 		<- paste0(format(prevDT$LowerRange, big.mark="'"), ' - ', format(prevDT$UpperRange, big.mark="'"))
+		prevDTexp$'Valore atteso +- incertezza standard'  <- paste0(format(prevDTexp$LowerRange, big.mark="'"), ' - ', format(prevDTexp$UpperRange, big.mark="'"))
 
-		setnames(prevDT, old=c('LowerRange', 'UpperRange', 'outName', 'Attesi'), new=c('Minimo', 'Massimo', 'Variabile', 'Previsto'))
-		setnames(prevDTexp, old=c('LowerRange', 'UpperRange', 'outName', 'Attesi'), new=c('Minimo', 'Massimo', 'Variabile', 'Previsto'))
+		setnames(prevDT, old=c('LowerRange', 'UpperRange', 'outName', 'Attesi'), new=c('Minimo', 'Massimo', 'Variabile', 'Valore atteso'))
+		setnames(prevDTexp, old=c('LowerRange', 'UpperRange', 'outName', 'Attesi'), new=c('Minimo', 'Massimo', 'Variabile', 'Valore atteso'))
 
-		out <-rbind(prevDT[, c('data', 'Modello', 'Variabile', 'Confidence Level68%', 'Previsto', 'Osservato')],
-					prevDTexp[, c('data', 'Modello', 'Variabile', 'Confidence Level68%', 'Previsto',  'Osservato')])
+		out <-rbind(prevDT[, c('data', 'Modello', 'Variabile', 'Osservato', 'Valore atteso +- incertezza standard', 'Valore atteso')],
+					prevDTexp[, c('data', 'Modello', 'Variabile', 'Osservato', 'Valore atteso +- incertezza standard', 'Valore atteso')])
 
-		out$Variazione <- paste0 (round((out$Osservato-out$Previsto)/out$Osservato*100, 2), " %")
-		out$Previsto 		<- format(out$Previsto, big.mark="'")
+		out$Variazione <- paste0 (round((out$Osservato-out$'Valore atteso')/out$Osservato*100, 2), " %")
+		out$'Valore atteso' 		<- format(out$'Valore atteso', big.mark="'")
 		out$Osservato 		<- format(out$Osservato, big.mark="'")
 
 		out
@@ -944,18 +944,18 @@ prevItaCompare <- reactive({
 		prevDT$Variazione    <- prevDT$VarPrev - DVero
 		prevDTexp$Variazione <- prevDTexp$VarPrev - DVero
 
-		prevDT$'Confidence Level68%' 		<- paste0(format(prevDT$VarMin, big.mark="'"), ' - ', format(prevDT$VarMax, big.mark="'"))
-		prevDTexp$'Confidence Level68%'  <- paste0(format(prevDTexp$VarMin, big.mark="'"), ' - ', format(prevDTexp$VarMax, big.mark="'"))
+		prevDT$'Valore atteso +- incertezza standard' 		<- paste0(format(prevDT$VarMin, big.mark="'"), ' - ', format(prevDT$VarMax, big.mark="'"))
+		prevDTexp$'Valore atteso +- incertezza standard'  <- paste0(format(prevDTexp$VarMin, big.mark="'"), ' - ', format(prevDTexp$VarMax, big.mark="'"))
 
-		setnames(prevDT, old=c('VarMin', 'VarMax', 'outName', 'VarPrev'), new=c('Minimo', 'Massimo', 'Variabile', 'Previsto'))
-		setnames(prevDTexp, old=c('VarMin', 'VarMax', 'outName', 'VarPrev'), new=c('Minimo', 'Massimo', 'Variabile', 'Previsto'))
+		setnames(prevDT, old=c('VarMin', 'VarMax', 'outName', 'VarPrev'), new=c('Minimo', 'Massimo', 'Variabile', 'Valore atteso'))
+		setnames(prevDTexp, old=c('VarMin', 'VarMax', 'outName', 'VarPrev'), new=c('Minimo', 'Massimo', 'Variabile', 'Valore atteso'))
 
-		outPerc <-rbind(prevDT[, c('data', 'Modello', 'Variabile', 'Confidence Level68%', 'Previsto', 'Osservato')],
-					prevDTexp[, c('data', 'Modello', 'Variabile', 'Confidence Level68%', 'Previsto',  'Osservato')])
+		outPerc <-rbind(prevDT[, c('data', 'Modello', 'Variabile', 'Osservato', 'Valore atteso', 'Valore atteso +- incertezza standard')],
+					prevDTexp[, c('data', 'Modello', 'Variabile',  'Osservato', 'Valore atteso', 'Valore atteso +- incertezza standard')])
 
-		outPerc$Variazione <- paste0 (round((outPerc$Osservato-outPerc$Previsto)/outPerc$Osservato*100, 2), " %")
+		outPerc$Variazione <- paste0 (round((outPerc$Osservato-outPerc$'Valore atteso')/outPerc$Osservato*100, 2), " %")
 
-		outPerc$Previsto 		<- format(outPerc$Previsto, big.mark="'")
+		outPerc$'Valore atteso' 		<- format(outPerc$'Valore atteso', big.mark="'")
 		outPerc$Osservato 		<- format(outPerc$Osservato, big.mark="'")
 
 		outPerc
