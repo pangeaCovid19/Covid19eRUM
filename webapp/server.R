@@ -213,6 +213,7 @@ observe({
 	if(verbose) cat("\n observe:tabRegioni<<<<<<<<<<<<<<<<<<<<")
 	allDataReg <- copy(reacval$dataTables_reg_flt)
 	if (is.null(allDataReg)) return(NULL)
+	if(assignout) assign('outallData_observe', allDataReg, envir=.GlobalEnv)
 
 	if(animazione){
 		if(verbose) cat("\t animazione: ", animazione)
@@ -223,11 +224,18 @@ observe({
     allDataReg <- allDataReg[allDataReg$data==myGiorno,]
     allDataReg$totale_casi[allDataReg$totale_casi==0] <- NA_integer_
     pltRegioni <- merge(regioni, allDataReg[,c("codice_regione", "totale_casi")], by.x="COD_REG", by.y="codice_regione")
-    pal <- colorNumeric("YlOrRd", domain = log10(pltRegioni$totale_casi))
+    #pal <- colorNumeric("YlOrRd", domain = log10(pltRegioni$totale_casi))
+		pal <- palRegioni()
     leafletProxy(mapId="mapRegioni", data=pltRegioni) %>% clearShapes() %>%
         addPolygons(fillColor = ~pal(log10(totale_casi)), weight = 1, stroke = TRUE, color="lightgrey", fillOpacity = .7,
              label = ~paste(DEN_REG, "- casi:", totale_casi))
   }
+})
+
+palRegioni <- reactive({
+	if(verbose) cat("\n reactive:pal")
+	indDataMax <- which(reacval$dataTables_reg_flt$totale_casi > 0)
+	colorNumeric("YlOrRd", domain = log10(c(1, (reacval$dataTables_reg_flt$totale_casi[indDataMax] ))))
 })
 
 output$mapRegioni <- renderLeaflet({
@@ -237,7 +245,8 @@ output$mapRegioni <- renderLeaflet({
   if (!is.null(allDataReg)) {
     allDataReg <- allDataReg[allDataReg$data==max(allDataReg$data),]
     pltRegioni <- merge(regioni, allDataReg[,c("codice_regione", "totale_casi")], by.x="COD_REG", by.y="codice_regione")
-    pal <- colorNumeric("YlOrRd", domain = log10(pltRegioni$totale_casi))
+    #pal <- colorNumeric("YlOrRd", domain = log10(pltRegioni$totale_casi))
+		pal <- palRegioni()
 
 		if(animazione){
 
@@ -259,7 +268,7 @@ output$mapRegioni <- renderLeaflet({
 				addProviderTiles("CartoDB.Positron") %>% setView(lng=12.5, lat=41.3, zoom=5)  %>%
 				# i poligoni li mette l'observe sopra... se li mettiamo anche qui, sfarfalla all'avvio
 				addPolygons(fillColor = ~pal(log10(totale_casi)), weight = 1, stroke = TRUE, color="lightgrey", fillOpacity=.7,          label = ~paste(DEN_REG, "- casi:", totale_casi)) %>%
-				addLegend(pal = pal, values = ~log10(totale_casi), opacity = 0.7,
+				addLegend(pal = pal, values = ~log10(10^(1:4)), opacity = 0.7,
 									labFormat = labelFormat(transform = function(x) round(10^x), big.mark = "."),
 									position = 'bottomleft',
 									title = paste0("casi")))
@@ -331,6 +340,7 @@ output$tabProvince <- renderDT({
 })
 
 
+
 output$selProvince <- renderUI({
   allDataPrv <- reacval$dataTables_prv
   if (!is.null(allDataPrv)) {
@@ -345,12 +355,16 @@ output$selProvince <- renderUI({
 			fluidRow(
 				selectInput("regionSel", label="Seleziona regione", choices=regioniList, selected = "Lombardia")
     	)
-
-
 		}
-
   }
 })
+
+palProvince <- reactive({
+	if(verbose) cat("\n reactive:palProvince")
+	indDataMax <- which(reacval$dataTables_prv$totale_casi > 0)
+	colorNumeric("YlOrRd", domain = log10(c(1, (reacval$dataTables_prv$totale_casi[indDataMax] ))))
+})
+
 
 observe({
 	if(verbose) cat("\n observe:animaProvince")
@@ -364,7 +378,8 @@ observe({
 	    allDataPrv <- allDataPrv[allDataPrv$data == myGiorno,]
 	    allDataPrv$totale_casi[allDataPrv$totale_casi==0] <- NA_integer_
 	    pltProvince <- merge(province, allDataPrv[,c("codice_provincia", "totale_casi")], by.x="COD_PROV", by.y="codice_provincia")
-	    pal <- colorNumeric("YlOrRd", domain = log10(pmax(1,allDataPrv$totale_casi)))
+			pal <- palProvince()
+			#pal <- colorNumeric("YlOrRd", domain = log10(pmax(1,allDataPrv$totale_casi)))
 	    leafletProxy(mapId="mapProvince", data=pltProvince) %>% clearShapes() %>%
 	        addPolygons(fillColor = ~pal(log10(totale_casi)), weight = 1, stroke = TRUE, color="lightgrey", fillOpacity = .7,
 	             label = ~paste(DEN_UTS, "- casi:", totale_casi))
@@ -383,11 +398,12 @@ output$mapProvince <- renderLeaflet({
     allDataPrv$totale_casi[allDataPrv$totale_casi==0] <- NA_integer_
     pltProvince <- merge(province, allDataPrv[,c("codice_provincia", "totale_casi")], by.x="COD_PROV", by.y="codice_provincia")
     my_frame <- st_drop_geometry(regioni[regioni$COD_REG == unique(pltProvince$COD_REG), c("reg_long", "reg_lat")])
-    pal <- colorNumeric("YlOrRd", domain = log10(pmax(1,allDataPrv$totale_casi)))
+		pal <- palProvince()
+		#pal <- colorNumeric("YlOrRd", domain = log10(pmax(1,allDataPrv$totale_casi)))
 
 		if (animazione){
     suppressWarnings(
-			leaflet(data = pltProvince, options = leafletOptions(zoomControl = FALSE,minZoom = 7, maxZoom = 7)) %>% addTiles() %>%
+			out <- leaflet(data = pltProvince, options = leafletOptions(zoomControl = FALSE,minZoom = 7, maxZoom = 7)) %>% addTiles() %>%
         addProviderTiles("CartoDB.Positron") %>% setView(lng=my_frame$reg_long, lat=my_frame$reg_lat, zoom=7)  %>%
         # i poligoni li mette l'observe sopra... se li mettiamo anche qui, sfarfalla all'avvio
         #addPolygons(fillColor = ~pal(log10(totale_casi)), weight = 1, stroke = TRUE, color="lightgrey", fillOpacity = .7,
@@ -397,7 +413,7 @@ output$mapProvince <- renderLeaflet({
                 position = 'bottomright',
                 title = paste0("casi"))
 		)} else {suppressWarnings(
-			leaflet(data = pltProvince, options = leafletOptions(zoomControl = FALSE,minZoom = 7, maxZoom = 7)) %>% addTiles() %>%
+			out <-leaflet(data = pltProvince, options = leafletOptions(zoomControl = FALSE,minZoom = 7, maxZoom = 7)) %>% addTiles() %>%
         addProviderTiles("CartoDB.Positron") %>% setView(lng=my_frame$reg_long, lat=my_frame$reg_lat, zoom=7)  %>%
         # i poligoni li mette l'observe sopra... se li mettiamo anche qui, sfarfalla all'avvio
         addPolygons(fillColor = ~pal(log10(totale_casi)), weight = 1, stroke = TRUE, color="lightgrey", fillOpacity = .7,
@@ -407,6 +423,7 @@ output$mapProvince <- renderLeaflet({
                 position = 'bottomright',
                 title = paste0("casi"))
 		)}
+		(out)
 
   }
 })
@@ -452,8 +469,6 @@ output$updateTIUI <- renderUI({
 	if(verbose) cat("\n renderUI:updateTIUI")
   h3(paste("Dati aggiornati al giorno:", get_last_date()))
 })
-
-
 
 
 prevRegion <- reactive({
