@@ -1,5 +1,6 @@
 require(data.table)
 require(rmarkdown)
+
 source("funzionifit.R")
 datiRegioni<-readRDS("www/dati-regioni/dataRegioni.RDS")
 pvalue<-function(x,mean,sd) {
@@ -63,9 +64,9 @@ treregioniperc<-round(c(colSums(treregioni2[,2:3]))/ultimidati[,.(totale_casi,de
 diffdeceduti<-diff(italia$decedutiGiorni)
 diffcontagi<-diff(italia$nuovi_attualmente_positivi)
 tabellaregioni<-ultimidatiregioni[,.(denominazione_regione,deceduti,totale_casi)]
-setnames(tabellaregioni,old=c("denominazione_regione","deceduti","totale_casi"),new=c("Regione","Deceduti","Totale Contagi"))
-tabellaregioni[,`Perc. Deceduti`:=round(Deceduti/sum(Deceduti),2)]
-tabellaregioni[,`Perc. Contagi`:=round(`Totale Contagi`/sum(`Totale Contagi`),2)]
+setnames(tabellaregioni,old=c("denominazione_regione","deceduti","totale_casi"),new=c("Regione","Totale Deceduti","Totale Contagi"))
+tabellaregioni[,`% Deceduti`:=round(`Totale Deceduti`/sum(`Totale Deceduti`),2)]
+tabellaregioni[,`% Contagi`:=round(`Totale Contagi`/sum(`Totale Contagi`),2)]
 coeffexptotalecasi<-coef(modelloexp[[1]])
 trexptotalecasi<-round(1/coeffexptotalecasi[2]*log(2),2)
 coeffexpdeceduti<-coef(modelloexp[[2]])
@@ -83,3 +84,5 @@ pvquad<-pvalue(log(ultimidati$totale_casi),log(previsionequad$Attesi),sdquad)
 
 tabuno<-confrontoModelloPrevisioni(data, italia[,.(data,totale_casi)])
 tabdue<-confrontoModelloPrevisioni(data, italia[,.(data,deceduti)])
+colnames(tabuno)[1:2]<-c("Data","Totale casi")
+colnames(tabdue)[1:2]<-c("Data", "Deceduti")
