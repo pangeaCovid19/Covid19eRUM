@@ -3,12 +3,7 @@ shinyServer(function(input, output, session) {
 
 
 
-  observe({
-  		if (!is.null(input$GetNavUserAgent)){
-  			if (grepl("mobile",tolower(input$GetNavUserAgent)) || grepl("android",tolower(input$GetNavUserAgent)))
-  			reacval$mobile<-T
-  		}
-  	})
+
 
 
   DT_lang_opt <- list(language = list(lengthMenu="Mostra _MENU_ righe per pagina",
@@ -24,8 +19,9 @@ shinyServer(function(input, output, session) {
   reacval<-reactiveValues(
 						fileList=list.files(dir_prov, full.names=T),
             oldList=NULL,
-            dataTables=allData,
-            dateRange=date_range,
+            dataTables_reg_flt=allData_reg_flt,
+            dataTables_prv=allData_prv,
+            dateRange_prv=date_range_prv,
 						mdataProv=mtimeProv,
 						fileList_reg=list.files(dir_reg, full.names=T),
             oldList_reg=NULL,
@@ -39,21 +35,56 @@ shinyServer(function(input, output, session) {
             mobile=F
 					)
 
+
+
+observe({
+
+		if (!is.null(input$GetNavUserAgent)){
+
+			if (grepl("mobile",tolower(input$GetNavUserAgent)) || grepl("android",tolower(input$GetNavUserAgent)))
+			reacval$mobile<-T
+		}
+	})
+
+
   observe({
 		if(verbose) cat("\n OBSERVE:leggiDati")
     autoInvalidate()
 		pathProv 	<- paste0(dir_prov,provRDS)
 		pathReg 	<- paste0(dir_reg,regRDS)
-		if( file.info(pathProv)$mtime > isolate(reacval$mdataProv)  ) {
-			dataProv	<- readRDS(pathProv)
-			reacval$dataTables  <- dataProv
-			reacval$mdataProv 	<- file.info(pathProv)$mtime
+		if (file.info(pathProv)$mtime > isolate(reacval$mdataProv)) {
+			if(verbose) cat("\t entro   file.info(pathProv)$mtime > isolate(reacval$mdataProv)  ")
+      ## Qui creiamo anche i dati regionali con solo i confermati... capire se vogliamo usare questi per le previsioni...
+			prvData	<- readRDS(pathProv)
+			reacval$mdataProv <- file.info(pathProv)$mtime
+      reacval$dateRange_prv <- max(prvData$data)
+
+      prvData <- prvData[!grepl("aggiornamento", prvData$denominazione_provincia),]
+      prvData <- aggregate(list(totale_casi=prvData$totale_casi, pop=allDataConf$pop),
+                        by=list(data=prvData$data, denominazione_regione=prvData$denominazione_regione,
+                                denominazione_provincia=prvData$denominazione_provincia, codice_provincia=prvData$codice_provincia),
+                        FUN=sum)
+      prvData$`casi su 10mila abit` <- round(prvData$totale_casi / prvData$pop * 10000, 2)
+      reacval$dataTables_prv <- prvData
+
+      regDataFlt	<- readRDS(pathProv)
+      regDataFlt <- regDataFlt[!grepl("aggiornamento", regDataFlt$denominazione_provincia),]
+      regDataFlt <- aggregate(list(totale_casi=regDataFlt$totale_casi, pop=regDataFlt$pop),
+                            by=list(data=regDataFlt$data,
+                                    denominazione_regione=regDataFlt$denominazione_regione, codice_regione=regDataFlt$codice_regione),
+                            FUN=sum)
+      regDataFlt$`casi su 10mila abit` <- round(regDataFlt$totale_casi / regDataFlt$pop * 10000, 2)
+      reacval$dataTables_reg_flt <- regDataFlt
+
+      if(assignout) assign("outallData_prv",prvData,envir=.GlobalEnv)
+      if(assignout) assign("outallData_reg_flt",regData,envir=.GlobalEnv)
 		}
-		if( file.info(pathReg)$mtime > isolate(reacval$mdataReg)  ) {
+		if (file.info(pathReg)$mtime > isolate(reacval$mdataReg)) {
+			if(verbose) cat("\t entro   file.info(pathReg)$mtime > isolate(reacval$mdataReg)  ")
 			regData <- readRDS(pathReg)
-			reacval$dataTables_reg<- regData
+			reacval$dataTables_reg <- regData
 			reacval$mdataReg <- file.info(pathReg)$mtime
-			reacval$dateRange_reg 	<- max(regData$data)
+			reacval$dateRange_reg <- max(regData$data)
 
 			tsReg <- getTimeSeries(regData)
 #			modelliIta <- list()
@@ -91,24 +122,9 @@ shinyServer(function(input, output, session) {
 		}
   })
 
-  get_data <- reactive({
-		if(verbose) cat("\n REACTIVE:getDATA")
-    res <- reacval$dataTables
-    #if (!is.null(input$drangeSel)) res <- res[res$data >= input$drangeSel[1] & res$data <= input$drangeSel[2],]
-    res
-  })
-
-#DEPRECATA
-#	  get_data_reg <- reactive({
-#			if(verbose) cat("\n REACTIVE:getDATA")
-#	    res <- reacval$dataTables_reg
-	    #if (!is.null(input$drangeSel)) res <- res[res$data >= input$drangeSel[1] & res$data <= input$drangeSel[2],]
-#	    res
-#	  })
-
   get_last_date <- reactive({
 		if(verbose) cat("\n REACTIVE:get_last_date")
-    strftime(max(reacval$dateRange), format="%d-%m-%Y")
+    strftime(max(reacval$dateRange_prv), format="%d-%m-%Y")
   })
 
 ## CONFIG
@@ -122,20 +138,21 @@ shinyServer(function(input, output, session) {
 #})
 
 
+
+
 ## REGIONI
 output$updateRegUI <- renderUI({
+
 	if(verbose) cat("\n renderUI:updateRegUI")
   h4(paste("Dati aggiornati al giorno:", get_last_date()))
 })
 
-output$lineRegion <- renderPlotly({
-	if(verbose) cat("\n renderPlotly:lineRegion")
-  allData <- reacval$dataTables#get_data()
-  if (!is.null(allData)) {
-    allDataConf <- allData[!grepl("aggiornamento", allData$denominazione_provincia),]
-    allDataReg <- aggregate(list(totale_casi=allDataConf$totale_casi), by=list(data=allDataConf$data, denominazione_regione=allDataConf$denominazione_regione), FUN=sum)
-    colnames(allDataReg)[2] <- "regione"
-    colnames(allDataReg)[3] <- "casi totali"
+output$lineRegioni <- renderPlotly({
+	if(verbose) cat("\n renderPlotly:lineRegioni")
+  allDataReg <- copy(reacval$dataTables_reg_flt)
+
+  if (!is.null(allDataReg)) {
+    setnames(allDataReg, old=c('denominazione_regione', 'totale_casi'), new=c('regione', 'casi totali'))
     p <- ggplot(allDataReg) + my_ggtheme() +
           suppressWarnings(geom_line(group=1, # group=1 serve per aggirare un bug di ggplotly con tooltip = c("text")
             aes(x=data, y=`casi totali`, color=regione,
@@ -148,81 +165,137 @@ output$lineRegion <- renderPlotly({
   }
 })
 
-output$tabRegionNEW <- renderDT({
-	if(verbose) cat("\n renderDT:tabRegion")
-  allDataReg <- reacval$dataTables_reg#get_data()
-  if (!is.null(allData)) {
+output$tabRegioni <- renderDT({
+	if(verbose) cat("\n renderDT:tabRegioni")
+  allDataReg <- reacval$dataTables_reg
+  if (!is.null(allDataReg)) {
     regrdx <- allDataReg[allDataReg$data==max(allDataReg$data), ]
-		out <- regrdx[, c('denominazione_regione', 'tamponi', 'totale_casi', 'totale_ospedalizzati','terapia_intensiva','deceduti','dimessi_guariti')]
-		names(out) <- c('regione', 'tamponi', 'casi', 'ospedalizzati', 'Terapia intensiva','deceduti','guariti')
+		regrdx$casi10k <- round(regrdx$totale_casi / regrdx$pop * 10000, 2)
+		regrdx$casiTampone <- round(regrdx$totale_casi / regrdx$tamponi , 2)
+
+		out <- regrdx[, c('denominazione_regione', 'tamponi', 'totale_casi','casiTampone', 'totale_ospedalizzati','terapia_intensiva','deceduti','dimessi_guariti','casi10k')]
+		names(out) <- c('regione', 'tamponi', 'casi', 'casi x tampone', 'ospedalizzati', 'Terapia intensiva','deceduti','guariti', 'casi su 10mila abit.')
  #   out$`casi su 10mila abit` <- round(out$totale_casi / out$pop * 10000, 3)
+ #
 
-    datatable(out,
+
+
+    datatable(out,extensions = c('Scroller'),
+      selection = list(target = NULL),
+      options= c(list(dom = 't',scroller=T,scrollX="300",scrollY="300",paging = T, searching = F, info=F, ordering=T, order=list(list(2, 'desc'))), DT_lang_opt),
+      rownames=F)
+  }
+})
+
+output$tabRegioniOLD <- renderDT({
+	if(verbose) cat("\n renderDT:tabRegioni")
+  allDataReg <- copy(reacval$dataTables_reg_flt)
+
+  if (!is.null(allDataReg)) {
+    allDataReg <- allDataReg[allDataReg$data==max(allDataReg$data),]
+    allDataReg$pop <- NULL
+    allDataReg$data <- strftime(allDataReg$data, format="%d-%m-%Y")
+    setnames(allDataReg, old=c('denominazione_regione', 'totale_casi'), new=c('regione', 'casi totali'))
+
+    datatable(allDataReg,
       selection = list(target = NULL),
       options= c(list(paging = T, searching = F, info=F, ordering=T, order=list(list(2, 'desc'))), DT_lang_opt),
       rownames=F)
   }
 })
 
-output$tabRegion <- renderDT({
-	if(verbose) cat("\n renderDT:tabRegion")
-  allData <- reacval$dataTables#get_data()
-  if (!is.null(allData)) {
-    allDataConf <- allData[!grepl("aggiornamento", allData$denominazione_provincia),]
-    allDataReg <- aggregate(list(totale_casi=allDataConf$totale_casi, pop=allDataConf$pop), by=list(data=allDataConf$data, denominazione_regione=allDataConf$denominazione_regione), FUN=sum)
-    allDataReg$data <- as.Date(allDataReg$data)
-    latestDataReg <- allDataReg[allDataReg$data==max(allDataReg$data),]
-    latestDataReg$`casi su 10mila abit` <- round(latestDataReg$totale_casi / latestDataReg$pop * 10000, 3)
-    latestDataReg$pop <- NULL
-    latestDataReg$data <- strftime(latestDataReg$data, format="%d-%m-%Y")
-    colnames(latestDataReg)[2] <- "regione"
-    colnames(latestDataReg)[3] <- "casi totali"
 
-    datatable(latestDataReg,
-      selection = list(target = NULL),
-      options= c(list(paging = T, searching = F, info=F, ordering=T, order=list(list(2, 'desc'))), DT_lang_opt),
-      rownames=F)
+output$selRegioni <- renderUI({
+	if(verbose) cat("\n renderUI:selRegioni")
+  allDataReg <- reacval$dataTables_reg_flt
+	if (is.null(allDataReg)) {
+		if(verbose) cat("\t allDataReg è NULL")
+		return(NULL)
+	}
+  if (animazione) {
+		if(verbose) cat("\t animazione: ", animazione)
+    fluidRow(sliderInput("giornoReg", "Giorno:",
+              min = min(allDataReg$data) + 1, max = max(allDataReg$data),
+              value = max(allDataReg$data), animate = animationOptions(interval = 1500), timeFormat="%b %d")
+    )
   }
 })
 
+observe({
+	if(verbose) cat("\n observe:tabRegioni<<<<<<<<<<<<<<<<<<<<")
+	allDataReg <- copy(reacval$dataTables_reg_flt)
+	if (is.null(allDataReg)) return(NULL)
+	if(assignout) assign('outallData_observe', allDataReg, envir=.GlobalEnv)
 
-output$mapRegion <- renderLeaflet({
-	if(verbose) cat("\n renderLeaflet:mapRegion")
+	if(animazione){
+		if(verbose) cat("\t animazione: ", animazione)
+		myGiorno <- input$giornoReg
+	} else myGiorno <- max(allDataReg$data, na.rm=TRUE)
 
-  allData <- reacval$dataTables#get_data()
-  if (!is.null(allData)) {
-    allDataConf <- allData[!grepl("aggiornamento", allData$denominazione_provincia),]
-    allDataReg <- aggregate(list(totale_casi=allDataConf$totale_casi, pop=allDataConf$pop),
-                      by=list(data=allDataConf$data, denominazione_regione=allDataConf$denominazione_regione, codice_regione=allDataConf$codice_regione),
-                      FUN=sum)
-    latestDataReg <- allDataReg[allDataReg$data==max(allDataReg$data),]
-    latestDataReg$densita_casi <- round(latestDataReg$totale_casi / latestDataReg$pop * 10000, 3)
-    pltRegioni <- merge(regioni, latestDataReg[,c("codice_regione", "totale_casi", "densita_casi")], by.x="COD_REG", by.y="codice_regione")
-    pal <- colorNumeric("YlOrRd", domain = log10(pltRegioni$totale_casi))
-
-		suppressWarnings(leaflet(data = pltRegioni, options = leafletOptions(zoomControl = FALSE,minZoom = 3, maxZoom = 6)) %>%
-			addTiles()%>%
-			addProviderTiles("CartoDB.Positron") %>% setView(lng=12.5, lat=41.3, zoom=5)  %>%
-			addPolygons(fillColor = ~pal(log10(totale_casi)), weight = 1, stroke = TRUE, color="lightgrey", fillOpacity=.7,
-		            label = ~paste(DEN_REG, "- casi:", totale_casi)) %>%
-      addLegend(pal = pal, values = ~log10(totale_casi), opacity = 0.7,
-                labFormat = labelFormat(transform = function(x) round(10^x), big.mark = "."),
-                position = 'bottomleft',
-                title = paste0("casi")))
+  if (!is.null(myGiorno)) {
+    allDataReg <- allDataReg[allDataReg$data==myGiorno,]
+    allDataReg$totale_casi[allDataReg$totale_casi==0] <- NA_integer_
+    pltRegioni <- merge(regioni, allDataReg[,c("codice_regione", "totale_casi")], by.x="COD_REG", by.y="codice_regione")
+    #pal <- colorNumeric("YlOrRd", domain = log10(pltRegioni$totale_casi))
+		pal <- palRegioni()
+    leafletProxy(mapId="mapRegioni", data=pltRegioni) %>% clearShapes() %>%
+        addPolygons(fillColor = ~pal(log10(totale_casi)), weight = 1, stroke = TRUE, color="lightgrey", fillOpacity = .7,
+             label = ~paste(DEN_REG, "- casi:", totale_casi))
   }
 })
 
-output$mapRegionGG <- renderPlot({
-	if(verbose) cat("\n renderPlot:mapRegionGG")
-  allData <- reacval$dataTables#get_data()
-  if (!is.null(allData)) {
-    allDataConf <- allData[!grepl("aggiornamento", allData$denominazione_provincia),]
-    allDataReg <- aggregate(list(totale_casi=allDataConf$totale_casi, pop=allDataConf$pop),
-                      by=list(data=allDataConf$data, denominazione_regione=allDataConf$denominazione_regione, codice_regione=allDataConf$codice_regione),
-                      FUN=sum)
-    latestDataReg <- allDataReg[allDataReg$data==max(allDataReg$data),]
-    latestDataReg$densita_casi <- round(latestDataReg$totale_casi / latestDataReg$pop * 10000, 3)
-    pltRegioni <- merge(regioni, latestDataReg[,c("codice_regione", "totale_casi", "densita_casi")], by.x="COD_REG", by.y="codice_regione")
+palRegioni <- reactive({
+	if(verbose) cat("\n reactive:pal")
+	indDataMax <- which(reacval$dataTables_reg_flt$totale_casi > 0)
+	colorNumeric("YlOrRd", domain = log10(c(1, (reacval$dataTables_reg_flt$totale_casi[indDataMax] ))))
+})
+
+output$mapRegioni <- renderLeaflet({
+	if(verbose) cat("\n renderLeaflet:mapRegioni --- ")
+  allDataReg <- copy(reacval$dataTables_reg_flt)
+
+  if (!is.null(allDataReg)) {
+    allDataReg <- allDataReg[allDataReg$data==max(allDataReg$data),]
+    pltRegioni <- merge(regioni, allDataReg[,c("codice_regione", "totale_casi")], by.x="COD_REG", by.y="codice_regione")
+		#pltRegioni$prova <- 10^log10(pltRegioni$totale_casi)
+    #pal <- colorNumeric("YlOrRd", domain = log10(pltRegioni$totale_casi))
+		pal <- palRegioni()
+
+		if(animazione){
+
+			if(verbose) cat("\n animazione --- TRUE")
+			suppressWarnings(leaflet(data = pltRegioni, options = leafletOptions(zoomControl = FALSE,minZoom = 3, maxZoom = 6)) %>%
+				addTiles()%>%
+				addProviderTiles("CartoDB.Positron") %>% setView(lng=12.5, lat=41.3, zoom=5)  %>%
+	      # i poligoni li mette l'observe sopra... se li mettiamo anche qui, sfarfalla all'avvio
+				#addPolygons(fillColor = ~pal(log10(totale_casi)), weight = 1, stroke = TRUE, color="lightgrey", fillOpacity=.7,
+			  #          label = ~paste(DEN_REG, "- casi:", totale_casi)) %>%
+	      addLegend(pal = pal, values = ~log10(totale_casi), opacity = 0.7,
+	                labFormat = labelFormat(transform = function(x) round(10^x), big.mark = "."),
+	                position = 'bottomleft',
+	                title = paste0("casi")))
+		} else  {
+			if(verbose) cat("\n animazione --- FALSE")
+			suppressWarnings(leaflet(data = pltRegioni, options = leafletOptions(zoomControl = FALSE,minZoom = 3, maxZoom = 6)) %>%
+				addTiles()%>%
+				addProviderTiles("CartoDB.Positron") %>% setView(lng=12.5, lat=41.3, zoom=5)  %>%
+				# i poligoni li mette l'observe sopra... se li mettiamo anche qui, sfarfalla all'avvio
+				addPolygons(fillColor = ~pal(log10(totale_casi)), weight = 1, stroke = TRUE, color="lightgrey", fillOpacity=.7,          label = ~paste(DEN_REG, "- casi:", totale_casi)) %>%
+				addLegend(pal = pal, values = ~log10(10^(1:4)), opacity = 0.7,
+									labFormat = labelFormat(transform = function(x) round(10^x), big.mark = "."),
+									position = 'bottomleft',
+									title = paste0("casi")))
+		}
+	}
+})
+
+output$mapRegioniGG <- renderPlot({
+	if(verbose) cat("\n renderPlot:mapRegioniGG")
+  allDataReg <- copy(reacval$dataTables_reg_flt)
+
+  if (!is.null(allDataReg)) {
+    allDataReg <- allDataReg[allDataReg$data==max(allDataReg$data),]
+    pltRegioni <- merge(regioni, allDataReg[,c("codice_regione", "totale_casi")], by.x="COD_REG", by.y="codice_regione")
 
     # map_italia è definito una volta sola nel global
     map_italia +
@@ -231,6 +304,8 @@ output$mapRegionGG <- renderPlot({
       geom_text(data = pltRegioni, aes(x=reg_long, y=reg_lat, label=paste(DEN_REG, "\n casi:", totale_casi)), cex=2.5, color="black", fontface = "bold")
   }
 })
+
+
 ## PROVINCE
 
 output$updatePrvUI <- renderUI({
@@ -241,16 +316,11 @@ output$updatePrvUI <- renderUI({
 output$lineProvince <- renderPlotly({
 	if(verbose) cat("\n renderPlotly:lineProvince")
   myReg <- input$regionSel
-  allData <- reacval$dataTables#get_data()
-  if (!is.null(allData)) {
-    allDataConf <- allData[!grepl("aggiornamento", allData$denominazione_provincia),]
-    allDataConf <- allDataConf[allDataConf$denominazione_regione == myReg,]
-    allDataProv <- aggregate(list(totale_casi=allDataConf$totale_casi),
-                      by=list(data=allDataConf$data, denominazione_provincia=allDataConf$denominazione_provincia),
-                      FUN=sum)
-    colnames(allDataProv)[2] <- "provincia"
-    colnames(allDataProv)[3] <- "casi totali"
-    p <- ggplot(allDataProv) + my_ggtheme() +
+  allDataPrv <- copy(reacval$dataTables_prv)
+  if (!is.null(allDataPrv) & !is.null(myReg)) {
+    allDataPrv <- allDataPrv[allDataPrv$denominazione_regione == myReg,]
+    setnames(allDataPrv, old=c('denominazione_provincia', 'totale_casi'), new=c('provincia', 'casi totali'))
+    p <- ggplot(allDataPrv) + my_ggtheme() +
           suppressWarnings(geom_line(group=1, # group=1 serve per aggirare un bug di ggplotly con tooltip = c("text")
             aes(x=data, y=`casi totali`, color=provincia,
             text = paste('Provincia:', provincia, '<br>Data:', strftime(data, format="%d-%m-%Y"),
@@ -258,7 +328,13 @@ output$lineProvince <- renderPlotly({
           scale_color_manual(values=d3hexcols20) +
           theme(axis.text.x=element_text(angle=45, hjust=1)) +
           labs(x="")
-    ggplotly(p, tooltip = c("text")) %>% config(locale = 'it')
+    plot<-ggplotly(p, tooltip = c("text")) %>% config(locale = 'it')
+
+    if(reacval$mobile){
+      plot<-plot%>%layout(legend=list(orientation='h',x=0.6,y=-0.4))
+
+    }
+    plot
   }
 })
 
@@ -266,22 +342,17 @@ output$lineProvince <- renderPlotly({
 output$tabProvince <- renderDT({
 	if(verbose) cat("\n renderDT:tabProvince")
   myReg <- input$regionSel
+  allDataPrv <- copy(reacval$dataTables_prv)
 
-  if (!is.null(allData)) {
-    allData <- reacval$dataTables#get_data()
-    allDataConf <- allData[!grepl("aggiornamento", allData$denominazione_provincia),]
-    allDataConf <- allDataConf[allDataConf$denominazione_regione == myReg,]
-    allDataProv <- aggregate(list(totale_casi=allDataConf$totale_casi, pop=allDataConf$pop),
-                      by=list(data=allDataConf$data, denominazione_provincia=allDataConf$denominazione_provincia),
-                      FUN=sum)
-    latestDataProv <- allDataProv[allDataProv$data==max(allDataProv$data),]
-    latestDataProv$`casi su 10mila abit` <- round(latestDataProv$totale_casi / latestDataProv$pop * 10000, 3)
-    latestDataProv$pop <- NULL
-    latestDataProv$data <- strftime(latestDataProv$data, format="%d-%m-%Y")
-    colnames(latestDataProv)[2] <- "provincia"
-    colnames(latestDataProv)[3] <- "casi totali"
+  if (!is.null(allDataPrv) & !is.null(myReg)) {
+    allDataPrv <- allDataPrv[allDataPrv$denominazione_regione == myReg,]
+    allDataPrv <- allDataPrv[allDataPrv$data==max(allDataPrv$data),]
+    setnames(allDataPrv, old=c('denominazione_provincia', 'totale_casi'), new=c('provincia', 'casi totali'))
+    allDataPrv$pop <- NULL
+    allDataPrv$data <- strftime(allDataPrv$data, format="%d-%m-%Y")
+		allDataPrv$`casi su 10mila abit` <- round(allDataPrv$`casi su 10mila abit`,2)
 
-    datatable(latestDataProv,
+    datatable(allDataPrv,
       selection = list(target = NULL),
       options= c(list(paging = F, searching = F, info=F, ordering=T, order=list(list(2, 'desc'))), DT_lang_opt),
       rownames=F)
@@ -289,31 +360,93 @@ output$tabProvince <- renderDT({
 })
 
 
+
+output$selProvince <- renderUI({
+  allDataPrv <- reacval$dataTables_prv
+  if (!is.null(allDataPrv)) {
+		if(animazione){
+			fluidRow(
+				selectInput("regionSel", label="Seleziona regione", choices=regioniList, selected = "Lombardia"),
+	      sliderInput("giornoPrv", "Giorno:",
+        min = min(allDataPrv$data) + 1, max = max(allDataPrv$data),
+        value = max(allDataPrv$data), animate = animationOptions(interval = 1500), timeFormat="%b %d")
+    	)
+		} else {
+			fluidRow(
+				selectInput("regionSel", label="Seleziona regione", choices=regioniList, selected = "Lombardia")
+    	)
+		}
+  }
+})
+
+palProvince <- reactive({
+	if(verbose) cat("\n reactive:palProvince")
+	indDataMax <- which(reacval$dataTables_prv$totale_casi > 0)
+	colorNumeric("YlOrRd", domain = log10(c(1, (reacval$dataTables_prv$totale_casi[indDataMax] ))))
+})
+
+
+observe({
+	if(verbose) cat("\n observe:animaProvince")
+	if (animazione){
+	  myGiorno <- input$giornoPrv
+	  myReg <- isolate(input$regionSel)
+	  allDataPrv <- copy(reacval$dataTables_prv)
+
+	  if (!is.null(allDataPrv) & !is.null(myGiorno) & !is.null(myReg)) {
+	    allDataPrv <- allDataPrv[allDataPrv$denominazione_regione == myReg,]
+	    allDataPrv <- allDataPrv[allDataPrv$data == myGiorno,]
+	    allDataPrv$totale_casi[allDataPrv$totale_casi==0] <- NA_integer_
+	    pltProvince <- merge(province, allDataPrv[,c("codice_provincia", "totale_casi")], by.x="COD_PROV", by.y="codice_provincia")
+			pal <- palProvince()
+			#pal <- colorNumeric("YlOrRd", domain = log10(pmax(1,allDataPrv$totale_casi)))
+	    leafletProxy(mapId="mapProvince", data=pltProvince) %>% clearShapes() %>%
+	        addPolygons(fillColor = ~pal(log10(totale_casi)), weight = 1, stroke = TRUE, color="lightgrey", fillOpacity = .7,
+	             label = ~paste(DEN_UTS, "- casi:", totale_casi))
+  		}
+		} else if(verbose) cat("\t non eseguito")
+})
+
 output$mapProvince <- renderLeaflet({
 	if(verbose) cat("\n renderLeaflet:mapProvince")
   myReg <- input$regionSel
-  allData <- reacval$dataTables#get_data()
-  if (!is.null(allData)) {
-    allDataConf <- allData[!grepl("aggiornamento", allData$denominazione_provincia),]
-    allDataConf <- allDataConf[allDataConf$denominazione_regione == myReg,]
-    allDataProv <- aggregate(list(totale_casi=allDataConf$totale_casi, pop=allDataConf$pop),
-                      by=list(data=allDataConf$data, denominazione_provincia=allDataConf$denominazione_provincia, codice_provincia=allDataConf$codice_provincia),
-                      FUN=sum)
-    latestDataProv <- allDataProv[allDataProv$data==max(allDataProv$data),]
-    latestDataProv$densita_casi <- round(latestDataProv$totale_casi / latestDataProv$pop * 10000, 3)
-    pltProvince <- merge(province, latestDataProv[,c("codice_provincia", "totale_casi", "densita_casi")], by.x="COD_PROV", by.y="codice_provincia")
+  allDataPrv <- copy(reacval$dataTables_prv)
+
+	assign("myReg",myReg, envir=.GlobalEnv)
+	assign("outallDataPrv",allDataPrv, envir=.GlobalEnv)
+
+  if (!is.null(allDataPrv) & !is.null(myReg)) {
+    allDataPrv <- allDataPrv[allDataPrv$denominazione_regione == myReg,]
+    allDataPrv <- allDataPrv[allDataPrv$data == max(allDataPrv$data),]
+    allDataPrv$totale_casi[allDataPrv$totale_casi==0] <- NA_integer_
+    pltProvince <- merge(province, allDataPrv[,c("codice_provincia", "totale_casi")], by.x="COD_PROV", by.y="codice_provincia")
     my_frame <- st_drop_geometry(regioni[regioni$COD_REG == unique(pltProvince$COD_REG), c("reg_long", "reg_lat")])
-    ##pltProvince <- merge(province, latestDataProv[,c("codice_regione", "reg_long", "reg_lat")], by.x="COD_REG", by.y="codice_regione")
-    #pal <- colorNumeric("YlOrRd", domain = log10(pltProvince$totale_casi))
-    pal <- colorNumeric("YlOrRd", domain = log10(pmax(1,pltProvince$totale_casi)))
-    suppressWarnings(leaflet(data = pltProvince, options = leafletOptions(zoomControl = FALSE,minZoom = 7, maxZoom = 7)) %>% addTiles() %>%
+		pal <- palProvince()
+		if(scalaSingolaProvincia) pal <- colorNumeric("YlOrRd", domain = log10(pmax(1,allDataPrv$totale_casi)))
+
+		if (animazione){
+    suppressWarnings(
+			out <- leaflet(data = pltProvince, options = leafletOptions(zoomControl = FALSE,minZoom = 7, maxZoom = 7)) %>% addTiles() %>%
         addProviderTiles("CartoDB.Positron") %>% setView(lng=my_frame$reg_long, lat=my_frame$reg_lat, zoom=7)  %>%
-        addPolygons(fillColor = ~pal(log10(totale_casi)), weight = 1, stroke = TRUE, color="lightgrey", fillOpacity = .7,
-                 label = ~paste(DEN_UTS, "- casi:", totale_casi)) %>%
-        addLegend(pal = pal, values = ~log10(pmax(1,pltProvince$totale_casi)), opacity = 0.7,
+        # i poligoni li mette l'observe sopra... se li mettiamo anche qui, sfarfalla all'avvio
+        #addPolygons(fillColor = ~pal(log10(totale_casi)), weight = 1, stroke = TRUE, color="lightgrey", fillOpacity = .7,
+        #         label = ~paste(DEN_UTS, "- casi:", totale_casi)) %>%
+        addLegend(pal = pal, values = ~log10(pmax(1,allDataPrv$totale_casi)), opacity = 0.7,
                 labFormat = labelFormat(transform = function(x) round(10^x), big.mark = "."),
                 position = 'bottomright',
-                title = paste0("casi")))
+                title = paste0("casi"))
+		)} else {suppressWarnings(
+			out <-leaflet(data = pltProvince, options = leafletOptions(zoomControl = FALSE,minZoom = 7, maxZoom = 7)) %>% addTiles() %>%
+        addProviderTiles("CartoDB.Positron") %>% setView(lng=my_frame$reg_long, lat=my_frame$reg_lat, zoom=7)  %>%
+        # i poligoni li mette l'observe sopra... se li mettiamo anche qui, sfarfalla all'avvio
+        addPolygons(fillColor = ~pal(log10(totale_casi)), weight = 1, stroke = TRUE, color="lightgrey", fillOpacity = .7,
+                 label = ~paste(DEN_UTS, "- casi:", totale_casi)) %>%
+        addLegend(pal = pal, values = ~log10(pmax(1,allDataPrv$totale_casi)), opacity = 0.7,
+                labFormat = labelFormat(transform = function(x) round(10^x), big.mark = "."),
+                position = 'bottomright',
+                title = paste0("casi"))
+		)}
+		(out)
 
   }
 })
@@ -321,31 +454,24 @@ output$mapProvince <- renderLeaflet({
 output$mapProvinceGG <- renderPlot({
 	if(verbose) cat("\n renderPlot:mapProvinceGG")
   myReg <- input$regionSel
-  allData <- reacval$dataTables#get_data()
-  if (!is.null(allData)) {
-    allDataConf <- allData[!grepl("aggiornamento", allData$denominazione_provincia),]
-    allDataConf <- allDataConf[allDataConf$denominazione_regione == myReg,]
-    allDataProv <- aggregate(list(totale_casi=allDataConf$totale_casi, pop=allDataConf$pop),
-                      by=list(data=allDataConf$data, denominazione_provincia=allDataConf$denominazione_provincia, codice_provincia=allDataConf$codice_provincia),
-                      FUN=sum)
-    latestDataProv <- allDataProv[allDataProv$data==max(allDataProv$data),]
-    latestDataProv$densita_casi <- round(latestDataProv$totale_casi / latestDataProv$pop * 10000, 3)
-    pltProvince <- merge(province, latestDataProv[,c("codice_provincia", "totale_casi", "densita_casi")], by.x="COD_PROV", by.y="codice_provincia")
+  allDataPrv <- copy(reacval$dataTables_prv)
+
+  if (!is.null(allDataPrv) & !is.null(myReg)) {
+    allDataPrv <- allDataPrv[allDataPrv$denominazione_regione == myReg,]
+    allDataPrv <- allDataPrv[allDataPrv$data==max(allDataPrv$data),]
+    pltProvince <- merge(province, allDataPrv[,c("codice_provincia", "totale_casi")], by.x="COD_PROV", by.y="codice_provincia")
 
     # map_regioni è definita una volta sola nel global
     map_regioni[[unique(pltProvince$COD_REG)]] +
- 			#map_italia+
       geom_sf(data = pltProvince, aes(fill = totale_casi), color="black", size=.2) +
       scale_fill_distiller(palette = "YlOrRd", direction = 1, name="Numero casi", trans = "log10") +
       geom_text(data = pltProvince, aes(x=prv_long, y=prv_lat, label=paste(DEN_UTS, "\n casi:", totale_casi)), cex=2.5, color="black", fontface = "bold")
-
-
   }
 })
 
 getTimeSeriesReact <- reactive({
 	if(verbose) cat("\n reactive:getTimeSeriesReact")
-	allDataReg <- copy( reacval$dataTables_reg)
+	allDataReg <- copy(reacval$dataTables_reg)
 	if (!is.null(allDataReg)) {
 		tstot <- getTimeSeries(allDataReg)
 		if(saveRDSout) saveRDS(file="tstotOut.RDS",tstot)
@@ -368,11 +494,9 @@ output$updateTIUI <- renderUI({
 })
 
 
-
-
 prevRegion <- reactive({
 	if(verbose) cat("\n reactive:prevRegion")
-	allDataReg <- copy( reacval$dataTables_reg)
+	allDataReg <- copy(reacval$dataTables_reg)
   tipoModello <- input$modelloFit
 	nahead=3
 	cat("\ttipoModello:", tipoModello)
@@ -410,7 +534,7 @@ output$fitRegion <- renderPlotly({
 		prevDT <- copy(prevRegion())
 		setnames(prevDT, old=c('Attesi'), new=c('casi totali'))
     prevDT <- prevDT[which(prevDT$regione%in%regioniSel),]
-    assign("prevDTvedi",prevDT, envir=.GlobalEnv)
+ #   assign("prevDTvedi",prevDT, envir=.GlobalEnv)
 
     setnames(allDataReg, old=c('denominazione_regione', 'totale_casi'), new=c('regione', 'casi totali'))
 		setDF(allDataReg)
@@ -438,25 +562,29 @@ output$fitRegion <- renderPlotly({
               '<br>Casi (fit): ', round(`casi totali`),
               '<br>Intervallo previsione:', paste0('[', round(LowerRange,2), ', ', round(UpperRange,2),']')
               )))) +
-       suppressWarnings(geom_point(data=prevDT[which(prevDT$data>=datamax-2),], lty=2, group=1, # group=1 serve per aggirare un bug di ggplotly con tooltip = c("text")
+       suppressWarnings(geom_point(data=prevDT[which(prevDT$data>=datamax-2),], shape=22,
            aes(x=data, y=`casi totali`, color=regione,
               text = paste('Data:', strftime(data, format="%d-%m-%Y"),
               '<br>Regione: ', regione,
               '<br>Casi (fit): ', round(`casi totali`),
               '<br>Intervallo previsione:', paste0('[', round(LowerRange,2), ', ', round(UpperRange,2),']')
-            )), shape=22)) +
+            )))) +
        suppressWarnings(geom_point(data=allDataReg, aes(x=data, y=`casi totali`, color=regione,
              text = paste('Data:', strftime(data, format="%d-%m-%Y"),
               '<br>Regione: ', regione,
               '<br>Casi: ', `casi totali`
               )))) +
-       scale_color_manual(values=d3hexcols20) +scale_x_date(date_breaks="2 day",date_labels="%b %d")+
-			 theme(axis.text.x=element_text(angle=45,hjust=1)) +#theme(legend.position= c(0.7, 0.2))+
+       scale_color_manual(values=d3hexcols20) + scale_x_date(date_breaks="2 day",date_labels="%b %d") +
+			 theme(axis.text.x=element_text(angle=45,hjust=1)) +
        labs(x="")
 
     if (tipoGraph == "Logaritmico") p <- p + scale_y_log10()
 
-    ggplotly(p, tooltip = c("text")) %>% config(locale = 'it')
+    plot<-ggplotly(p, tooltip = c("text")) %>% config(locale = 'it')
+    if(reacval$mobile){
+    plot<-plot%>%layout(legend=list(orientation='h',x=0,y=-0.2))
+    }
+    plot
   }
 })
 
@@ -533,26 +661,30 @@ if(verbose) cat("\n renderPlotly:fitIta")
                  '<br>Casi (fit): ', round(casi),
                  '<br>Intervallo previsione:', paste0('[', round(LowerRange,2), ', ', round(UpperRange,2),']')
                  )))) +
-       suppressWarnings(geom_point(data=prevItaDT[which(prevItaDT$data>=datamax-2),], lty=2, group=1, # group=1 serve per aggirare un bug di ggplotly con tooltip = c("text")
+       suppressWarnings(geom_point(data=prevItaDT[which(prevItaDT$data>=datamax-2),], shape=22,
                      aes(x=data, y=`casi`, color=variabilePrevista,
                         text = paste('Data:', strftime(data, format="%d-%m-%Y"),
                         '<br>Variabile: ', variabilePrevista,
                         '<br>Casi (fit): ', round(`casi`),
                         '<br>Intervallo previsione:', paste0('[', round(LowerRange,2), ', ', round(UpperRange,2),']')
-                      )), shape=22)) +
+                      )))) +
 			 suppressWarnings(geom_point(data=tmp,
               aes(x=data, y=casi, color=variabilePrevista,
                 text = paste('Data:', strftime(data, format="%d-%m-%Y"),
                  '<br>Variabile: ', variabilePrevista,
                  '<br>Casi: ', casi
                  )))) +
-			 scale_color_manual(values=d3hexcols20) +scale_x_date(date_breaks="2 day",date_labels="%b %d")+
+			 scale_color_manual(values=d3hexcols20) + scale_x_date(date_breaks="2 day",date_labels="%b %d") +
        theme(axis.text.x = element_text(angle=45,hjust=1)) +
        labs(x="", color = "variabile prevista")
 
     if (tipoGraph == "Logaritmico") p <- p + scale_y_log10()
 
-    ggplotly(p, tooltip = c("text")) %>% config(locale = 'it')
+    plot<-ggplotly(p, tooltip = c("text")) %>% config(locale = 'it')
+    if(reacval$mobile){
+      plot<-plot%>%layout(legend=list(orientation='h',x=0.01,y=-0.2))
+      }
+    plot
   }
 })
 
@@ -601,7 +733,11 @@ output$fitCasesIta <- renderPlotly({
             theme(axis.text.x=element_text(angle=45,hjust=1)) +
             labs(x="") +
             theme(legend.title = element_blank())
-      ggplotly(p, tooltip = c("text")) %>% config(locale = 'it')
+      plot<-ggplotly(p, tooltip = c("text")) %>% config(locale = 'it')
+      if(reacval$mobile){
+        plot<-plot%>%layout(legend=list(orientation='h',x=0,y=-0.2))
+      }
+      plot
    }
 })
 
@@ -625,11 +761,12 @@ output$terapiaIntPlotPercNow<- renderPlotly({
                   '<br>Percentuale: ', round(percTI)))) +
           geom_bar(stat="identity", fill="steelblue") + my_ggtheme() +
 	        theme(axis.text.x=element_text(angle=45,hjust=1))+
+					geom_hline(yintercept=100, linetype="dashed", color = "lightgrey")+
           labs(x="", y="% letti occupati per CoVid19")
 	ggplotly(p, tooltip = c("text")) %>% config(locale = 'it')
-  if(reacval$mobile){
-    p<-p+coord_flip()
-  }
+  # if(reacval$mobile){
+  #   p<-p+coord_flip()
+  # }
   p
 
 })
@@ -652,18 +789,23 @@ output$terapiaIntPlotNow<- renderPlotly({
 	      theme(axis.text.x=element_text(angle=45,hjust=1))+
         scale_fill_manual(values=d3hexcols) +
         labs(x="", y="numero letti")
-  ggplotly(p, tooltip = c("text")) %>% config(locale = 'it')
+  plot<- ggplotly(p, tooltip = c("text")) %>% config(locale = 'it')
   if(reacval$mobile){
-    p<- p+coord_flip()
+    plot<-plot%>%layout(legend=list(orientation='h',x=0.6,y=-0.4))
+
   }
-  p
+  plot
+  # if(reacval$mobile){
+  #   p<- p+coord_flip()
+  # }
+
 })
 
 output$terapiaIntPlotPercPrev<- renderPlotly({
 	if(verbose) cat("\n renderPlotly:terapiaIntPlot")
 
 	tint <- terapiaInt()
-	allDataReg <- copy( reacval$dataTables_reg)
+	allDataReg <- copy(reacval$dataTables_reg)
 	prevDT <-copy(prevRegion())
 	if(is.null(tint)) return(NULL)
 	if(is.null(allDataReg)) return(NULL)
@@ -705,11 +847,13 @@ output$terapiaIntPlotPercPrev<- renderPlotly({
 	      geom_errorbar(aes(ymin=LowerRange, ymax=UpperRange), width=.2, position=position_dodge(.9))+
         scale_fill_manual(values=d3hexcols) +
         labs(x="", y="numero letti", fill="")
-  ggplotly(p, tooltip = c("text")) %>% config(locale = 'it')
+  plot<-ggplotly(p, tooltip = c("text")) %>% config(locale = 'it')
+
   if(reacval$mobile){
-    p<-p+coord_flip()
+    plot<-plot%>%layout(legend=list(orientation='h',x=0.6,y=-0.4))
+
   }
-  p
+  plot
 
 
 
@@ -717,7 +861,7 @@ output$terapiaIntPlotPercPrev<- renderPlotly({
 
 prevRegionCompare <- reactive({
 	if(verbose) cat("\n reactive:prevRegion")
-	allDataReg <- copy( reacval$dataTables_reg)
+	allDataReg <- copy(reacval$dataTables_reg)
   tipoModello <- input$modelloFit
 
 
@@ -757,22 +901,26 @@ prevItaCompare <- reactive({
 	if(verbose) cat("\n reactive:prevItaCompare")
 	inpData <- input$dataComparazione
 	tipoVariazione <-input$tipoCompare
-		if(verbose) cat("\n inpData", inpData)
-
+	if(verbose) cat("\n inpData", inpData)
 
 	if(is.null(inpData)) return(NULL)
 	if(is.null(tipoVariazione)) return(NULL)
-
 
 	dataMod <-as.Date(inpData)
 
 	tsIta <- getTimeSeriesReact()["Italia"]
 
-	assign("tsIta",tsIta, envir=.GlobalEnv)
-	assign("dataMod",dataMod, envir=.GlobalEnv)
+	if(assignout) assign("tsIta",tsIta, envir=.GlobalEnv)
+	if(assignout) assign("dataMod",dataMod, envir=.GlobalEnv)
 
-	modelliItaPast <- readRDS(paste0("www/pastModels/modelliIta_", dataMod, ".RDS"))
-	modelliItaExpPast  <- readRDS(paste0("www/pastModels/modelliItaExp_", dataMod, ".RDS"))
+	pathModIta    <-paste0("www/pastModels/modelliIta_", dataMod, ".RDS")
+	pathModItaExp <-paste0("www/pastModels/modelliItaExp_", dataMod, ".RDS")
+
+	modelliItaPast <- readRDS(pathModIta)
+	modelliItaExpPast  <- readRDS(pathModItaExp)
+
+	if(verbose) cat("\n\t pathModIta ", pathModIta)
+	if(verbose) cat("\n\t pathModItaExp ", pathModItaExp)
 
 	if(tipoVariazione=='Totale'){
 
@@ -780,25 +928,25 @@ prevItaCompare <- reactive({
 
 		tsIta$Italia <- tsIta$Italia[ tsIta$Italia$data<=dataMod, ]
 
-	  prevDT <- get_predictions(modelliIta, tsIta, nahead=1, alldates=FALSE)
-		prevDTexp <- get_predictions(modelliItaExp, tsIta, nahead=1, alldates=FALSE)
+	  prevDT <- get_predictions(modelliItaPast, tsIta, nahead=1, alldates=FALSE)
+		prevDTexp <- get_predictions(modelliItaExpPast, tsIta, nahead=1, alldates=FALSE)
 		prevDT$Modello 		<- "Esp. quadratico"
 		prevDTexp$Modello <- "Esponenziale"
 
 		prevDT$Osservato 		<- unlist(vero)
 		prevDTexp$Osservato  <- unlist(vero)
 
-		prevDT$'Confidence Level68%' 		<- paste0(format(prevDT$LowerRange, big.mark="'"), ' - ', format(prevDT$UpperRange, big.mark="'"))
-		prevDTexp$'Confidence Level68%'  <- paste0(format(prevDTexp$LowerRange, big.mark="'"), ' - ', format(prevDTexp$UpperRange, big.mark="'"))
+		prevDT$'Valore atteso +- incertezza standard' 		<- paste0(format(prevDT$LowerRange, big.mark="'"), ' - ', format(prevDT$UpperRange, big.mark="'"))
+		prevDTexp$'Valore atteso +- incertezza standard'  <- paste0(format(prevDTexp$LowerRange, big.mark="'"), ' - ', format(prevDTexp$UpperRange, big.mark="'"))
 
-		setnames(prevDT, old=c('LowerRange', 'UpperRange', 'outName', 'Attesi'), new=c('Minimo', 'Massimo', 'Variabile', 'Previsto'))
-		setnames(prevDTexp, old=c('LowerRange', 'UpperRange', 'outName', 'Attesi'), new=c('Minimo', 'Massimo', 'Variabile', 'Previsto'))
+		setnames(prevDT, old=c('LowerRange', 'UpperRange', 'outName', 'Attesi'), new=c('Minimo', 'Massimo', 'Variabile', 'Valore atteso'))
+		setnames(prevDTexp, old=c('LowerRange', 'UpperRange', 'outName', 'Attesi'), new=c('Minimo', 'Massimo', 'Variabile', 'Valore atteso'))
 
-		out <-rbind(prevDT[, c('data', 'Modello', 'Variabile', 'Confidence Level68%', 'Previsto', 'Osservato')],
-					prevDTexp[, c('data', 'Modello', 'Variabile', 'Confidence Level68%', 'Previsto',  'Osservato')])
+		out <-rbind(prevDT[, c('data', 'Modello', 'Variabile', 'Osservato', 'Valore atteso +- incertezza standard', 'Valore atteso')],
+					prevDTexp[, c('data', 'Modello', 'Variabile', 'Osservato', 'Valore atteso +- incertezza standard', 'Valore atteso')])
 
-		out$Variazione <- paste0 (round((out$Osservato-out$Previsto)/out$Osservato*100, 2), " %")
-		out$Previsto 		<- format(out$Previsto, big.mark="'")
+		out$Variazione <- paste0 (round((out$Osservato-out$'Valore atteso')/out$Osservato*100, 2), " %")
+		out$'Valore atteso' 		<- format(out$'Valore atteso', big.mark="'")
 		out$Osservato 		<- format(out$Osservato, big.mark="'")
 
 		out
@@ -831,18 +979,18 @@ prevItaCompare <- reactive({
 		prevDT$Variazione    <- prevDT$VarPrev - DVero
 		prevDTexp$Variazione <- prevDTexp$VarPrev - DVero
 
-		prevDT$'Confidence Level68%' 		<- paste0(format(prevDT$VarMin, big.mark="'"), ' - ', format(prevDT$VarMax, big.mark="'"))
-		prevDTexp$'Confidence Level68%'  <- paste0(format(prevDTexp$VarMin, big.mark="'"), ' - ', format(prevDTexp$VarMax, big.mark="'"))
+		prevDT$'Valore atteso +- incertezza standard' 		<- paste0(format(prevDT$VarMin, big.mark="'"), ' - ', format(prevDT$VarMax, big.mark="'"))
+		prevDTexp$'Valore atteso +- incertezza standard'  <- paste0(format(prevDTexp$VarMin, big.mark="'"), ' - ', format(prevDTexp$VarMax, big.mark="'"))
 
-		setnames(prevDT, old=c('VarMin', 'VarMax', 'outName', 'VarPrev'), new=c('Minimo', 'Massimo', 'Variabile', 'Previsto'))
-		setnames(prevDTexp, old=c('VarMin', 'VarMax', 'outName', 'VarPrev'), new=c('Minimo', 'Massimo', 'Variabile', 'Previsto'))
+		setnames(prevDT, old=c('VarMin', 'VarMax', 'outName', 'VarPrev'), new=c('Minimo', 'Massimo', 'Variabile', 'Valore atteso'))
+		setnames(prevDTexp, old=c('VarMin', 'VarMax', 'outName', 'VarPrev'), new=c('Minimo', 'Massimo', 'Variabile', 'Valore atteso'))
 
-		outPerc <-rbind(prevDT[, c('data', 'Modello', 'Variabile', 'Confidence Level68%', 'Previsto', 'Osservato')],
-					prevDTexp[, c('data', 'Modello', 'Variabile', 'Confidence Level68%', 'Previsto',  'Osservato')])
+		outPerc <-rbind(prevDT[, c('data', 'Modello', 'Variabile', 'Osservato', 'Valore atteso', 'Valore atteso +- incertezza standard')],
+					prevDTexp[, c('data', 'Modello', 'Variabile',  'Osservato', 'Valore atteso', 'Valore atteso +- incertezza standard')])
 
-		outPerc$Variazione <- paste0 (round((outPerc$Osservato-outPerc$Previsto)/outPerc$Osservato*100, 2), " %")
+		outPerc$Variazione <- paste0 (round((outPerc$Osservato-outPerc$'Valore atteso')/outPerc$Osservato*100, 2), " %")
 
-		outPerc$Previsto 		<- format(outPerc$Previsto, big.mark="'")
+		outPerc$'Valore atteso' 		<- format(outPerc$'Valore atteso', big.mark="'")
 		outPerc$Osservato 		<- format(outPerc$Osservato, big.mark="'")
 
 		outPerc
@@ -870,92 +1018,147 @@ output$tabCompare <- renderDT({
 
 
 
+# output$tab_desktop<-renderUI({
+#
+#   fluidRow(style="padding-left:30px;padding-right:30px;border-style: solid;border-color:#009933;",#" border-color :#009933;",
+#   	h1("Analisi previsionale nelle province italiane"),
+#   	fluidRow(
+#   		column(12,h4("In questa pagina proponiamo il confronto tra i dati registrati, sia regionali che nazionali e due modelli di crescita. Il primo modello (esponenziale) descrive una diffusione incontrollata, mentre il secondo (esponenziale quadratico) tenta di tenere conto dell'effetto di misure contenitive. Per maggiori dettagli, controlla la sezione Descrizione Modelli"))
+#
+#   	),
+#
+#   		 br(),
+#   		fluidRow(style="padding:30px;background-color:#ffffff",
+#   			column(2,fluidRow(selectizeInput("regionLinLogFit", label="Tipo Grafico", choices=c("Lineare", "Logaritmico"), selected = "Lineare")),
+# 				radioButtons("modelloFit", label="Tipologia Modello", choices=c("Esp. quadratico","Esponenziale"), selected="Esp. quadratico"),
+# 				checkboxGroupInput("regionSelFit", label="Seleziona regioni", choices=regioniList, selected = regioni2fit)),
+#   		column(10,
+#
+#   			fluidRow(column(6,align="center",h4("Andamento casi positivi per regione con previsione a 3 giorni")),column(6,align="center",h4("Andamenti globali in Italia con previsione a 3 giorni"))),
+#   			fluidRow(
+#   				column(width=6,align="left", plotlyOutput(outputId="fitRegion"), #spiegaFitPos
+#   				),br(),
+#   				column(width=6,align="left",plotlyOutput(outputId="fitIta"), #spiegaFitTot
+#   				),br(),fluidRow(style="padding:20px;",spiegaFitTotePos)
+#   			)
+#       )
+#   		),br(),br(),
+#   		fluidRow(style="padding:30px;background-color:#ffffff",width=12,  h2("Previsione del numero di casi totali a medio termine con modello esponenziale quadratico"), plotlyOutput(outputId="fitCasesIta")
+#
+#   		),br(),
+#       fluidRow(
+#         box(width=12,
+#           column(width=4,
+#             selectizeInput("tipoCompare", label="Tipo Comparazione", choices=c("Totale", "Incremento Giornaliero"), , selected = "Lineare")
+#           ),
+#           column(width=4,
+#             uiOutput("dateCompare")
+#           ),
+#           DTOutput("tabCompare"),spiegaTabellaCompare
+#
+#         )
+#       ),br()
+#   	)
+#
+#   })
 output$tab_desktop<-renderUI({
 
   fluidRow(style="padding-left:30px;padding-right:30px;border-style: solid;border-color:#009933;",#" border-color :#009933;",
-  	h1("Analisi previsionale nelle province italiane"),
-  	fluidRow(
-  		column(12,h4("In questa pagina proponiamo il confronto tra i dati registrati, sia regionali che nazionali e due modelli di crescita. Il primo modello (esponenziale) descrive una diffusione incontrollata, mentre il secondo (esponenziale quadratico) tenta di tenere conto dell'effetto di misure contenitive. Per maggiori dettagli, controlla la sezione di approfondimento"))
+    h1("Previsioni"),
+    fluidRow(
+      column(12,h4("In questa pagina proponiamo il confronto tra i dati registrati, sia regionali che nazionali e due modelli di crescita. Il primo modello (esponenziale) descrive una diffusione incontrollata, mentre il secondo (esponenziale quadratico) tenta di tenere conto dell'effetto di misure contenitive. Per maggiori dettagli, controlla la sezione Matematica della diffusione"))
 
-  	),
-
-  		 br(),
-  		fluidRow(style="padding:30px;background-color:#ffffff",
-  			column(2,fluidRow(selectizeInput("regionLinLogFit", label="Tipo Grafico", choices=c("Lineare", "Logaritmico"), selected = "Lineare")),
-				radioButtons("modelloFit", label="Tipologia Modello", choices=c("Esp. quadratico","Esponenziale"), selected="Esp. quadratico"),
-				checkboxGroupInput("regionSelFit", label="Seleziona regioni", choices=regioniList, selected = regioni2fit)),
-  		column(10,
-
-  			fluidRow(column(6,align="center",h4("Andamento casi positivi per regione con previsione a 3 giorni")),column(6,align="center",h4("Andamenti globali in Italia con previsione a 3 giorni"))),
-  			fluidRow(
-  				column(width=6,align="left", plotlyOutput(outputId="fitRegion"), #spiegaFitPos
-  				),br(),
-  				column(width=6,align="left",plotlyOutput(outputId="fitIta"), #spiegaFitTot
-  				),br(),fluidRow(style="padding:20px;",spiegaFitTotePos)
-  			)
-      )
-  		),br(),br(),
-  		fluidRow(style="padding:30px;background-color:#ffffff",width=12,  h2("Previsione del numero di casi totali a medio termine con modello esponenziale quadratico"), plotlyOutput(outputId="fitCasesIta")
-
-  		),br(),
+    ),
+       br(),
+      fluidRow(style="padding:30px;background-color:#ffffff",
       fluidRow(
-        box(width=12,
+
+        column(5,pickerInput(inputId = "regionSelFit", label = "Seleziona regioni", choices = regioniList,selected=regioni2fit, options = list(size=10,`actions-box` = TRUE, `selected-text-format` = "count >20"), multiple = TRUE)),
+        column(4,selectizeInput("regionLinLogFit", label="Tipo Grafico", choices=c("Lineare", "Logaritmico"), selected = "Lineare")),
+        column(3,radioButtons("modelloFit", label="Tipologia Modello", choices=c("Esp. quadratico", "Esponenziale" ), selected="Esp. quadratico"))),
+
+        fluidRow(align="center",h4("Andamento casi positivi per regione con previsione a 3 giorni")),
+         plotlyOutput(outputId="fitRegion"), spiegaFitPos
+        ),br(),
+        fluidRow(style="padding:30px;background-color:#ffffff",
+        fluidRow(align="center",h4("Andamenti globali in Italia con previsione a 3 giorni")),
+         plotlyOutput(outputId="fitIta"), spiegaFitTot
+
+      ),br(),br(),
+      fluidRow(style="padding:30px;background-color:#ffffff",  h2("Previsione del numero di casi totali a medio termine con modello esponenziale quadratico"), plotlyOutput(outputId="fitCasesIta")
+
+      ),br(),
+      fluidRow(style="padding:30px;background-color:#ffffff",
           column(width=4,
-            selectizeInput("tipoCompare", label="Tipo Comparazione", choices=c("Totale", "Incremento Giornaliero"), , selected = "Lineare")
+            selectizeInput("tipoCompare", label="Tipo Comparazione", choices=c("Totale", "Incremento Giornaliero"), selected = "Lineare")
           ),
           column(width=4,
             uiOutput("dateCompare")
           ),
           DTOutput("tabCompare"),spiegaTabellaCompare
 
-        )
-      ),br(),
+
+      ),br()
+    )
+
+  })
+
+output$tab_mobile<-renderUI({
+
+  fluidRow(style="padding-left:30px;padding-right:30px;border-style: solid;border-color:#009933;",#" border-color :#009933;",
+  	h1("Previsioni"),
+  	fluidRow(
+  		column(12,h4("In questa pagina proponiamo il confronto tra i dati registrati, sia regionali che nazionali e due modelli di crescita. Il primo modello (esponenziale) descrive una diffusione incontrollata, mentre il secondo (esponenziale quadratico) tenta di tenere conto dell'effetto di misure contenitive. Per maggiori dettagli, controlla la sezione Matematica della diffusione"))
+
+  	),
+  		 br(),
+  		fluidRow(style="padding:30px;background-color:#ffffff",
+      fluidRow(
+
+        column(5,pickerInput(inputId = "regionSelFit", label = "Seleziona regioni", choices = regioniList,selected=regioni2fit, options = list(size=10,`actions-box` = TRUE, `selected-text-format` = "count >20"), multiple = TRUE)),
+        column(4,selectizeInput("regionLinLogFit", label="Tipo Grafico", choices=c("Lineare", "Logaritmico"), selected = "Lineare")),
+        column(3,radioButtons("modelloFit", label="Tipologia Modello", choices=c("Esp. quadratico", "Esponenziale" ), selected="Esp. quadratico"))),
+
+        fluidRow(style="background-color:#ffffff",column(10,offset=1,align="center",h4("Andamento casi positivi per regione con previsione a 3 giorni"))),
+         fluidRow(style="padding:10px;background-color:#ffffff",plotlyOutput(outputId="fitRegion")), spiegaFitPos
+        ),br(),
+
+        fluidRow(style="background-color:#ffffff",column(10,offset=1,align="center",h4("Andamenti globali in Italia con previsione a 3 giorni"))),
+         fluidRow(style="padding:10px;background-color:#ffffff",plotlyOutput(outputId="fitIta")),
+         fluidRow( style="padding:20px;background-color:#ffffff;",spiegaFitTot)
+
+  		,br(),br(),
+  		fluidRow(style="padding:30px;background-color:#ffffff", h2("Previsione del numero di casi totali a medio termine con modello esponenziale quadratico")),
+       fluidRow(style="padding:10px;background-color:#ffffff",plotlyOutput(outputId="fitCasesIta",width="100%")
+
+  		),br(),
+      fluidRow(style="padding:30px;background-color:#ffffff",
+
+          column(width=4,
+            selectizeInput("tipoCompare", label="Tipo Comparazione", choices=c("Totale", "Incremento Giornaliero"),  selected = "Lineare")
+          ),
+          column(width=4,
+            uiOutput("dateCompare")
+          ),
+          DTOutput("tabCompare"),spiegaTabellaCompare
+
+
+      ),br()
   	)
 
   })
 
-  output$tab_mobile<-renderUI({
-
-    fluidRow(style="padding-left:30px;padding-right:30px;border-style: solid;border-color:#009933;",#" border-color :#009933;",
-    	h1("Previsioni"),
-    	fluidRow(
-    		column(12,h4("In questa pagina proponiamo il confronto tra i dati registrati, sia regionali che nazionali e due modelli di crescita. Il primo modello (esponenziale) descrive una diffusione incontrollata, mentre il secondo (esponenziale quadratico) tenta di tenere conto dell'effetto di misure contenitive. Per maggiori dettagli, controlla la sezione di approfondimento"))
-
-    	),
-    		 br(),
-    		fluidRow(style="padding:30px;background-color:#ffffff",
-        fluidRow(
-
-          column(5,pickerInput(inputId = "regionSelFit", label = "Seleziona regioni", choices = regioniList,selected=regioni2fit, options = list(size=10,`actions-box` = TRUE, `selected-text-format` = "count >20"), multiple = TRUE)),
-          column(4,selectizeInput("regionLinLogFit", label="Tipo Grafico", choices=c("Lineare", "Logaritmico"), selected = "Lineare")),
-          column(2,radioButtons("modelloFit", label="Tipologia Modello", choices=c("Esp. quadratico", "Esponenziale" ), selected="Esp. quadratico"))),
-
-          fluidRow(align="center",h4("Andamento casi positivi per regione con previsione a 3 giorni")),
-           plotlyOutput(outputId="fitRegion"), spiegaFitPos
-          ),br(),
-          fluidRow(style="padding:30px;background-color:#ffffff",
-          fluidRow(align="center",h4("Andamenti globali in Italia con previsione a 3 giorni")),
-           plotlyOutput(outputId="fitIta"), spiegaFitTot
-
-    		),br(),br(),
-    		fluidRow(style="padding:30px;background-color:#ffffff",width=12,  h2("Previsione del numero di casi totali a medio termine con modello esponenziale quadratico"), plotlyOutput(outputId="fitCasesIta")
-
-    		),br(),
-        fluidRow(
-          box(width=12,
-            column(width=4,
-              selectizeInput("tipoCompare", label="Tipo Comparazione", choices=c("Totale", "Incremento Giornaliero"), , selected = "Lineare")
-            ),
-            column(width=4,
-              uiOutput("dateCompare")
-            ),
-            DTOutput("tabCompare"),spiegaTabellaCompare
-
-          )
-        ),br(),
-    	)
-
-    })
+output$tab_previsioni<-renderUI({
+  out<-NULL
+   if((length(reacval$mobile)>0)){
+     if(reacval$mobile){
+      out<-uiOutput("tab_mobile")
+     }
+     else{
+       out<-uiOutput("tab_desktop")
+     }
+   }
+  })
 
 output$spaces_mobile_prev<-renderUI({
   out<-NULL
@@ -1007,6 +1210,32 @@ output$spaces_mobile_prov<-renderUI({
   }
 
   })
+
+  output$spaces_mobile_chisiamo<-renderUI({
+    out<-NULL
+    if((length(reacval$mobile)>0)){
+      if(reacval$mobile){
+        out<-fluidRow(br(),br(),br())
+      }
+
+    }
+
+    })
+
+
+    output$spaces_mobile_diario<-renderUI({
+      out<-NULL
+      if((length(reacval$mobile)>0)){
+        if(reacval$mobile){
+          out<-fluidRow(br(),br(),br())
+        }
+
+      }
+
+      })
+
+
+
 
   output$sidebar <- renderUI({
     out<-NULL

@@ -1,5 +1,6 @@
 require(digest)
 require(httr)
+require(rmarkdown)
 source("funzionifit.R")
 writeLog<-function(message, log) {
 	cat(sprintf("%s - %s\n",format(Sys.time()),message),file=log,append=TRUE)
@@ -61,7 +62,7 @@ while (i==0) {
 	prov<-try(content(GET(provremotepath),type="raw"))
 	if (!inherits(prov,"try-error")) {
 		d1<- digest(prov)
-		if (length(prov)>=length(currentprov) && (is.na(hashes["Province"]) || d1!=hashes["Province"])) {
+		if ((is.na(hashes["Province"]) || d1!=hashes["Province"])) {
 			writeLog("Scarico Province\n",logdemone)
 			writeBin(prov,provlocalpathcsv)
 			hashes["Province"]<-d1
@@ -70,7 +71,7 @@ while (i==0) {
 	reg<-try(content(GET(regremotepath),type="raw"))
 	if (!inherits(reg,"try-error")) {
 		d2<- digest(reg)
-		if (length(reg)>=length(currentreg) && (is.na(hashes["Regioni"]) || d2!=hashes["Regioni"])) {
+		if ((is.na(hashes["Regioni"]) || d2!=hashes["Regioni"])) {
 			writeLog("Scarico Regioni\n",logdemone)
 			writeBin(reg,reglocalpathcsv)
 			hashes["Regioni"]<-d2
@@ -137,3 +138,4 @@ if ( TRUE) {
 		saveRDS(modelliItaExp,paste0("www/pastModels/modelliItaExp_", x,".RDS"))
 	})
 }
+rmarkdown::render("articolo.Rmd",output_file="www/tabReport.html")

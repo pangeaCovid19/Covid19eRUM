@@ -165,3 +165,5 @@ get_predictions <- function(modelli, datiTS, nahead, alldates=FALSE) {
 		setDF(previsioniDT)
   previsioniDT
 }
+
+

@@ -8,8 +8,12 @@ source("funzionifit.R")
 options(bitmapType="cairo")
 
 
+
+animazione <- FALSE
+scalaSingolaProvincia <-FALSE
+
 verbose <- TRUE
-assignout <- TRUE
+assignout <- FALSE
 saveRDSout <- FALSE
 
 regioni2fit <- c('Lombardia', 'Emilia Romagna', 'Veneto')
@@ -45,6 +49,13 @@ d3col1 <- d3hexcols[1]
 d3cols20 <- "1f77b4aec7e8ff7f0effbb782ca02c98df8ad62728ff98969467bdc5b0d58c564bc49c94e377c2f7b6d27f7f7fc7c7c7bcbd22dbdb8d17becf9edae5"
 d3hexcols20 <- paste0("#",regmatches(d3cols20, gregexpr(".{6}", d3cols20))[[1]])
 
+
+
+
+
+
+
+
 my_ggtheme <- function() {
   theme_minimal() +
             theme(legend.text = element_text(size = 7),
@@ -66,8 +77,26 @@ my_ggtheme <- function() {
 }
 
 # dati epidemiolocigi
-allData <- readRDS(paste0(dir_prov,provRDS))
-regioniList <- sort(unique(allData$denominazione_regione))
+allData_prv <- readRDS(paste0(dir_prov,provRDS))
+allData_reg_flt <- readRDS(paste0(dir_prov,provRDS))
+## globalizziamo le aggregazioni per le mappe...
+allData_prv <- allData_prv[!grepl("aggiornamento", allData_prv$denominazione_provincia),]
+allData_prv <- aggregate(list(totale_casi=allData_prv$totale_casi, pop=allData_prv$pop),
+                  by=list(data=allData_prv$data, denominazione_regione=allData_prv$denominazione_regione,
+                          denominazione_provincia=allData_prv$denominazione_provincia, codice_provincia=allData_prv$codice_provincia),
+                  FUN=sum)
+allData_prv$`casi su 10mila abit` <- round(allData_prv$totale_casi / allData_prv$pop * 10000, 3)
+
+allData_reg_flt <- allData_reg_flt[!grepl("aggiornamento", allData_reg_flt$denominazione_provincia),]
+allData_reg_flt <- aggregate(list(totale_casi=allData_reg_flt$totale_casi, pop=allData_reg_flt$pop),
+                              by=list(data=allData_reg_flt$data,
+                                  denominazione_regione=allData_reg_flt$denominazione_regione, codice_regione=allData_reg_flt$codice_regione),
+                              FUN=sum)
+allData_reg_flt$`casi su 10mila abit` <- round(allData_reg_flt$totale_casi / allData_reg_flt$pop * 10000, 3)
+## fine parte per mappe
+regioniList <- sort(unique(allData_reg_flt$denominazione_regione))
+
+
 allData_reg <- readRDS(paste0(dir_reg, regRDS))
 mtimeProv <- file.info(paste0(dir_prov,provRDS))$mtime
 mtimeReg 	<-file.info(paste0(dir_reg,regRDS))$mtime
@@ -80,10 +109,10 @@ if(file.exists("www/modelliRegExp.RDS"))
 if(file.exists("www/modelliItaExp.RDS"))
 	modelliItaExp <-readRDS("www/modelliItaExp.RDS")
 
-date_range 			<- range(allData$data)
-date_range_reg 	<- range(allData_reg$data)
+date_range_prv <- range(allData_prv$data)
+date_range_reg <- range(allData_reg$data)
 
-date0 		<- min(date_range, na.rm=T)
+date0_prv <- min(date_range_prv, na.rm=T)
 date0_reg <- min(date_range_reg, na.rm=T)
 
 province <- readRDS(paste0(dir_prov, provShapeRDS))
@@ -140,6 +169,15 @@ spiegaTabellaCompare <- HTML("<div style='padding-top:10px;'>In questa tabella v
 <br>Sono stati confrontati i due modelli, l'esponeziale quadratico e l'esponenziale puro. La forte discordanza tra previsioni e valori osservati nel modello esponenziale indica che siamo usciti da quel regime di crescita: le misure preventive adottate dal governo iniziano ad avere effetto!</div>")
 
 
+# Descrizione Terapia Intensiva
+spiegaTerIntPrevisione <- HTML("<div style='padding-top:10px;'>In questo grafico vengono rappresentati il numero di posti letto in terapia intensiva, aggiornati al 2018, e le previsioni del numero di pazienti che hanno bisogno di terapia intensiva. Non avendo sufficienti dati per ogni regione le proiezioni sono state fatte moltiplicanzo il numero di terapie intensive su contagiati totali per le previsioni del numero di contagiati per regione. Le barre verticali rappresentano l'incertezza standard.I dati sulla disponibilità dei posti letto è aggioranta al 2018 e non si tiene conto del continuo sforfo che sta affrontado il Sistema Sanitario Nazionale per aumentarne la disponibilità nel minor tempo possibile.</div>")
+
+spiegaTerIntPercentuale <- HTML("<div style='padding-top:10px;'>In questo grafico viene rappresentata la percentuale di posti letto occupati da pazienti in terapia intensiva rispetto al numero di posti letto disponibili, aggiornati al 2018.</div>")
+
+
+spiegaTerIntAttuale <- HTML("<div style='padding-top:10px;'>In questo grafico vengono rappresentati il numero di posti letto in terapia intensiva, aggiornati al 2018, ed il numero di pazienti in terapia intensiva con CoVid19 per ogni regione.</div>")
+
+
 fontiDati <- HTML("<div>Dati provenienti da:
 <ul>
 <li><a href='https://github.com/pcm-dpc/COVID-19'>Presidenza del Consiglio dei Ministri - Dipartimento della Protezione Civile
@@ -149,153 +187,3 @@ fontiDati <- HTML("<div>Dati provenienti da:
 http://www.dati.salute.gov.it/dati/dettaglioDataset.jsp?menu=dati&idPag=96'>Ministero della Salute</a>
 (Numero di posti letto in terapia intensiva, dati aggiornati al 2018)</li>
 </ul></div>")
-
-
-
-
-
-
-
-
-
-
-
-# DEPRECATE
-
-
-## shapefile addizionali per rimuovere uso di leaflet e alleggerire il carico della app
-
-#eu_countries <- read_sf("www/EU_countries.shp/CNTR_BN_10M_2016_4326.shp")
-#eu_info <- read.csv("www/EU_countries.shp/CNTR_RG_BN_10M_2016.csv")
-#eu_info <- eu_info[!is.na(eu_info$CNTR_CODE),]
-#eu_countries <- merge(eu_countries, eu_info, by.x="CNTR_BN_ID", by.y="CNTR_BN_CODE")
-
-#italy <- eu_countries[eu_countries$CNTR_CODE=="IT",]
-#ita_box <- st_as_sfc(st_bbox(italy), crs=st_crs(eu_countries))
-#selezionati <- vapply(st_geometry(eu_countries), function(x) st_intersects(x, st_geometry(ita_box), sparse=F), TRUE)
-#eu_to_plot <- eu_countries[selezionati,]
-#st_agr(eu_to_plot) = "constant"
-#eu_to_plot <- st_intersection(eu_to_plot, ita_box)
-#eu_to_plot <- st_transform(eu_to_plot, crs="+proj=longlat +datum=WGS84 +no_defs")
-
-#map_italia <- ggplot() +
-#                  geom_sf(data = eu_to_plot, color="lightgrey", size=.5) +
-#                  geom_sf(data = italy, color="black", size=.75) +
-#                  labs(title="Casi in Italia", x="", y="") +
-#                  my_ggtheme()
-
-#rm(eu_countries)
-#rm(eu_info)
-#rm(ita_box)
-#gc()
-
-## a questo punto eu_to_plot rappresenta i confini delle nazioni vicino all'Italia
-## e italy i contorni dell'Italia
-## plot per provare
-#ggplot() +
-#  geom_sf(data = eu_to_plot, color="lightgrey", size=.5) +
-#  geom_sf(data = italy, color="steelblue", size=.75) +
-#  theme_minimal()
-
-
-
-
-
-################################################################## DEPRECATE
-##################################################################
-# MAPPE ggplot
-if(FALSE){
-
-	map_italia <- ggplot() +
-		geom_sf(data = eu_to_plot, color="lightgrey", size=.5) +
-		geom_sf(data = italy, color="black", size=.75) +
-		labs(title="Casi in Italia", x="", y="") +
-		my_ggtheme()
-
-	map_regioni <- lapply(regioni$COD_REG, function(cod) {
-	                        box_strict <- st_as_sfc(st_bbox(regioni[regioni$COD_REG == cod,]), crs=st_crs(regioni))
-	                        selezionati <- vapply(st_geometry(regioni), function(x) st_intersects(x, st_geometry(box_strict), sparse=F), TRUE)
-	                        reg_to_plot <- st_boundary(regioni[selezionati,])
-	                        reg_to_plot <- st_intersection(reg_to_plot, box_strict)
-	                        ggplot() +
-	                          geom_sf(data = reg_to_plot, color="lightgrey", size=.5) +
-	                          geom_sf(data = regioni[regioni$COD_REG == cod,], color="black", size=.75) +
-	                          labs(title=paste("Casi in", regioni$DEN_REG[regioni$COD_REG == cod]), x="", y="") +
-	                          my_ggtheme()
-	                      })
-	names(map_regioni) <- regioni$COD_REG
-}# SHAPE FILES
-if (FALSE){
-regioni <- st_read("www/Reg01012019/Reg01012019_WGS84.shp")
-regioni <- st_transform(regioni, crs="+proj=longlat +datum=WGS84 +no_defs")
-hlpr <- st_coordinates(st_centroid(regioni))
-colnames(hlpr) <- c("reg_long", "reg_lat")
-regioni <- cbind(regioni, hlpr)
-
-#map_regioni <- lapply(regioni$COD_REG, function(cod) {
-#                        box_strict <- st_as_sfc(st_bbox(regioni[regioni$COD_REG == cod,]), crs=st_crs(regioni))
-#                       selezionati <- vapply(st_geometry(regioni), function(x) st_intersects(x, st_geometry(box_strict), sparse=F), TRUE)
-#                      reg_to_plot <- st_boundary(regioni[selezionati,])
-#                        reg_to_plot <- st_intersection(reg_to_plot, box_strict)
-#                        ggplot() +
-#                          geom_sf(data = reg_to_plot, color="lightgrey", size=.5) +
-#                          geom_sf(data = regioni[regioni$COD_REG == cod,], color="black", size=.75) +
-#                          labs(title=paste("Casi in", regioni$DEN_REG[regioni$COD_REG == cod]), x="", y="") +
-#                          my_ggtheme()
-#                      })
-#names(map_regioni) <- regioni$COD_REG
-
-
-province <- st_read("www/ProvCM01012019/ProvCM01012019_WGS84.shp")
-province <- st_transform(province, crs="+proj=longlat +datum=WGS84 +no_defs")
-#hlpr <- st_coordinates(st_centroid(province))
-#colnames(hlpr) <- c("prv_long", "prv_lat")
-#province <- cbind.data.frame(province, hlpr)
-}
-##################################################################
-if(FALSE) {
-	data_files <- list.files(dir_prov, full.names=T)
-	data_files <- data_files[(grepl(".csv$", data_files) | grepl(".txt$", data_files)) & grepl('2020',data_files)]
-	date_range <- as.Date(gsub(".*/.*-(\\d{,8}).csv$", "\\1", data_files), format="%Y%m%d")
-	date0 <- min(date_range, na.rm=T)
-
-
-	get_covid19_data <- function(flist) {
-	  do.call(rbind, lapply(flist, function(ff) {
-	    temp <- read.csv(ff, stringsAsFactors=F)
-	    temp$data <- as.Date(temp$data)
-			paTrentino <- grep('bolz|trent', temp$denominazione_regione, ignore.case=T)
-			temp$denominazione_regione[paTrentino] <- "Trentino - Alto Adige"
-			#temp$denominazione_regione[temp$denominazione_regione %in% c("Bolzano", "Trento")] <- "Trentino - Alto Adige"
-	    temp <- merge(temp, pop_file[,c("codice_provincia", "pop")], by="codice_provincia")
-	    temp
-	  }))
-	}
-
-	allData <- get_covid19_data(data_files)
-	regioniList <- sort(unique(allData$denominazione_regione))
-
-	alld0 <- allData[allData$data==date0, ]
-	pop_reg <- aggregate(alld0[, 'pop'], by=list(denominazione_regione=alld0$denominazione_regione), sum)
-	setnames(pop_reg, old="x", new="pop")
-
-
-	data_files_reg <- list.files(dir_reg, full.names=T)
-	data_files_reg <- data_files_reg[(grepl(".csv$", data_files_reg) | grepl(".txt$", data_files_reg))  & grepl('2020',data_files_reg)]
-	date_range_reg <- as.Date(gsub(".*/.*-(\\d{,8}).csv$", "\\1", data_files_reg), format="%Y%m%d")
-	date0_reg <- min(date_range_reg, na.rm=T)
-
-	get_covid19_data_reg <- function(flist) {
-	  do.call(rbind, lapply(flist, function(ff) {
-	    temp <- read.csv(ff, stringsAsFactors=F)
-	    temp$data <- as.Date(temp$data)
-	    temp <- merge(temp, pop_reg[,c("denominazione_regione", "pop")], by="denominazione_regione")
-			paTrentino <- grep('bolz|trent', temp$denominazione_regione, ignore.case=T)
-			temp$denominazione_regione[paTrentino] <- "Trentino - Alto Adige"
-	    #temp$denominazione_regione[temp$denominazione_regione %in% c("Bolzano", "Trento")] <- "Trentino - Alto Adige"
-	    temp
-	  }))
-	}
-
-	allData_reg <- get_covid19_data_reg(data_files_reg)
-}
