@@ -10,12 +10,12 @@ chisiamotab<-tabItem(tabName="chisiamo",
 
 				uiOutput("spaces_mobile_chisiamo"),
 
-							fluidRow(style="padding:30px;border-style: solid;border-color:#00cc99;",
+							fluidRow(style="padding:30px;border-style: solid;border-color:#ff8c00;",
 										#	h1("Quanto veloce si diffonde il Coronavirus in Italia "),
 
 											fluidRow(style="padding:30px;background-color:#ffffff;",
 											HTML(readChar("../docs/chisiamo.html",file.info("../docs/chisiamo.html")$size)))))
-											
+
 diariotab<-tabItem(tabName="diario",
 
 				uiOutput("spaces_mobile_diario"),
@@ -23,8 +23,8 @@ diariotab<-tabItem(tabName="diario",
 							fluidRow(style="padding:30px;border-style: solid;border-color:#00cc99;",
 
 											fluidRow(style="padding:30px;background-color:#ffffff;",
-											a("Clicca per il report",href="tabReport.html",target="_blank",rel="noopener noreferrer")	)))										
-											
+											a("Clicca per il report",href="tabReport.html",target="_blank",rel="noopener noreferrer")	)))
+
 
 introTab<-tabItem(tabName="intro",
 
@@ -149,9 +149,9 @@ prvTab <- tabItem(tabName = "prvPlots",
 #
 ######################################################
 
-dashboardPage(
+dashboardPage(title="CoVid-19 in Italia",
 	skin = "black",
-	dashboardHeader3(title="CoVid-19 in Italia", pagename="CoVid-19 in Italia", logo_img = "logo_pangea_esteso.png", width = 200),
+	dashboardHeader3( pagename="CoVid-19 in Italia", logo_img = "logo_pangea_esteso.png", width = 200),
 
 ## bbar content
 	dashboardSidebar(uiOutput('sidebar'),
@@ -168,10 +168,10 @@ dashboardPage(
 			        menuItem2("Per Provincia", tabName = "prvPlots", icon = icon("far fa-chart-bar"))#("vials"))
 			      ),
 			sidebarMenu(id='spiegazione',
-				menuItem2("Descrizione modelli", tabName = "intro", icon = icon("fas fa-atlas"))
+				menuItem2("Matematica della diffusione", tabName = "intro", icon = icon("fas fa-square-root-alt"))
 			),
 			sidebarMenu(id='diariodibordo',
-				menuItem2("Diario della diffusione", tabName = "diario", icon = icon("fas fa-users"))
+				menuItem2("Diario della diffusione", tabName = "diario", icon = icon("fas fa-book-open"))
 			),
 			sidebarMenu(id='presentazione',
 				menuItem2("Chi Siamo", tabName = "chisiamo", icon = icon("fas fa-users"))
@@ -197,5 +197,5 @@ dashboardPage(
 		    ,diariotab
 		    ,chisiamotab
 	))
-	
+
 )
