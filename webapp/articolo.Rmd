@@ -1,6 +1,6 @@
 ---
 title: "I nuovi dati diramati dalla Protezione Civile sul Coronavirus"
-author: "Pangea"
+author: <span class="titolo2">Pangea</span>
 output: 
    html_document:
       css: style.css
@@ -9,7 +9,7 @@ output:
 source("scriptMD.R")
 ```
 
-<span class="myclass"></span> 
+
 Avrete probabilmente sentito la Protezione Civile diramare gli ultimi dati relativi al <span class="myclass">`r fdata`</span>. Nella giornata, sono stati registrati <span class="myclass">`r ultimidati$decedutiGiorni`</span> nuovi decessi, portando il totale a <span class="myclass">`r ultimidati$deceduti`</span>. Il totale dei casi di contagio ammonta a <span class="myclass">`r ultimidati$totale_casi`</span>, di cui <span class="myclass">`r ultimidati$nuovi_attualmente_positivi`</span> nell'ultima giornata. Rispetto al giorno precedente, registriamo <span class="myclass">`r segno(tail(diffdeceduti,1))`</span> di <span class="myclass">`r abs(tail(diffdeceduti,1))`</span> per quanto riguarda i deceduti e <span class="myclass">`r segno(tail(diffcontagi,1))`</span> di <span class="myclass">`r abs(tail(diffcontagi,1))`</span> per i nuovi nuovi contagi. 
 
 
