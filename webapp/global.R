@@ -38,7 +38,7 @@ TIindx <- grep("TERAPIA INTENSIVA", letti2018$Descrizione.disciplina)
 Tintensiva <- aggregate(letti2018[TIindx, 'Totale.posti.letto'],by=list( denominazione_regione=letti2018[TIindx, 'Descrizione.Regione']), sum)
 setnames(Tintensiva, old="x", new="lettiTI")
 
-letality<-read.csv2(file="report_iss/letality.csv",stringsAsFactors=FALSE)
+letality<-read.csv2(file="report_iss/Letality.csv",stringsAsFactors=FALSE)
 
 
 # Temi dell'applicazione
