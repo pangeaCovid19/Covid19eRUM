@@ -742,6 +742,7 @@ output$terapiaIntPlotPercNow<- renderPlotly({
                   '<br>Percentuale: ', round(percTI)))) +
           geom_bar(stat="identity", fill="steelblue") + my_ggtheme() +
 	        theme(axis.text.x=element_text(angle=45,hjust=1))+
+					geom_hline(yintercept=100, linetype="dashed", color = "lightgrey")+
           labs(x="", y="% letti occupati per CoVid19")
 	ggplotly(p, tooltip = c("text")) %>% config(locale = 'it')
   # if(reacval$mobile){
