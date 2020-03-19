@@ -64,7 +64,7 @@ observe({
                         by=list(data=prvData$data, denominazione_regione=prvData$denominazione_regione,
                                 denominazione_provincia=prvData$denominazione_provincia, codice_provincia=prvData$codice_provincia),
                         FUN=sum)
-      prvData$`casi su 10mila abit` <- round(prvData$totale_casi / prvData$pop * 10000, 3)
+      prvData$`casi su 10mila abit` <- round(prvData$totale_casi / prvData$pop * 10000, 2)
       reacval$dataTables_prv <- prvData
 
       regDataFlt	<- readRDS(pathProv)
@@ -73,7 +73,7 @@ observe({
                             by=list(data=regDataFlt$data,
                                     denominazione_regione=regDataFlt$denominazione_regione, codice_regione=regDataFlt$codice_regione),
                             FUN=sum)
-      regDataFlt$`casi su 10mila abit` <- round(regDataFlt$totale_casi / regDataFlt$pop * 10000, 3)
+      regDataFlt$`casi su 10mila abit` <- round(regDataFlt$totale_casi / regDataFlt$pop * 10000, 2)
       reacval$dataTables_reg_flt <- regDataFlt
 
       if(assignout) assign("outallData_prv",prvData,envir=.GlobalEnv)
@@ -350,6 +350,7 @@ output$tabProvince <- renderDT({
     setnames(allDataPrv, old=c('denominazione_provincia', 'totale_casi'), new=c('provincia', 'casi totali'))
     allDataPrv$pop <- NULL
     allDataPrv$data <- strftime(allDataPrv$data, format="%d-%m-%Y")
+		allDataPrv$`casi su 10mila abit` <- round(allDataPrv$`casi su 10mila abit`,2)
 
     datatable(allDataPrv,
       selection = list(target = NULL),
