@@ -1119,13 +1119,13 @@ output$tab_mobile<-renderUI({
         column(4,selectizeInput("regionLinLogFit", label="Tipo Grafico", choices=c("Lineare", "Logaritmico"), selected = "Lineare")),
         column(3,radioButtons("modelloFit", label="Tipologia Modello", choices=c("Esp. quadratico", "Esponenziale" ), selected="Esp. quadratico"))),
 
-        fluidRow(column(10,offset=1,align="center",h4("Andamento casi positivi per regione con previsione a 3 giorni"))),
+        fluidRow(style="background-color:#ffffff",column(10,offset=1,align="center",h4("Andamento casi positivi per regione con previsione a 3 giorni"))),
          fluidRow(style="padding:10px;background-color:#ffffff",plotlyOutput(outputId="fitRegion")), spiegaFitPos
         ),br(),
 
-        fluidRow(column(10,offset=1,align="center",h4("Andamenti globali in Italia con previsione a 3 giorni"))),
+        fluidRow(style="background-color:#ffffff",column(10,offset=1,align="center",h4("Andamenti globali in Italia con previsione a 3 giorni"))),
          fluidRow(style="padding:10px;background-color:#ffffff",plotlyOutput(outputId="fitIta")),
-         fluidRow( style="padding:20px;",spiegaFitTot)
+         fluidRow( style="padding:20px;background-color:#ffffff;",spiegaFitTot)
 
   		,br(),br(),
   		fluidRow(style="padding:30px;background-color:#ffffff", h2("Previsione del numero di casi totali a medio termine con modello esponenziale quadratico")),
