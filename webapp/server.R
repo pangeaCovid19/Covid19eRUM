@@ -39,7 +39,6 @@ shinyServer(function(input, output, session) {
 
 observe({
 
-    print(input$GetNavUserAgent)
 		if (!is.null(input$GetNavUserAgent)){
 
 			if (grepl("mobile",tolower(input$GetNavUserAgent)) || grepl("android",tolower(input$GetNavUserAgent)))
@@ -1131,6 +1130,32 @@ output$spaces_mobile_prov<-renderUI({
   }
 
   })
+
+  output$spaces_mobile_chisiamo<-renderUI({
+    out<-NULL
+    if((length(reacval$mobile)>0)){
+      if(reacval$mobile){
+        out<-fluidRow(br(),br(),br())
+      }
+
+    }
+
+    })
+
+
+    output$spaces_mobile_diario<-renderUI({
+      out<-NULL
+      if((length(reacval$mobile)>0)){
+        if(reacval$mobile){
+          out<-fluidRow(br(),br(),br())
+        }
+
+      }
+
+      })
+
+
+
 
   output$sidebar <- renderUI({
     out<-NULL

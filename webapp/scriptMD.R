@@ -47,13 +47,13 @@ segno<-function(x) c("una diminuzione","un incremento")[(x>0)+1]
 
 
 data<-getLastDate()
-fdata<-format(data,"%d %B %Y")
+fdata<-format(data,"%d %b %Y")
 ldata<-data-1
 modello<-readRDS(sprintf("www/pastModels/modelliIta_%s.RDS",ldata))
 modelloexp<-readRDS(sprintf("www/pastModels/modelliItaExp_%s.RDS",ldata))
 
 
-fldata<-format(ldata,"%d %B %Y")
+fldata<-format(ldata,"%d %b %Y")
 ultimidati<-lastdaydata()
 ultimidatiregioni<-lastdaydata(datiRegioni)
 ultimidatiregioni<-ultimidatiregioni[order(totale_casi,decreasing=TRUE)]
