@@ -147,21 +147,28 @@ output$updateRegUI <- renderUI({
   h4(paste("Dati aggiornati al giorno:", get_last_date()))
 })
 
+
 output$lineRegioni <- renderPlotly({
 	if(verbose) cat("\n renderPlotly:lineRegioni")
   allDataReg <- copy(reacval$dataTables_reg_flt)
+#	allDataReg <- copy(res)
+	var2plot <- 'totale_casi'
+	var2plotNew <- gsub("_", " ", var2plot)
 
   if (!is.null(allDataReg)) {
-    setnames(allDataReg, old=c('denominazione_regione', 'totale_casi'), new=c('regione', 'casi totali'))
+#		allDataReg <- copy(res)
+    setnames(allDataReg, old=c('denominazione_regione',var2plot), new=c('regione', 'VAR2PLOT'))
     p <- ggplot(allDataReg) + my_ggtheme() +
           suppressWarnings(geom_line(group=1, # group=1 serve per aggirare un bug di ggplotly con tooltip = c("text")
-            aes(x=data, y=`casi totali`, color=regione,
+            aes(x=data, y=VAR2PLOT, color=regione,
             text = paste('Regione:', regione, '<br>Data:', strftime(data, format="%d-%m-%Y"),
-             '<br>Casi: ', `casi totali`)))) +
+             '<br>Casi: ', VAR2PLOT)))) +
           scale_color_manual(values=d3hexcols20) +
           theme(axis.text.x=element_text(angle=45, hjust=1)) +
-          labs(x="")
+					guides(fill=guide_legend(title="regione")) +
+          xlab("")+ylab(var2plotNew)
     ggplotly(p, tooltip = c("text")) %>% config(locale = 'it')
+
   }
 })
 
@@ -187,22 +194,20 @@ output$tabRegioni <- renderDT({
   }
 })
 
-output$tabRegioniOLD <- renderDT({
-	if(verbose) cat("\n renderDT:tabRegioni")
-  allDataReg <- copy(reacval$dataTables_reg_flt)
-
-  if (!is.null(allDataReg)) {
-    allDataReg <- allDataReg[allDataReg$data==max(allDataReg$data),]
-    allDataReg$pop <- NULL
-    allDataReg$data <- strftime(allDataReg$data, format="%d-%m-%Y")
-    setnames(allDataReg, old=c('denominazione_regione', 'totale_casi'), new=c('regione', 'casi totali'))
-
-    datatable(allDataReg,
-      selection = list(target = NULL),
-      options= c(list(paging = T, searching = F, info=F, ordering=T, order=list(list(2, 'desc'))), DT_lang_opt),
-      rownames=F)
-  }
-})
+#output$tabRegioniOLD <- renderDT({
+#	if(verbose) cat("\n renderDT:tabRegioni")
+# allDataReg <- copy(reacval$dataTables_reg_flt)
+#  if (!is.null(allDataReg)) {
+#    allDataReg <- allDataReg[allDataReg$data==max(allDataReg$data),]
+#    allDataReg$pop <- NULL
+#    allDataReg$data <- strftime(allDataReg$data, format="%d-%m-%Y")
+#    setnames(allDataReg, old=c('denominazione_regione', 'totale_casi'), new=c('regione', 'casi totali'))
+#    datatable(allDataReg,
+#      selection = list(target = NULL),
+#      options= c(list(paging = T, searching = F, info=F, ordering=T, order=list(list(2, 'desc'))), DT_lang_opt),
+#      rownames=F)
+#  }
+#})
 
 
 output$selRegioni <- renderUI({
@@ -222,7 +227,7 @@ output$selRegioni <- renderUI({
 })
 
 observe({
-	if(verbose) cat("\n observe:tabRegioni<<<<<<<<<<<<<<<<<<<<")
+	if(verbose) cat("\n observe:tabRegioni")
 	allDataReg <- copy(reacval$dataTables_reg_flt)
 	if (is.null(allDataReg)) return(NULL)
 	if(assignout) assign('outallData_observe', allDataReg, envir=.GlobalEnv)

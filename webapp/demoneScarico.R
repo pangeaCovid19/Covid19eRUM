@@ -14,7 +14,14 @@ readData<-function(file, popolazione) {
 		res<-merge(tmp, popolazione[,c("codice_provincia", "pop")], by="codice_provincia",all.x=TRUE)
 		return(res)
 	} else {
-		res<-merge(tmp,popolazione,by="denominazione_regione",all.x=TRUE)
+		indTrentino <- which(tmp$denominazione_regione=="Trentino - Alto Adige")
+		tmp$lat[indTrentino] 	<- mean(tmp$lat[indTrentino])
+		tmp$long[indTrentino] 	<- mean(tmp$long[indTrentino])
+
+		toAggBy <- c("data", "stato" , "codice_regione", "denominazione_regione", "lat", "long")
+		toSum		<- names(tmp)[which(!(names(tmp) %in% toAggBy))]
+		tmp2 <- aggregate(tmp[, toSum], by=tmp[, toAggBy], sum)
+		res<-merge(tmp2,popolazione,by="denominazione_regione",all.x=TRUE)
 		return(res)
 	}
 }
@@ -139,3 +146,6 @@ if ( TRUE) {
 	})
 }
 rmarkdown::render("articolo.Rmd",output_file="www/tabReport.html")
+
+if(!dir.exists("www/pastDiary/")) dir.create("www/pastDiary/")
+rmarkdown::render("articolo.Rmd",output_file=paste0("www/pastDiary/tabReport_", dataMax,".html"))
