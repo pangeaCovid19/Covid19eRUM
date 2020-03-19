@@ -22,8 +22,11 @@ diariotab<-tabItem(tabName="diario",
 
 							fluidRow(style="padding:30px;border-style: solid;border-color: rgb(243,118,37);",
 
+
 											fluidRow(style="padding:30px;background-color:#ffffff;",
-											a("Clicca per il report",href="tabReport.html",target="_blank",rel="noopener noreferrer")	)))
+											h1("Diario della diffusione"),br(),
+											h4("Clicca sui link per i report aggiornati:"),
+											a("Report del 19 Marzo 2020",href="tabReport.html",target="_blank",rel="noopener noreferrer")	)))
 
 
 introTab<-tabItem(tabName="intro",
