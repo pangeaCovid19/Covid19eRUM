@@ -328,7 +328,13 @@ output$lineProvince <- renderPlotly({
           scale_color_manual(values=d3hexcols20) +
           theme(axis.text.x=element_text(angle=45, hjust=1)) +
           labs(x="")
-    ggplotly(p, tooltip = c("text")) %>% config(locale = 'it')
+    plot<-ggplotly(p, tooltip = c("text")) %>% config(locale = 'it')
+
+    if(reacval$mobile){
+      plot<-plot%>%layout(legend=list(orientation='h',x=0.6,y=-0.4))
+
+    }
+    plot
   }
 })
 
@@ -573,7 +579,11 @@ output$fitRegion <- renderPlotly({
 
     if (tipoGraph == "Logaritmico") p <- p + scale_y_log10()
 
-    ggplotly(p, tooltip = c("text")) %>% config(locale = 'it')
+    plot<-ggplotly(p, tooltip = c("text")) %>% config(locale = 'it')
+    if(reacval$mobile){
+    plot<-plot%>%layout(legend=list(orientation='h',x=0,y=-0.2))
+    }
+    plot
   }
 })
 
@@ -669,7 +679,11 @@ if(verbose) cat("\n renderPlotly:fitIta")
 
     if (tipoGraph == "Logaritmico") p <- p + scale_y_log10()
 
-    ggplotly(p, tooltip = c("text")) %>% config(locale = 'it')
+    plot<-ggplotly(p, tooltip = c("text")) %>% config(locale = 'it')
+    if(reacval$mobile){
+      plot<-plot%>%layout(legend=list(orientation='h',x=0.01,y=-0.2))
+      }
+    plot
   }
 })
 
@@ -718,7 +732,11 @@ output$fitCasesIta <- renderPlotly({
             theme(axis.text.x=element_text(angle=45,hjust=1)) +
             labs(x="") +
             theme(legend.title = element_blank())
-      ggplotly(p, tooltip = c("text")) %>% config(locale = 'it')
+      plot<-ggplotly(p, tooltip = c("text")) %>% config(locale = 'it')
+      if(reacval$mobile){
+        plot<-plot%>%layout(legend=list(orientation='h',x=0,y=-0.2))
+      }
+      plot
    }
 })
 
@@ -770,11 +788,16 @@ output$terapiaIntPlotNow<- renderPlotly({
 	      theme(axis.text.x=element_text(angle=45,hjust=1))+
         scale_fill_manual(values=d3hexcols) +
         labs(x="", y="numero letti")
-  ggplotly(p, tooltip = c("text")) %>% config(locale = 'it')
+  plot<- ggplotly(p, tooltip = c("text")) %>% config(locale = 'it')
+  if(reacval$mobile){
+    plot<-plot%>%layout(legend=list(orientation='h',x=0.6,y=-0.4))
+
+  }
+  plot
   # if(reacval$mobile){
   #   p<- p+coord_flip()
   # }
-  p
+
 })
 
 output$terapiaIntPlotPercPrev<- renderPlotly({
@@ -823,11 +846,13 @@ output$terapiaIntPlotPercPrev<- renderPlotly({
 	      geom_errorbar(aes(ymin=LowerRange, ymax=UpperRange), width=.2, position=position_dodge(.9))+
         scale_fill_manual(values=d3hexcols) +
         labs(x="", y="numero letti", fill="")
-  ggplotly(p, tooltip = c("text")) %>% config(locale = 'it')
-  # if(reacval$mobile){
-  #   p<-p+coord_flip()
-  # }
-  p
+  plot<-ggplotly(p, tooltip = c("text")) %>% config(locale = 'it')
+
+  if(reacval$mobile){
+    plot<-plot%>%layout(legend=list(orientation='h',x=0.6,y=-0.4))
+
+  }
+  plot
 
 
 
@@ -992,92 +1017,147 @@ output$tabCompare <- renderDT({
 
 
 
+# output$tab_desktop<-renderUI({
+#
+#   fluidRow(style="padding-left:30px;padding-right:30px;border-style: solid;border-color:#009933;",#" border-color :#009933;",
+#   	h1("Analisi previsionale nelle province italiane"),
+#   	fluidRow(
+#   		column(12,h4("In questa pagina proponiamo il confronto tra i dati registrati, sia regionali che nazionali e due modelli di crescita. Il primo modello (esponenziale) descrive una diffusione incontrollata, mentre il secondo (esponenziale quadratico) tenta di tenere conto dell'effetto di misure contenitive. Per maggiori dettagli, controlla la sezione Descrizione Modelli"))
+#
+#   	),
+#
+#   		 br(),
+#   		fluidRow(style="padding:30px;background-color:#ffffff",
+#   			column(2,fluidRow(selectizeInput("regionLinLogFit", label="Tipo Grafico", choices=c("Lineare", "Logaritmico"), selected = "Lineare")),
+# 				radioButtons("modelloFit", label="Tipologia Modello", choices=c("Esp. quadratico","Esponenziale"), selected="Esp. quadratico"),
+# 				checkboxGroupInput("regionSelFit", label="Seleziona regioni", choices=regioniList, selected = regioni2fit)),
+#   		column(10,
+#
+#   			fluidRow(column(6,align="center",h4("Andamento casi positivi per regione con previsione a 3 giorni")),column(6,align="center",h4("Andamenti globali in Italia con previsione a 3 giorni"))),
+#   			fluidRow(
+#   				column(width=6,align="left", plotlyOutput(outputId="fitRegion"), #spiegaFitPos
+#   				),br(),
+#   				column(width=6,align="left",plotlyOutput(outputId="fitIta"), #spiegaFitTot
+#   				),br(),fluidRow(style="padding:20px;",spiegaFitTotePos)
+#   			)
+#       )
+#   		),br(),br(),
+#   		fluidRow(style="padding:30px;background-color:#ffffff",width=12,  h2("Previsione del numero di casi totali a medio termine con modello esponenziale quadratico"), plotlyOutput(outputId="fitCasesIta")
+#
+#   		),br(),
+#       fluidRow(
+#         box(width=12,
+#           column(width=4,
+#             selectizeInput("tipoCompare", label="Tipo Comparazione", choices=c("Totale", "Incremento Giornaliero"), , selected = "Lineare")
+#           ),
+#           column(width=4,
+#             uiOutput("dateCompare")
+#           ),
+#           DTOutput("tabCompare"),spiegaTabellaCompare
+#
+#         )
+#       ),br()
+#   	)
+#
+#   })
 output$tab_desktop<-renderUI({
 
   fluidRow(style="padding-left:30px;padding-right:30px;border-style: solid;border-color:#009933;",#" border-color :#009933;",
-  	h1("Analisi previsionale nelle province italiane"),
-  	fluidRow(
-  		column(12,h4("In questa pagina proponiamo il confronto tra i dati registrati, sia regionali che nazionali e due modelli di crescita. Il primo modello (esponenziale) descrive una diffusione incontrollata, mentre il secondo (esponenziale quadratico) tenta di tenere conto dell'effetto di misure contenitive. Per maggiori dettagli, controlla la sezione Descrizione Modelli"))
+    h1("Previsioni"),
+    fluidRow(
+      column(12,h4("In questa pagina proponiamo il confronto tra i dati registrati, sia regionali che nazionali e due modelli di crescita. Il primo modello (esponenziale) descrive una diffusione incontrollata, mentre il secondo (esponenziale quadratico) tenta di tenere conto dell'effetto di misure contenitive. Per maggiori dettagli, controlla la sezione Descrizione Modelli"))
 
-  	),
-
-  		 br(),
-  		fluidRow(style="padding:30px;background-color:#ffffff",
-  			column(2,fluidRow(selectizeInput("regionLinLogFit", label="Tipo Grafico", choices=c("Lineare", "Logaritmico"), selected = "Lineare")),
-				radioButtons("modelloFit", label="Tipologia Modello", choices=c("Esp. quadratico","Esponenziale"), selected="Esp. quadratico"),
-				checkboxGroupInput("regionSelFit", label="Seleziona regioni", choices=regioniList, selected = regioni2fit)),
-  		column(10,
-
-  			fluidRow(column(6,align="center",h4("Andamento casi positivi per regione con previsione a 3 giorni")),column(6,align="center",h4("Andamenti globali in Italia con previsione a 3 giorni"))),
-  			fluidRow(
-  				column(width=6,align="left", plotlyOutput(outputId="fitRegion"), #spiegaFitPos
-  				),br(),
-  				column(width=6,align="left",plotlyOutput(outputId="fitIta"), #spiegaFitTot
-  				),br(),fluidRow(style="padding:20px;",spiegaFitTotePos)
-  			)
-      )
-  		),br(),br(),
-  		fluidRow(style="padding:30px;background-color:#ffffff",width=12,  h2("Previsione del numero di casi totali a medio termine con modello esponenziale quadratico"), plotlyOutput(outputId="fitCasesIta")
-
-  		),br(),
+    ),
+       br(),
+      fluidRow(style="padding:30px;background-color:#ffffff",
       fluidRow(
-        box(width=12,
+
+        column(5,pickerInput(inputId = "regionSelFit", label = "Seleziona regioni", choices = regioniList,selected=regioni2fit, options = list(size=10,`actions-box` = TRUE, `selected-text-format` = "count >20"), multiple = TRUE)),
+        column(4,selectizeInput("regionLinLogFit", label="Tipo Grafico", choices=c("Lineare", "Logaritmico"), selected = "Lineare")),
+        column(3,radioButtons("modelloFit", label="Tipologia Modello", choices=c("Esp. quadratico", "Esponenziale" ), selected="Esp. quadratico"))),
+
+        fluidRow(align="center",h4("Andamento casi positivi per regione con previsione a 3 giorni")),
+         plotlyOutput(outputId="fitRegion"), spiegaFitPos
+        ),br(),
+        fluidRow(style="padding:30px;background-color:#ffffff",
+        fluidRow(align="center",h4("Andamenti globali in Italia con previsione a 3 giorni")),
+         plotlyOutput(outputId="fitIta"), spiegaFitTot
+
+      ),br(),br(),
+      fluidRow(style="padding:30px;background-color:#ffffff",  h2("Previsione del numero di casi totali a medio termine con modello esponenziale quadratico"), plotlyOutput(outputId="fitCasesIta")
+
+      ),br(),
+      fluidRow(style="padding:30px;background-color:#ffffff",
           column(width=4,
-            selectizeInput("tipoCompare", label="Tipo Comparazione", choices=c("Totale", "Incremento Giornaliero"), , selected = "Lineare")
+            selectizeInput("tipoCompare", label="Tipo Comparazione", choices=c("Totale", "Incremento Giornaliero"), selected = "Lineare")
           ),
           column(width=4,
             uiOutput("dateCompare")
           ),
           DTOutput("tabCompare"),spiegaTabellaCompare
 
-        )
+
+      ),br()
+    )
+
+  })
+
+output$tab_mobile<-renderUI({
+
+  fluidRow(style="padding-left:30px;padding-right:30px;border-style: solid;border-color:#009933;",#" border-color :#009933;",
+  	h1("Previsioni"),
+  	fluidRow(
+  		column(12,h4("In questa pagina proponiamo il confronto tra i dati registrati, sia regionali che nazionali e due modelli di crescita. Il primo modello (esponenziale) descrive una diffusione incontrollata, mentre il secondo (esponenziale quadratico) tenta di tenere conto dell'effetto di misure contenitive. Per maggiori dettagli, controlla la sezione Descrizione Modelli"))
+
+  	),
+  		 br(),
+  		fluidRow(style="padding:30px;background-color:#ffffff",
+      fluidRow(
+
+        column(5,pickerInput(inputId = "regionSelFit", label = "Seleziona regioni", choices = regioniList,selected=regioni2fit, options = list(size=10,`actions-box` = TRUE, `selected-text-format` = "count >20"), multiple = TRUE)),
+        column(4,selectizeInput("regionLinLogFit", label="Tipo Grafico", choices=c("Lineare", "Logaritmico"), selected = "Lineare")),
+        column(3,radioButtons("modelloFit", label="Tipologia Modello", choices=c("Esp. quadratico", "Esponenziale" ), selected="Esp. quadratico"))),
+
+        fluidRow(column(10,offset=1,align="center",h4("Andamento casi positivi per regione con previsione a 3 giorni"))),
+         fluidRow(style="padding:10px;background-color:#ffffff",plotlyOutput(outputId="fitRegion")), spiegaFitPos
+        ),br(),
+
+        fluidRow(column(10,offset=1,align="center",h4("Andamenti globali in Italia con previsione a 3 giorni"))),
+         fluidRow(style="padding:10px;background-color:#ffffff",plotlyOutput(outputId="fitIta")),
+         fluidRow( style="padding:20px;",spiegaFitTot)
+
+  		,br(),br(),
+  		fluidRow(style="padding:30px;background-color:#ffffff", h2("Previsione del numero di casi totali a medio termine con modello esponenziale quadratico")),
+       fluidRow(style="padding:10px;background-color:#ffffff",plotlyOutput(outputId="fitCasesIta",width="100%")
+
+  		),br(),
+      fluidRow(style="padding:30px;background-color:#ffffff",
+
+          column(width=4,
+            selectizeInput("tipoCompare", label="Tipo Comparazione", choices=c("Totale", "Incremento Giornaliero"),  selected = "Lineare")
+          ),
+          column(width=4,
+            uiOutput("dateCompare")
+          ),
+          DTOutput("tabCompare"),spiegaTabellaCompare
+
+
       ),br()
   	)
 
   })
 
-  output$tab_mobile<-renderUI({
-
-    fluidRow(style="padding-left:30px;padding-right:30px;border-style: solid;border-color:#009933;",#" border-color :#009933;",
-    	h1("Previsioni"),
-    	fluidRow(
-    		column(12,h4("In questa pagina proponiamo il confronto tra i dati registrati, sia regionali che nazionali e due modelli di crescita. Il primo modello (esponenziale) descrive una diffusione incontrollata, mentre il secondo (esponenziale quadratico) tenta di tenere conto dell'effetto di misure contenitive. Per maggiori dettagli, controlla la sezione Descrizione Modelli"))
-
-    	),
-    		 br(),
-    		fluidRow(style="padding:30px;background-color:#ffffff",
-        fluidRow(
-
-          column(5,pickerInput(inputId = "regionSelFit", label = "Seleziona regioni", choices = regioniList,selected=regioni2fit, options = list(size=10,`actions-box` = TRUE, `selected-text-format` = "count >20"), multiple = TRUE)),
-          column(4,selectizeInput("regionLinLogFit", label="Tipo Grafico", choices=c("Lineare", "Logaritmico"), selected = "Lineare")),
-          column(2,radioButtons("modelloFit", label="Tipologia Modello", choices=c("Esp. quadratico", "Esponenziale" ), selected="Esp. quadratico"))),
-
-          fluidRow(align="center",h4("Andamento casi positivi per regione con previsione a 3 giorni")),
-           plotlyOutput(outputId="fitRegion"), spiegaFitPos
-          ),br(),
-          fluidRow(style="padding:30px;background-color:#ffffff",
-          fluidRow(align="center",h4("Andamenti globali in Italia con previsione a 3 giorni")),
-           plotlyOutput(outputId="fitIta"), spiegaFitTot
-
-    		),br(),br(),
-    		fluidRow(style="padding:30px;background-color:#ffffff",width=12,  h2("Previsione del numero di casi totali a medio termine con modello esponenziale quadratico"), plotlyOutput(outputId="fitCasesIta")
-
-    		),br(),
-        fluidRow(
-          box(width=12,
-            column(width=4,
-              selectizeInput("tipoCompare", label="Tipo Comparazione", choices=c("Totale", "Incremento Giornaliero"), , selected = "Lineare")
-            ),
-            column(width=4,
-              uiOutput("dateCompare")
-            ),
-            DTOutput("tabCompare"),spiegaTabellaCompare
-
-          )
-        ),br()
-    	)
-
-    })
+output$tab_previsioni<-renderUI({
+  out<-NULL
+   if((length(reacval$mobile)>0)){
+     if(reacval$mobile){
+      out<-uiOutput("tab_mobile")
+     }
+     else{
+       out<-uiOutput("tab_desktop")
+     }
+   }
+  })
 
 output$spaces_mobile_prev<-renderUI({
   out<-NULL

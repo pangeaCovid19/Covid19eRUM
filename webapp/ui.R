@@ -39,7 +39,7 @@ introTab<-tabItem(tabName="intro",
 fitTab <- tabItem(tabName = "fitPlots",#style="background-color:#ffc2b3",
 							uiOutput("spaces_mobile_prev"),
 
-							uiOutput("tab_mobile"),
+							uiOutput("tab_previsioni"),
 
 
 
@@ -86,7 +86,7 @@ tiTab <- tabItem(tabName = "tiPlots",
 regTab <- tabItem(tabName = "regPlots",
 					uiOutput("spaces_mobile_reg"),
 					fluidRow(style="padding-left:30px;padding-right:30px;border-style: solid;border-color:#0086b3;",
-					h1("Diffusione nelle regioni italiane"),
+					h1("Diffusione nelle regioni italiane"),br(),
 					fluidRow(style="padding:20px;background-color:#ffffff",
 					#style="background-color :#0086b3;",
 						 uiOutput("selRegioni"),
