@@ -15,7 +15,7 @@ chisiamotab<-tabItem(tabName="chisiamo",
 
 											fluidRow(style="padding:30px;background-color:#ffffff;",
 											HTML(readChar("../docs/chisiamo.html",file.info("../docs/chisiamo.html")$size)))))
-											
+
 diariotab<-tabItem(tabName="diario",
 
 				uiOutput("spaces_mobile_diario"),
@@ -23,8 +23,8 @@ diariotab<-tabItem(tabName="diario",
 							fluidRow(style="padding:30px;border-style: solid;border-color:#00cc99;",
 
 											fluidRow(style="padding:30px;background-color:#ffffff;",
-											a("Clicca per il report",href="tabReport.html",target="_blank",rel="noopener noreferrer")	)))										
-											
+											a("Clicca per il report",href="tabReport.html",target="_blank",rel="noopener noreferrer")	)))
+
 
 introTab<-tabItem(tabName="intro",
 
@@ -59,16 +59,19 @@ tiTab <- tabItem(tabName = "tiPlots",
 									 br(),
 
 										fluidRow(style="padding:20px;background-color:#ffffff",
-											h3("Previsione del numero di letti occupati da pazienti conCovid19 e disponibilità per regione (posti letto aggiornati al 2018)"),
-											plotlyOutput("terapiaIntPlotPercPrev")
+											h3("Previsione del numero di letti occupati da pazienti con Covid19 e disponibilità per regione (posti letto aggiornati al 2018)"),
+											plotlyOutput("terapiaIntPlotPercPrev"),
+											spiegaTerIntPrevisione
 										),br(),
 	                	fluidRow(style="padding:20px;background-color:#ffffff",
 											h3( "Percentuale in terapia intensiva occupati da pazienti con CoVid19 (posti letto aggiornati al 2018)"),
-											plotlyOutput("terapiaIntPlotPercNow")
+											plotlyOutput("terapiaIntPlotPercNow"),
+											spiegaTerIntPercentuale
 										),br(),
 										fluidRow(style="padding:20px;background-color:#ffffff",
 											h3("Diponibilità di letti in terapia intensiva e numero di occupanti con CoVid19 (posti letto aggiornati al 2018)"),
-											plotlyOutput("terapiaIntPlotNow")
+											plotlyOutput("terapiaIntPlotNow"),
+											spiegaTerIntAttuale
 										),
 
 
@@ -197,5 +200,5 @@ dashboardPage(
 		    ,diariotab
 		    ,chisiamotab
 	))
-	
+
 )

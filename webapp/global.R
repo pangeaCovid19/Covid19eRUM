@@ -168,6 +168,15 @@ spiegaTabellaCompare <- HTML("<div style='padding-top:10px;'>In questa tabella v
 <br>Sono stati confrontati i due modelli, l'esponeziale quadratico e l'esponenziale puro. La forte discordanza tra previsioni e valori osservati nel modello esponenziale indica che siamo usciti da quel regime di crescita: le misure preventive adottate dal governo iniziano ad avere effetto!</div>")
 
 
+# Descrizione Terapia Intensiva
+spiegaTerIntPrevisione <- HTML("<div style='padding-top:10px;'>In questo grafico vengono rappresentati il numero di posti letto in terapia intensiva, aggiornati al 2018, e le previsioni del numero di pazienti che hanno bisogno di terapia intensiva. Non avendo sufficienti dati per ogni regione le proiezioni sono state fatte moltiplicanzo il numero di terapie intensive su contagiati totali per le previsioni del numero di contagiati per regione. Le barre verticali rappresentano l'incertezza standard.I dati sulla disponibilità dei posti letto è aggioranta al 2018 e non si tiene conto del continuo sforfo che sta affrontado il Sistema Sanitario Nazionale per aumentarne la disponibilità nel minor tempo possibile.</div>")
+
+spiegaTerIntPercentuale <- HTML("<div style='padding-top:10px;'>In questo grafico viene rappresentata la percentuale di posti letto occupati da pazienti in terapia intensiva rispetto al numero di posti letto disponibili, aggiornati al 2018.</div>")
+
+
+spiegaTerIntAttuale <- HTML("<div style='padding-top:10px;'>In questo grafico vengono rappresentati il numero di posti letto in terapia intensiva, aggiornati al 2018, ed il numero di pazienti in terapia intensiva con CoVid19 per ogni regione.</div>")
+
+
 fontiDati <- HTML("<div>Dati provenienti da:
 <ul>
 <li><a href='https://github.com/pcm-dpc/COVID-19'>Presidenza del Consiglio dei Ministri - Dipartimento della Protezione Civile
