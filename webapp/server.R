@@ -150,10 +150,12 @@ output$updateRegUI <- renderUI({
 
 output$lineRegioni <- renderPlotly({
 	if(verbose) cat("\n renderPlotly:lineRegioni")
-  allDataReg <- copy(reacval$dataTables_reg_flt)
+  allDataReg <- copy(reacval$dataTables_reg)
 #	allDataReg <- copy(res)
-	var2plot <- 'totale_casi'
+	var2plot <- input$variabileLineRegioni
+	if(is.null(var2plot)) return(NULL)
 	var2plotNew <- gsub("_", " ", var2plot)
+
 
   if (!is.null(allDataReg)) {
 #		allDataReg <- copy(res)
@@ -171,6 +173,74 @@ output$lineRegioni <- renderPlotly({
 
   }
 })
+
+
+output$confrontoGiornoUI <- renderUI({
+	allDataReg <- copy(reacval$dataTables_reg)
+	if (is.null(allDataReg))retunr(NULL)
+	sliderInput("confrontoGiorno", "Giorno:", min = min(allDataReg$data) + 1, max = max(allDataReg$data), value = max(allDataReg$data), animate = animationOptions(interval = 1500), timeFormat="%b %d")
+
+})
+
+
+
+output$puntiRegioni <- renderPlotly({
+	if(verbose) cat("\n renderPlotly:lineRegioni")
+  allDataReg <- copy(reacval$dataTables_reg)
+	xVar <- input$confrontox #input$variabileLineRegioni
+	yVar <- input$confrontoy #input$variabileLineRegioni
+	assiGraph <- input$confrontoTipoGratico
+	giorno <- input$confrontoGiorno
+
+	assign("xVar", xVar, envir=.GlobalEnv)
+	assign("yVar", yVar, envir=.GlobalEnv)
+	assign("assiGraph", assiGraph, envir=.GlobalEnv)
+
+	#	allDataReg <- copy(allData_reg)
+
+	if(is.null(xVar)) return(NULL)
+	if(is.null(yVar)) return(NULL)
+	if (is.null(allDataReg)) return(NULL)
+	if (is.null(assiGraph)) assiGraph <- "Lineari"
+
+#	validate((need("Selezionari assi co, nomi diversi")))
+
+	xVarNew <- gsub("_", " ", xVar)
+	yVarNew <- gsub("_", " ", yVar)
+
+
+	if(xVar == yVar) {
+		setnames(allDataReg, old=c('denominazione_regione',xVar), new=c('regione','XVAR'))
+		allDataReg$YVAR <- allDataReg$XVAR
+	} else setnames(allDataReg, old=c('denominazione_regione',xVar, yVar), new=c('regione','XVAR', 'YVAR'))
+
+	#setnames(allDataReg, old=c('denominazione_regione',xVar, yVar), new=c('regione','XVAR', 'YVAR'))
+
+	tmp <- allDataReg[which(allDataReg$data==giorno),]
+
+	dfplot <- data.frame( XVAR= pmax(log10(tmp$XVAR), 0), YVAR=pmax(0, log10(tmp$YVAR)), regione=tmp[,'regione' ])
+	dfplot <- data.frame( XVAR= pmax((tmp$XVAR), 0), YVAR=pmax(0, (tmp$YVAR)), regione=tmp[,'regione' ])
+	#dfplot[as.data.frame(lapply(dfplot, is.infinite))] <- 0
+
+	p <- ggplot(dfplot) + my_ggtheme() +
+		suppressWarnings(
+			geom_point( data=dfplot,
+				aes(
+					x=XVAR, y=YVAR, color=regione, text = 	paste( '<br>', xVarNew, ':', 10, '<br>',yVarNew,': ', 10, '<br>Regione: ',regione)
+		 		)
+		 )
+	 ) +
+	  scale_color_manual(values=d3hexcols20) +
+	  theme(axis.text.x=element_text(angle=45, hjust=1)) +
+		guides(fill=guide_legend(title="regione")) +
+	  xlab(xVarNew)+ylab(yVarNew)
+
+		if(assiGraph=="Logaritmici") p <- p + scale_y_log10()+ scale_x_log10()
+
+  ggplotly(p, tooltip = c("text")) %>% config(locale = 'it')
+
+})
+
 
 output$tabRegioni <- renderDT({
 	if(verbose) cat("\n renderDT:tabRegioni")
