@@ -82,20 +82,23 @@ hr{
 	color: #cc0000;
 }
 .fa-chart-line {
-	color: #009933;
+	color: rgb(51,159,52);
 }
+
 .fa-chart-bar{
-	color: #0086b3;
+	color: #add437;
 }
 
 .fa-square-root-alt{
-	color: #ffe066;
+	color: #85ede1;
 }
+/* rgb(175,200,231) */
+
 
 .fa-book-open{
-	color: #00cc99;
+	color: rgb(243,118,37);
 }
 
 .fa-users{
-	color: #ff8c00;
+	color: rgb(37,117,173);
 }

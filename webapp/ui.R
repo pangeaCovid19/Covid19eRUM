@@ -10,7 +10,7 @@ chisiamotab<-tabItem(tabName="chisiamo",
 
 				uiOutput("spaces_mobile_chisiamo"),
 
-							fluidRow(style="padding:30px;border-style: solid;border-color:#ff8c00;",
+							fluidRow(style="padding:30px;border-style: solid;border-color: rgb(37,117,173);",
 										#	h1("Quanto veloce si diffonde il Coronavirus in Italia "),
 
 											fluidRow(style="padding:30px;background-color:#ffffff;",
@@ -20,17 +20,20 @@ diariotab<-tabItem(tabName="diario",
 
 				uiOutput("spaces_mobile_diario"),
 
-							fluidRow(style="padding:30px;border-style: solid;border-color:#00cc99;",
+							fluidRow(style="padding:30px;border-style: solid;border-color: rgb(243,118,37);",
+
 
 											fluidRow(style="padding:30px;background-color:#ffffff;",
-											a("Clicca per il report",href="tabReport.html",target="_blank",rel="noopener noreferrer")	)))
+											h1("Diario della diffusione"),br(),
+											h4("Clicca sui link per i report aggiornati:"),
+											a("Report del 19 Marzo 2020",href="tabReport.html",target="_blank",rel="noopener noreferrer")	)))
 
 
 introTab<-tabItem(tabName="intro",
 
 				uiOutput("spaces_mobile_intro"),
 
-							fluidRow(style="padding:30px;border-style: solid;border-color:#ffe066;",
+							fluidRow(style="padding:30px;border-style: solid;border-color:#85ede1;",
 										#	h1("Quanto veloce si diffonde il Coronavirus in Italia "),
 
 											fluidRow(style="padding:30px;background-color:#ffffff;",
@@ -85,10 +88,10 @@ tiTab <- tabItem(tabName = "tiPlots",
 
 regTab <- tabItem(tabName = "regPlots",
 					uiOutput("spaces_mobile_reg"),
-					fluidRow(style="padding-left:30px;padding-right:30px;border-style: solid;border-color:#0086b3;",
+					fluidRow(style="padding-left:30px;padding-right:30px;border-style: solid;border-color:#add437;",
 					h1("Diffusione nelle regioni italiane"),br(),
 					fluidRow(style="padding:20px;background-color:#ffffff",
-					#style="background-color :#0086b3;",
+					#style="background-color :#add437;",
 						 uiOutput("selRegioni"),
 						 h3("Mappa dei casi confermati"),
 								#plotOutput(outputId="mapRegioniGG", height = 800),
@@ -139,7 +142,7 @@ regTab <- tabItem(tabName = "regPlots",
 
 prvTab <- tabItem(tabName = "prvPlots",
 					uiOutput("spaces_mobile_prov"),
-					fluidRow(style="padding-left:30px;padding-right:30px;border-style: solid;border-color:#0086b3;",
+					fluidRow(style="padding-left:30px;padding-right:30px;border-style: solid;border-color:#add437;",
 							h1("Diffusione nelle province e nelle città metropolitane italiane"), br(),
 							#
 							fluidRow(style="padding:20px;background-color:#ffffff",
