@@ -106,6 +106,13 @@ mtimeReg 	<-file.info(paste0(dir_reg,regRDS))$mtime
 modelliReg <- readRDS("www/modelliReg.RDS")
 modelliIta <-readRDS("www/modelliIta.RDS")
 
+if(file.exists("www/modelliTIReg.RDS")){
+	modelliTIReg <- readRDS("www/modelliTIReg.RDS")
+} else modelliTIReg <- NULL
+if(file.exists("www/modelliTIRegExp.RDS")){
+	modelliTIRegExp <- readRDS("www/modelliTIRegExp.RDS")
+}else modelliTIRegExp <- NULL
+
 if(file.exists("www/modelliRegExp.RDS"))
 	modelliRegExp <- readRDS("www/modelliRegExp.RDS")
 if(file.exists("www/modelliItaExp.RDS"))

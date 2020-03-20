@@ -64,6 +64,7 @@ tiTab <- tabItem(tabName = "tiPlots",
 										fluidRow(style="padding:20px;background-color:#ffffff",
 											h3("Previsione del numero di letti occupati da pazienti con Covid19 e disponibilità per regione (posti letto aggiornati al 2018)"),
 											plotlyOutput("terapiaIntPlotPercPrev"),
+#											plotlyOutput("terapiaIntPlotPercPrevNEW"), calcolo terapia intensiva su numero di terapie intensive per farlo partire ricaricare il demone
 											spiegaTerIntPrevisione
 										),br(),
 	                	fluidRow(style="padding:20px;background-color:#ffffff",
@@ -106,6 +107,7 @@ regTab <- tabItem(tabName = "regPlots",
 							#plotlyOutput(outputId="puntiRegioni"),
 							##################################################
 							##################################################
+							#FIXME per togliere i grafici nuovi commentare fino a plotlyOutput(outputId="puntiRegioni")
 							fluidRow(tyle="padding:20px;background-color:#ffffff",
 								h3("Confronto tra variabili"),
 								column(width=3,
@@ -115,7 +117,7 @@ regTab <- tabItem(tabName = "regPlots",
 									selectizeInput("confrontoy", label="Variabile su asse Y", 	choices=campiTotali , selected = "tamponi", multiple=FALSE)
 								),
 								column(width=3,
-									selectizeInput("confrontoTipoGratico", label="Assi del grafico", 	choices=c('Lineari', 'Logaritmici') , selected = "Lineari", multiple=FALSE)
+									selectizeInput("confrontoTipoGratico", label="Assi del grafico", 	choices=c('Lineari', 'Logaritmici') , selected = "Logaritmici", multiple=FALSE)
 								),
 								column(width=3,
 									uiOutput("confrontoGiornoUI")

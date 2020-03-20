@@ -102,6 +102,9 @@ while (i==0) {
 	modelliReg <-lapply( tsReg[which(names(tsReg)!='Italia')], loglinmodel3, quadratico=TRUE)
 	modelliRegExp <-lapply( tsReg[which(names(tsReg)!='Italia')], loglinmodel3, quadratico=FALSE)
 
+	modelliTIReg <-lapply( tsReg[which(names(tsReg)!='Italia')], loglinmodel3, var='terapia_intensiva', quadratico=TRUE)
+	modelliTIRegExp <-lapply( tsReg[which(names(tsReg)!='Italia')], loglinmodel3, var='terapia_intensiva', quadratico=FALSE)
+
 
 	writeLog("Scrivendo i dati",logdemone)
 	saveRDS(due,"www/dati-regioni/dataRegioni.RDS")
@@ -112,6 +115,8 @@ while (i==0) {
 	saveRDS(modelliIta,"www/modelliIta.RDS")
 	saveRDS(modelliRegExp,"www/modelliRegExp.RDS")
 	saveRDS(modelliItaExp,"www/modelliItaExp.RDS")
+	saveRDS(modelliTIReg,"www/modelliTIReg.RDS")
+	saveRDS(modelliTIRegExp,"www/modelliTIRegExp.RDS")
 
 	# salvo lo storico dei modelli
 	if(!dir.exists("www/pastModels/")) dir.create("www/pastModels/")
