@@ -137,7 +137,10 @@ observe({
 #  language = "it", separator = " a ")
 #})
 
+output$data_report <- renderUI({
 
+  paste("Report del ", get_last_date())
+})
 
 
 ## REGIONI
