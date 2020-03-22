@@ -29,6 +29,8 @@ regShapeRDS <- "RegioniShapeF.RDS"
 
 campiPrevisioni <- c("totale_casi", "deceduti", "totale_ospedalizzati", "terapia_intensiva")
 
+campiTotali <- c("totale_casi", "tamponi", "totale_attualmente_positivi", "deceduti", "totale_ospedalizzati", "terapia_intensiva", "ricoverati_con_sintomi" , "nuovi_attualmente_positivi" , "dimessi_guariti")
+
 
 pop_file <- read.csv("www/tavola_pop_res01.csv", stringsAsFactors=F, skip=1)
 colnames(pop_file) <- c("codice_provincia", "provincia", "pop_m", "pop_f", "pop")
@@ -103,6 +105,13 @@ mtimeReg 	<-file.info(paste0(dir_reg,regRDS))$mtime
 
 modelliReg <- readRDS("www/modelliReg.RDS")
 modelliIta <-readRDS("www/modelliIta.RDS")
+
+if(file.exists("www/modelliTIReg.RDS")){
+	modelliTIReg <- readRDS("www/modelliTIReg.RDS")
+} else modelliTIReg <- NULL
+if(file.exists("www/modelliTIRegExp.RDS")){
+	modelliTIRegExp <- readRDS("www/modelliTIRegExp.RDS")
+}else modelliTIRegExp <- NULL
 
 if(file.exists("www/modelliRegExp.RDS"))
 	modelliRegExp <- readRDS("www/modelliRegExp.RDS")

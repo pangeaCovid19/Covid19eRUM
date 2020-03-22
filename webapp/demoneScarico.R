@@ -102,6 +102,9 @@ while (i==0) {
 	modelliReg <-lapply( tsReg[which(names(tsReg)!='Italia')], loglinmodel3, quadratico=TRUE)
 	modelliRegExp <-lapply( tsReg[which(names(tsReg)!='Italia')], loglinmodel3, quadratico=FALSE)
 
+	modelliTIReg <-lapply( tsReg[which(names(tsReg)!='Italia')], loglinmodel3, var='terapia_intensiva', quadratico=TRUE)
+	modelliTIRegExp <-lapply( tsReg[which(names(tsReg)!='Italia')], loglinmodel3, var='terapia_intensiva', quadratico=FALSE)
+
 
 	writeLog("Scrivendo i dati",logdemone)
 	saveRDS(due,"www/dati-regioni/dataRegioni.RDS")
@@ -112,6 +115,8 @@ while (i==0) {
 	saveRDS(modelliIta,"www/modelliIta.RDS")
 	saveRDS(modelliRegExp,"www/modelliRegExp.RDS")
 	saveRDS(modelliItaExp,"www/modelliItaExp.RDS")
+	saveRDS(modelliTIReg,"www/modelliTIReg.RDS")
+	saveRDS(modelliTIRegExp,"www/modelliTIRegExp.RDS")
 
 	# salvo lo storico dei modelli
 	if(!dir.exists("www/pastModels/")) dir.create("www/pastModels/")
@@ -149,3 +154,4 @@ rmarkdown::render("articolo.Rmd",output_file="www/tabReport.html")
 
 if(!dir.exists("www/pastDiary/")) dir.create("www/pastDiary/")
 rmarkdown::render("articolo.Rmd",output_file=paste0("www/pastDiary/tabReport_", dataMax,".html"))
+rmarkdown::render("art21mar2020.Rmd",output_file=paste0("www/Report21marzo2020.html"))

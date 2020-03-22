@@ -75,6 +75,7 @@ tiTab <- tabItem(tabName = "tiPlots",
 										fluidRow(style="padding:20px;background-color:#ffffff",
 											h3("Previsione del numero di letti occupati da pazienti con Covid19 e disponibilità per regione (posti letto aggiornati al 2018)"),
 											plotlyOutput("terapiaIntPlotPercPrev"),
+#											plotlyOutput("terapiaIntPlotPercPrevNEW"), calcolo terapia intensiva su numero di terapie intensive per farlo partire ricaricare il demone
 											spiegaTerIntPrevisione
 										),br(),
 	                	fluidRow(style="padding:20px;background-color:#ffffff",
@@ -111,9 +112,31 @@ regTab <- tabItem(tabName = "regPlots",
 						),br(),
 						fluidRow(style="padding:20px;background-color:#ffffff",
 							h3("Andamento dei casi confermati"),
-								plotlyOutput(outputId="lineRegioni"),
-								spiegaLinePlot
-
+							selectizeInput("variabileLineRegioni", label="Variabile da mostrare", 	choices=campiTotali , selected = "totale_casi", multiple=FALSE),
+							plotlyOutput(outputId="lineRegioni"),
+							spiegaLinePlot,
+							#plotlyOutput(outputId="puntiRegioni"),
+							##################################################
+							##################################################
+							#FIXME per togliere i grafici nuovi commentare fino a plotlyOutput(outputId="puntiRegioni")
+							fluidRow(tyle="padding:20px;background-color:#ffffff",
+								h3("Confronto tra variabili"),
+								column(width=3,
+									selectizeInput("confrontox", label="Variabile su asse X", 	choices=campiTotali , selected = "totale_casi", multiple=FALSE)
+								),
+								column(width=3,
+									selectizeInput("confrontoy", label="Variabile su asse Y", 	choices=campiTotali , selected = "tamponi", multiple=FALSE)
+								),
+								column(width=3,
+									selectizeInput("confrontoTipoGratico", label="Assi del grafico", 	choices=c('Lineari', 'Logaritmici') , selected = "Logaritmici", multiple=FALSE)
+								),
+								column(width=3,
+									uiOutput("confrontoGiornoUI")
+								)
+							),
+							plotlyOutput(outputId="puntiRegioni"),
+							##################################################
+							##################################################
 						)
 						,br(),
 						# box(width=6, title = tagList(shiny::icon("table"), "Tabella con casi confermati"), status = "primary", solidHeader = F,collapsible = T,

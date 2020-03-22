@@ -32,6 +32,8 @@ shinyServer(function(input, output, session) {
 						modelliReg=modelliReg,
 						modelliItaExp=modelliItaExp,
 						modelliRegExp=modelliRegExp,
+						modelliTIReg=ifelse(file.exists("www/modelliTIReg.RDS"), yes=modelliTIReg, no=NA),
+						modelliTIRegExp=ifelse(file.exists("www/modelliTIRegExp.RDS"), yes=modelliTIRegExp, no=NA),
             mobile=F
 					)
 
@@ -153,10 +155,12 @@ output$updateRegUI <- renderUI({
 
 output$lineRegioni <- renderPlotly({
 	if(verbose) cat("\n renderPlotly:lineRegioni")
-  allDataReg <- copy(reacval$dataTables_reg_flt)
+  allDataReg <- copy(reacval$dataTables_reg)
 #	allDataReg <- copy(res)
-	var2plot <- 'totale_casi'
+	var2plot <- input$variabileLineRegioni
+	if(is.null(var2plot)) return(NULL)
 	var2plotNew <- gsub("_", " ", var2plot)
+
 
   if (!is.null(allDataReg)) {
 #		allDataReg <- copy(res)
@@ -174,6 +178,74 @@ output$lineRegioni <- renderPlotly({
 
   }
 })
+
+
+output$confrontoGiornoUI <- renderUI({
+	allDataReg <- copy(reacval$dataTables_reg)
+	if (is.null(allDataReg))retunr(NULL)
+	sliderInput("confrontoGiorno", "Giorno:", min = min(allDataReg$data) + 1, max = max(allDataReg$data), value = max(allDataReg$data), animate = animationOptions(interval = 1500), timeFormat="%b %d")
+
+})
+
+
+
+output$puntiRegioni <- renderPlotly({
+	if(verbose) cat("\n renderPlotly:lineRegioni")
+  allDataReg <- copy(reacval$dataTables_reg)
+	xVar <- input$confrontox #input$variabileLineRegioni
+	yVar <- input$confrontoy #input$variabileLineRegioni
+	assiGraph <- input$confrontoTipoGratico
+	giorno <- input$confrontoGiorno
+
+	assign("xVar", xVar, envir=.GlobalEnv)
+	assign("yVar", yVar, envir=.GlobalEnv)
+	assign("assiGraph", assiGraph, envir=.GlobalEnv)
+
+	#	allDataReg <- copy(allData_reg)
+
+	if(is.null(xVar)) return(NULL)
+	if(is.null(yVar)) return(NULL)
+	if (is.null(allDataReg)) return(NULL)
+	if (is.null(assiGraph)) assiGraph <- "Lineari"
+
+#	validate((need("Selezionari assi co, nomi diversi")))
+
+	xVarNew <- gsub("_", " ", xVar)
+	yVarNew <- gsub("_", " ", yVar)
+
+
+	if(xVar == yVar) {
+		setnames(allDataReg, old=c('denominazione_regione',xVar), new=c('regione','XVAR'))
+		allDataReg$YVAR <- allDataReg$XVAR
+	} else setnames(allDataReg, old=c('denominazione_regione',xVar, yVar), new=c('regione','XVAR', 'YVAR'))
+
+	#setnames(allDataReg, old=c('denominazione_regione',xVar, yVar), new=c('regione','XVAR', 'YVAR'))
+
+	tmp <- allDataReg[which(allDataReg$data==giorno),]
+
+	dfplot <- data.frame( XVAR= pmax(log10(tmp$XVAR), 0), YVAR=pmax(0, log10(tmp$YVAR)), regione=tmp[,'regione' ])
+	dfplot <- data.frame( XVAR= pmax((tmp$XVAR), 0), YVAR=pmax(0, (tmp$YVAR)), regione=tmp[,'regione' ])
+	#dfplot[as.data.frame(lapply(dfplot, is.infinite))] <- 0
+
+	p <- ggplot(dfplot) + my_ggtheme() +
+		suppressWarnings(
+			geom_point( data=dfplot,
+				aes(
+					x=XVAR, y=YVAR, color=regione, text = 	paste( '<br>', xVarNew, ':', XVAR, '<br>',yVarNew,': ', YVAR, '<br>Regione: ',regione)
+		 		)
+		 )
+	 ) +
+	  scale_color_manual(values=d3hexcols20) +
+	  theme(axis.text.x=element_text(angle=45, hjust=1)) +
+		guides(fill=guide_legend(title="regione")) +
+	  xlab(xVarNew)+ylab(yVarNew)
+
+		if(assiGraph=="Logaritmici") p <- p + scale_y_log10()+ scale_x_log10()
+
+  ggplotly(p, tooltip = c("text")) %>% config(locale = 'it')
+
+})
+
 
 output$tabRegioni <- renderDT({
 	if(verbose) cat("\n renderDT:tabRegioni")
@@ -500,6 +572,7 @@ output$updateTIUI <- renderUI({
 	if(verbose) cat("\n renderUI:updateTIUI")
   h3(paste("Dati aggiornati al giorno:", get_last_date()))
 })
+
 
 
 prevRegion <- reactive({
@@ -879,8 +952,116 @@ output$terapiaIntPlotNow<- renderPlotly({
 
 })
 
+
+
+prevRegionTI <- reactive({
+	if(verbose) cat("\n reactive:prevRegionTI")
+	allDataReg <- copy(reacval$dataTables_reg)
+ 	nahead=3
+
+	modelliRegTint=isolate(reacval$modelliTIReg)
+	modelliRegTintExp=isolate(reacval$modelliTIRegExp)
+	assign("modelliRegTintor",modelliRegTint,envir=.GlobalEnv)
+	assign("allDataReg",allDataReg,envir=.GlobalEnv)
+	assign("modelliRegTintExp",modelliRegTintExp,envir=.GlobalEnv)
+
+	coeff <- unlist(lapply(modelliTIReg, function(x) {y<-x$coefficients; y['dataind']}))
+	if(any(coeff<0)){
+		indNeg <-which(coeff<0)
+		modelliRegTint[indNeg] <- modelliRegTintExp[indNeg]
+	}
+	assign("modelliRegTint",modelliRegTint,envir=.GlobalEnv)
+
+	if (!is.null(allDataReg)) {
+		tsReg <- getTimeSeriesReact()
+		assign("tsReg",tsReg,envir=.GlobalEnv)
+    tsReg["Italia"] <- NULL
+		if(saveRDSout) saveRDS(file="prevRegionList.RDS",list(tsReg, modelliRegTint, allDataReg))
+
+	#	prevDTti <- get_predictions(modelliRegTint, tsReg, nahead=nahead, alldates=TRUE)
+
+		previsioni <- mapply(FUN=predictNextDays, tsReg, modelliRegTint, nahead=nahead, all=TRUE, SIMPLIFY=F)
+		pre2<-lapply(previsioni, function(x) {x$dataind<-NULL; x$data2<-NULL; x})
+		previsioniDT <- rbindlist(pre2)
+
+		#if (alldates)
+			previsioniDT[, outName:=rep(names(modelliRegTint), each=nrow(tsReg[[1]])+nahead)]
+		#else
+		#	previsioniDT[, outName:=rep(names(modelli), each=nahead)]
+
+
+    setnames(previsioniDT, old=c("outName"), new=c("regione"))
+		setDF(previsioniDT)
+		previsioniDT
+  }
+})
+
+
+output$terapiaIntPlotPercPrevNEW<- renderPlotly({
+	if(verbose) cat("\n renderPlotly:terapiaIntPlotPercPrevNEW")
+
+	allDataReg <- copy(reacval$dataTables_reg)
+	prevDTti <-copy(prevRegionTI())
+	tint <- terapiaInt()
+	nahead <-3
+
+	oggi <- isolate(reacval$dateRange_reg)[2]
+
+	assign("prevDTti",prevDTti,envir=.GlobalEnv)
+	assign("allDataReg",allDataReg,envir=.GlobalEnv)
+	assign("tint",tint,envir=.GlobalEnv)
+	assign("oggi",oggi,envir=.GlobalEnv)
+	if(is.null(allDataReg)) return(NULL)
+	if(is.null(prevDTti)) return(NULL)
+	if(is.null(tint)) return(NULL)
+
+	totitalia<-aggregate( allDataReg[,c('totale_casi', 'terapia_intensiva')],by=list(data=allDataReg$data), sum)
+	totitalia$perc <-totitalia$terapia_intensiva/totitalia$totale_casi
+	percTI <-totitalia[which.max(totitalia$data), 'perc']
+
+
+  prevFin <- prevDTti[between(prevDTti$data,oggi+1,oggi+nahead), c('data', 'Attesi', 'UpperRange', 'LowerRange', 'regione')]
+#	prevFin$Attesi 		<-round(prevFin$Attesi*percTI)
+#	prevFin$UpperRange	<-prevFin$UpperRange*percTI
+#	prevFin$LowerRange	<-prevFin$LowerRange*percTI
+	prevFin$data <- strftime(prevFin$data, format="%d-%m-%Y")
+ # prevFin[,c("dataind","data2")]<-NULL
+  prevFin$ttip <- paste('Data:', prevFin$data,
+          '<br>Regione:', prevFin$regione,
+          '<br>Ricover attesi:', round(prevFin$Attesi),
+          '<br>Intervallo previsione:', paste0('[', round(prevFin$LowerRange,2), ', ', round(prevFin$UpperRange,2),']')
+        )
+
+	Ntint <- nrow(tint)
+  postiLetto <- data.frame(data=rep("posti disponibili", Ntint), Attesi= tint$lettiTI,
+                UpperRange=rep(0,Ntint), LowerRange=rep(0,Ntint),
+                regione=tint$denominazione_regione, stringsAsFactors=F)
+  postiLetto$ttip <- paste0('Regione: ', postiLetto$regione,
+          '<br>Posti disponibili: ', round(postiLetto$Attesi))
+
+	out <- rbind(prevFin, postiLetto)
+  out$data <- factor(out$data, levels=c(unique(prevFin$data[order(strptime(prevFin$data, format="%d-%m-%Y"))]), "posti disponibili"))
+	p <-ggplot(data=out, aes(x=regione, y=Attesi, fill=data,
+                text = ttip)) +
+        geom_bar(stat="identity", position=position_dodge()) + my_ggtheme() +
+	      theme(axis.text.x=element_text(angle=45,hjust=1)) +
+	      geom_errorbar(aes(ymin=LowerRange, ymax=UpperRange), width=.2, position=position_dodge(.9))+
+        scale_fill_manual(values=d3hexcols) +
+        labs(x="", y="numero letti", fill="")
+  plot<-ggplotly(p, tooltip = c("text")) %>% config(locale = 'it')
+
+  if(reacval$mobile){
+    plot<-plot%>%layout(legend=list(orientation='h',x=0.6,y=-0.4))
+
+  }
+  plot
+
+})
+
+
+
 output$terapiaIntPlotPercPrev<- renderPlotly({
-	if(verbose) cat("\n renderPlotly:terapiaIntPlot")
+	if(verbose) cat("\n renderPlotly:terapiaIntPlotPercPrev")
 
 	tint <- terapiaInt()
 	allDataReg <- copy(reacval$dataTables_reg)
@@ -932,8 +1113,6 @@ output$terapiaIntPlotPercPrev<- renderPlotly({
 
   }
   plot
-
-
 
 })
 
