@@ -1,12 +1,13 @@
 ---
-title: "La diffusione del Coronavirus tra previsioni e dati reali. Abbiamo superato il picco?"
-author: <span class="titolo2">Nicola Farina</span>
-date: 22 marzo 2020
+title: La diffusione del Coronavirus tra previsioni e dati reali. Abbiamo superato il picco?<br><small>Probabilmente non del tutto.</small>
+author: |
+   | <span class="titolo2">Nicola Farina</span>
+   | <small>Pangea Formazione, Direttore</small>
+date: <small>22 marzo 2020</small>
 output: 
    html_document:
       css: style.css
 ---
-Probabilmente non del tutto.
 
 ```{r ,results='hide', echo=FALSE}
 source("scriptMD.R")
