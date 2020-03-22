@@ -853,7 +853,7 @@ output$percDeltaTot <- renderPlotly({
           suppressWarnings(geom_bar(data=tmp, aes(x=data, y=deltaPerc,
           fill=tipo,
           text = paste('Data:', strftime(data, format="%d-%m-%Y"),
-          '<br>Variazione: ', paste(round(deltaPerc,2),'%'))), stat="identity", width = 0.8))+
+          '<br>Variazione: ', paste(round(deltaPerc,1),'%'))), stat="identity", width = 0.8))+
    				# suppressWarnings(geom_bar(data=tsIta, aes(x=data, y=deltaPerc, #fill=tipo,
           # text = paste('Data:', strftime(data, format="%d-%m-%Y"),
           # '<br>Variazione: ', paste(round(deltaPerc,2),'%'))), stat="identity", width = 0.8, fill="steelblue"))+
@@ -866,8 +866,8 @@ output$percDeltaTot <- renderPlotly({
               ymin=LowerRangePerc, ymax=UpperRangePerc,
             text = paste('Data:', strftime(data, format="%d-%m-%Y"),
           #'<br>Variabile: ', variabilePrevista,
-          '<br>Variazione prevista: ', paste0(round(deltaPerc,2),'%'),
-          '<br>Intervallo previsione:', paste0('[', round(LowerRangePerc,2), '%, ', round(UpperRangePerc,2),'%]')
+          '<br>Variazione prevista: ', paste0(round(deltaPerc,1),'%'),
+          '<br>Intervallo previsione:', paste0('[', round(LowerRangePerc,1), '%, ', round(UpperRangePerc,1),'%]')
         )),width=0.7,
             colour="orange",
             #alpha=0.6, size=1,
