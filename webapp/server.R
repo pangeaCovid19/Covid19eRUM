@@ -749,6 +749,76 @@ output$fitCasesIta <- renderPlotly({
    }
 })
 
+output$percDeltaTot <- renderPlotly({
+  if(verbose) cat("\n renderPlotly:percDeltaTot")
+  prevItaDT <- copy(prevItaLongTerm())
+  tsIta <- copy(getTimeSeriesReact()[["Italia"]])
+  # tsIta$deltaPerc<-c(NA,diff(tsIta$totale_casi))/c(NA,tsIta$totale_casi[1:(nrow(tsIta)-1)])
+  # assign("tsItaprova",tsIta, envir=.GlobalEnv)
+  #
+  # allDataReg <- copy(reacval$dataTables_reg)
+  # tipoGraph <- input$regionLinLogFit
+  #
+  # if (!is.null(allDataReg)) {
+  #   tsIta <- getTimeSeriesReact()$Italia
+  #   if(saveRDSout) saveRDS(file="fitItaList.RDS",list(tsIta, allDataReg))
+    tsIta$deltaPerc<-c(NA,diff(tsIta$totale_casi))/c(NA,tsIta$totale_casi[1:(nrow(tsIta)-1)])
+    assign("tsItaprova",tsIta, envir=.GlobalEnv)
+
+    prevItaDT <-copy(prevIta())
+    setnames(prevItaDT, old=c('Attesi'), new=c('casi'))
+    prevItaDT$deltaPerc<-c(NA,diff(prevItaDT$casi))/c(NA,prevItaDT$casi[1:(nrow(prevItaDT)-1)])
+
+    prevItaDT$UpperRangePerc<-c(NA,diff(prevItaDT$UpperRange))/c(NA,prevItaDT$casi[1:(nrow(prevItaDT)-1)])
+
+    prevItaDT$LowerRangePerc<-c(NA,diff(prevItaDT$LowerRange))/c(NA,prevItaDT$casi[1:(nrow(prevItaDT)-1)])
+
+    assign("prevItaDTprova",prevItaDT, envir=.GlobalEnv)
+
+    # setDF(allDataReg)
+    # varPrev <- unique(prevItaDT$variabilePrevista)
+    #
+    # dataRDX <- allDataReg[, c('data', varPrev)]
+    # dataIta <- aggregate(dataRDX[,2:5], sum, by=list(data=dataRDX$data))
+    #
+    # tmp <- data.frame(
+    #     data=rep(unique(dataIta$data), times=length(varPrev)),
+    #     casi=unlist(lapply(2:5, function(x) dataIta[, x])),
+    #     variabilePrevista=rep(unique(varPrev), each=nrow(dataIta))
+    # )
+    # assign("tmpprova",tmp, envir=.GlobalEnv)
+
+  # if (!is.null(prevItaDT) & !is.null(tsIta)) {
+  # 		setnames(prevItaDT, old=c('Attesi'), new=c('casi'))
+  #     setnames(tsIta, old=c('totale_casi'), new=c('casi'))
+  #     num_rows <- nrow(tsIta)
+  #     datiIta <- rbind(tsIta[, c("data", "casi")], prevItaDT[, c("data", "casi")])
+  #     datiIta$tipo <- c(rep("osservati", num_rows), rep("predetti", nrow(datiIta) - num_rows))
+  #     datiIta$tipo <- factor(datiIta$tipo, levels=c("osservati", "predetti"))
+
+  datamax<-max(tsIta$data)
+  p <- ggplot() + my_ggtheme() +
+   				suppressWarnings(geom_bar(data=tsIta, aes(x=data, y=deltaPerc, #fill=tipo,
+          text = paste('Data:', strftime(data, format="%d-%m-%Y"),
+          '<br>Variazione %: ', round(deltaPerc,2))), stat="identity", width = 0.8))+
+  # #          geom_text(data=datiIta, aes(x=data, y=casi, label=label), cex=2.5, color="black", fontface = "bold") +
+  # 					scale_fill_manual(values=d3hexcols)
+          geom_errorbar(data=prevItaDT[which(prevItaDT$data>=datamax-2),], aes(x=data, ymin=LowerRangePerc, ymax=UpperRangePerc), width=0.4, colour="orange", alpha=0.9, size=1.3)+
+          scale_x_date(date_breaks="2 day",date_labels="%b %d")+
+          theme(axis.text.x=element_text(angle=45,hjust=1)) +
+          labs(x="") +
+          theme(legend.title = element_blank())
+  plot<-ggplotly(p, tooltip = c("text")) %>% config(locale = 'it')
+  #     if(reacval$mobile){
+  #       plot<-plot%>%layout(legend=list(orientation='h',x=0,y=-0.2))
+  #     }
+       plot
+  # }
+})
+
+
+
+
 
 terapiaInt <- reactive({
 	if(verbose) cat("\n reactive:terapiaInt")
