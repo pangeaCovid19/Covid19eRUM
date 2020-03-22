@@ -875,7 +875,7 @@ output$percDeltaTot <- renderPlotly({
           )+
           scale_fill_manual(values=d3hexcols)+
           scale_x_date(date_breaks="2 day",date_labels="%b %d")+
-          theme(axis.text.x=element_text(angle=45,hjust=1),legend.title = element_blank())
+          theme(axis.text.x=element_text(angle=45,hjust=1),legend.title = element_blank())+
           labs(x="", y="Variazione %")
 
   plot<-ggplotly(p, tooltip = c("text")) %>% config(locale = 'it')
