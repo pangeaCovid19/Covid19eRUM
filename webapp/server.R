@@ -866,7 +866,7 @@ output$percDeltaTot <- renderPlotly({
               ymin=LowerRangePerc, ymax=UpperRangePerc,
             text = paste('Data:', strftime(data, format="%d-%m-%Y"),
           #'<br>Variabile: ', variabilePrevista,
-          '<br>Variazione prevista: ', paste0(round(deltaPerc),'%'),
+          '<br>Variazione prevista: ', paste0(round(deltaPerc,2),'%'),
           '<br>Intervallo previsione:', paste0('[', round(LowerRangePerc,2), '%, ', round(UpperRangePerc,2),'%]')
         )),width=0.7,
             colour="orange",
