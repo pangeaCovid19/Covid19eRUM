@@ -810,7 +810,8 @@ output$fitCasesIta <- renderPlotly({
               text = paste('Data:', strftime(data, format="%d-%m-%Y"),
                '<br>Casi: ', round(casi))), stat="identity", width = 0.8))+
   #          geom_text(data=datiIta, aes(x=data, y=casi, label=label), cex=2.5, color="black", fontface = "bold") +
-  					scale_fill_manual(values=d3hexcols) +#scale_x_date(date_breaks="2 day",date_labels="%b %d")+
+  					scale_fill_manual(values=d3hexcols)+
+            scale_x_date(date_breaks="2 day",date_labels="%b %d")+
             theme(axis.text.x=element_text(angle=45,hjust=1)) +
             labs(x="") +
             theme(legend.title = element_blank())
@@ -826,61 +827,57 @@ output$percDeltaTot <- renderPlotly({
   if(verbose) cat("\n renderPlotly:percDeltaTot")
   prevItaDT <- copy(prevItaLongTerm())
   tsIta <- copy(getTimeSeriesReact()[["Italia"]])
-  # tsIta$deltaPerc<-c(NA,diff(tsIta$totale_casi))/c(NA,tsIta$totale_casi[1:(nrow(tsIta)-1)])
-  # assign("tsItaprova",tsIta, envir=.GlobalEnv)
-  #
-  # allDataReg <- copy(reacval$dataTables_reg)
-  # tipoGraph <- input$regionLinLogFit
-  #
-  # if (!is.null(allDataReg)) {
-  #   tsIta <- getTimeSeriesReact()$Italia
-  #   if(saveRDSout) saveRDS(file="fitItaList.RDS",list(tsIta, allDataReg))
-    tsIta$deltaPerc<-c(NA,diff(tsIta$totale_casi))/c(NA,tsIta$totale_casi[1:(nrow(tsIta)-1)])
+
+    tsIta$deltaPerc<-c(NA,diff(tsIta$totale_casi))/c(NA,tsIta$totale_casi[1:(nrow(tsIta)-1)])*100
     assign("tsItaprova",tsIta, envir=.GlobalEnv)
 
     prevItaDT <-copy(prevIta())
-    setnames(prevItaDT, old=c('Attesi'), new=c('casi'))
-    prevItaDT$deltaPerc<-c(NA,diff(prevItaDT$casi))/c(NA,prevItaDT$casi[1:(nrow(prevItaDT)-1)])
+    setnames(prevItaDT, old=c('Attesi'), new=c('totale_casi'))
+    prevItaDT$deltaPerc<-c(NA,diff(prevItaDT$totale_casi))/c(NA,prevItaDT$totale_casi[1:(nrow(prevItaDT)-1)])*100
 
-    prevItaDT$UpperRangePerc<-c(NA,diff(prevItaDT$UpperRange))/c(NA,prevItaDT$casi[1:(nrow(prevItaDT)-1)])
+    prevItaDT$UpperRangePerc<-c(NA,diff(prevItaDT$UpperRange))/c(NA,prevItaDT$totale_casi[1:(nrow(prevItaDT)-1)])*100
 
-    prevItaDT$LowerRangePerc<-c(NA,diff(prevItaDT$LowerRange))/c(NA,prevItaDT$casi[1:(nrow(prevItaDT)-1)])
+    prevItaDT$LowerRangePerc<-c(NA,diff(prevItaDT$LowerRange))/c(NA,prevItaDT$totale_casi[1:(nrow(prevItaDT)-1)])*100
 
     assign("prevItaDTprova",prevItaDT, envir=.GlobalEnv)
 
-    # setDF(allDataReg)
-    # varPrev <- unique(prevItaDT$variabilePrevista)
-    #
-    # dataRDX <- allDataReg[, c('data', varPrev)]
-    # dataIta <- aggregate(dataRDX[,2:5], sum, by=list(data=dataRDX$data))
-    #
-    # tmp <- data.frame(
-    #     data=rep(unique(dataIta$data), times=length(varPrev)),
-    #     casi=unlist(lapply(2:5, function(x) dataIta[, x])),
-    #     variabilePrevista=rep(unique(varPrev), each=nrow(dataIta))
-    # )
-    # assign("tmpprova",tmp, envir=.GlobalEnv)
-
-  # if (!is.null(prevItaDT) & !is.null(tsIta)) {
-  # 		setnames(prevItaDT, old=c('Attesi'), new=c('casi'))
-  #     setnames(tsIta, old=c('totale_casi'), new=c('casi'))
-  #     num_rows <- nrow(tsIta)
-  #     datiIta <- rbind(tsIta[, c("data", "casi")], prevItaDT[, c("data", "casi")])
-  #     datiIta$tipo <- c(rep("osservati", num_rows), rep("predetti", nrow(datiIta) - num_rows))
-  #     datiIta$tipo <- factor(datiIta$tipo, levels=c("osservati", "predetti"))
-
   datamax<-max(tsIta$data)
+  tmp<-rbind(tsIta[,c("data","totale_casi","deltaPerc")],prevItaDT[which(prevItaDT$variabilePrevista=="totale_casi" & prevItaDT$data>datamax),c("data","totale_casi","deltaPerc")])
+
+  tmp$tipo<-NA
+  tmp$tipo[which(tmp$data<=datamax)]<-'osservata'
+  tmp$tipo[which(tmp$data>datamax)]<-'predetta'
+  assign("tmpprova",tmp, envir=.GlobalEnv)
+
   p <- ggplot() + my_ggtheme() +
-   				suppressWarnings(geom_bar(data=tsIta, aes(x=data, y=deltaPerc, #fill=tipo,
+          suppressWarnings(geom_bar(data=tmp, aes(x=data, y=deltaPerc,
+          fill=tipo,
           text = paste('Data:', strftime(data, format="%d-%m-%Y"),
-          '<br>Variazione %: ', round(deltaPerc,2))), stat="identity", width = 0.8))+
-  # #          geom_text(data=datiIta, aes(x=data, y=casi, label=label), cex=2.5, color="black", fontface = "bold") +
-  # 					scale_fill_manual(values=d3hexcols)
-          geom_errorbar(data=prevItaDT[which(prevItaDT$data>=datamax-2),], aes(x=data, ymin=LowerRangePerc, ymax=UpperRangePerc), width=0.4, colour="orange", alpha=0.9, size=1.3)+
+          '<br>Variazione: ', paste(round(deltaPerc,2),'%'))), stat="identity", width = 0.8))+
+   				# suppressWarnings(geom_bar(data=tsIta, aes(x=data, y=deltaPerc, #fill=tipo,
+          # text = paste('Data:', strftime(data, format="%d-%m-%Y"),
+          # '<br>Variazione: ', paste(round(deltaPerc,2),'%'))), stat="identity", width = 0.8, fill="steelblue"))+
+          # suppressWarnings(geom_bar(data=prevItaDT[which(prevItaDT$data>datamax & prevItaDT$variabilePrevista=="totale_casi"),], aes(x=data, y=deltaPerc, #fill=tipo,
+          # text = paste('Data:', strftime(data, format="%d-%m-%Y"),
+          # '<br>Variazione prevista: ', paste0(round(deltaPerc,2),'%'))), stat="identity", width = 0.8, fill="orange"))+
+          geom_crossbar(data=prevItaDT[which(prevItaDT$data>datamax & prevItaDT$variabilePrevista=="totale_casi"),],
+            aes(x=data,
+              y=deltaPerc,
+              ymin=LowerRangePerc, ymax=UpperRangePerc,
+            text = paste('Data:', strftime(data, format="%d-%m-%Y"),
+          #'<br>Variabile: ', variabilePrevista,
+          '<br>Variazione prevista: ', paste0(round(deltaPerc),'%'),
+          '<br>Intervallo previsione:', paste0('[', round(LowerRangePerc,2), '%, ', round(UpperRangePerc,2),'%]')
+        )),width=0.7,
+            colour="orange",
+            #alpha=0.6, size=1,
+            position=position_dodge(.9)
+          )+
+          scale_fill_manual(values=d3hexcols)+
           scale_x_date(date_breaks="2 day",date_labels="%b %d")+
-          theme(axis.text.x=element_text(angle=45,hjust=1)) +
-          labs(x="") +
-          theme(legend.title = element_blank())
+          theme(axis.text.x=element_text(angle=45,hjust=1),legend.title = element_blank())
+          labs(x="", y="Variazione %")
+
   plot<-ggplotly(p, tooltip = c("text")) %>% config(locale = 'it')
   #     if(reacval$mobile){
   #       plot<-plot%>%layout(legend=list(orientation='h',x=0,y=-0.2))
@@ -1334,17 +1331,25 @@ output$tab_desktop<-renderUI({
         column(4,selectizeInput("regionLinLogFit", label="Tipo Grafico", choices=c("Lineare", "Logaritmico"), selected = "Lineare")),
         column(3,radioButtons("modelloFit", label="Tipologia Modello", choices=c("Esp. quadratico", "Esponenziale" ), selected="Esp. quadratico"))),
 
-        fluidRow(align="center",h4("Andamento casi positivi per regione con previsione a 3 giorni")),
+        fluidRow(align="center",h3("Andamento casi positivi per regione con previsione a 3 giorni")),
          plotlyOutput(outputId="fitRegion"), spiegaFitPos
         ),br(),
         fluidRow(style="padding:30px;background-color:#ffffff",
-        fluidRow(align="center",h4("Andamenti globali in Italia con previsione a 3 giorni")),
+        fluidRow(align="center",h3("Andamenti globali in Italia con previsione a 3 giorni")),
          plotlyOutput(outputId="fitIta"), spiegaFitTot
 
-      ),br(),br(),
-      fluidRow(style="padding:30px;background-color:#ffffff",  h2("Previsione del numero di casi totali a medio termine con modello esponenziale quadratico"), plotlyOutput(outputId="fitCasesIta")
+      ),
 
-      ),br(),
+      br(),br(),
+      fluidRow(style="background-color:#ffffff",column(10,offset=1,align="center",h3("Variazione percentuale casi totali giorno per giorno"))),
+        fluidRow(style="padding:10px;background-color:#ffffff",plotlyOutput(outputId="percDeltaTot")),
+      br(),br(),
+
+
+      fluidRow(style="background-color:#ffffff",column(10,offset=1,align="center", h3("Previsione del numero di casi totali a medio termine con modello esponenziale quadratico"))),
+        fluidRow(style="padding:10px;background-color:#ffffff",plotlyOutput(outputId="fitCasesIta"))
+
+      ,br(),
       fluidRow(style="padding:30px;background-color:#ffffff",
           column(width=4,
             selectizeInput("tipoCompare", label="Tipo Comparazione", choices=c("Totale", "Incremento Giornaliero"), selected = "Lineare")
@@ -1382,13 +1387,22 @@ output$tab_mobile<-renderUI({
 
         fluidRow(style="background-color:#ffffff",column(10,offset=1,align="center",h4("Andamenti globali in Italia con previsione a 3 giorni"))),
          fluidRow(style="padding:10px;background-color:#ffffff",plotlyOutput(outputId="fitIta")),
-         fluidRow( style="padding:20px;background-color:#ffffff;",spiegaFitTot)
+         fluidRow( style="padding:20px;background-color:#ffffff;",spiegaFitTot),
 
-  		,br(),br(),
-  		fluidRow(style="padding:30px;background-color:#ffffff", h2("Previsione del numero di casi totali a medio termine con modello esponenziale quadratico")),
-       fluidRow(style="padding:10px;background-color:#ffffff",plotlyOutput(outputId="fitCasesIta",width="100%")
+        br(),br(),
+        fluidRow(style="background-color:#ffffff",column(10,offset=1,align="center",h4("Variazione percentuale casi totali giorno per giorno"))),
+          fluidRow(style="padding:10px;background-color:#ffffff",plotlyOutput(outputId="percDeltaTot")),
 
-  		),br(),
+        br(),br(),
+        fluidRow(style="background-color:#ffffff",column(10,offset=1,align="center",h4("Previsione del numero di casi totali a medio termine con modello esponenziale quadratico"))),
+          fluidRow(style="padding:10px;background-color:#ffffff",plotlyOutput(outputId="fitCasesIta",width="100%")),
+
+  		# br(),br(),
+  		# fluidRow(style="padding:30px;background-color:#ffffff", h4("Previsione del numero di casi totali a medio termine con modello esponenziale quadratico")),
+      #  fluidRow(style="padding:10px;background-color:#ffffff",plotlyOutput(outputId="fitCasesIta",width="100%")
+      #
+  		# ),
+      br(),
       fluidRow(style="padding:30px;background-color:#ffffff",
 
           column(width=4,

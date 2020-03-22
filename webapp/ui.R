@@ -27,11 +27,7 @@ diariotab<-tabItem(tabName="diario",
 											h1("Diario della diffusione"),br(),
 											h4("Clicca sui link per i report aggiornati:"),
 											a(uiOutput("data_report"),href="tabReport.html",target="_blank",rel="noopener noreferrer")
-										  ),
-											br(),
-											fluidRow(style="padding:20px;background-color:#ffffff",
-												h3("Delta Percentuale"),plotlyOutput(outputId="percDeltaTot")#, spiegaLinePlot
-											)
+										  )
 											# ,br(),
 											# fluidRow(style="padding:20px;background-color:#ffffff",
 											# 	column(width=12, h3("Tabella letalità per fascia di età"),DTOutput(outputId="letality"), spiegaTabella
