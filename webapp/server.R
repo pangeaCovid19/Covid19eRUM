@@ -1452,7 +1452,7 @@ output$spaces_mobile_prev<-renderUI({
   out<-NULL
   if((length(reacval$mobile)>0)){
     if(reacval$mobile){
-      out<-fluidRow(br(),br(),br())
+      out<-fluidRow(br(),br(),br(),br())
     }
 
   }
@@ -1462,7 +1462,7 @@ output$spaces_mobile_intro<-renderUI({
   out<-NULL
   if((length(reacval$mobile)>0)){
     if(reacval$mobile){
-      out<-fluidRow(br(),br(),br())
+      out<-fluidRow(br(),br(),br(),br())
     }
 
   }
@@ -1472,7 +1472,7 @@ output$spaces_mobile_ti<-renderUI({
   out<-NULL
   if((length(reacval$mobile)>0)){
     if(reacval$mobile){
-      out<-fluidRow(br(),br(),br())
+      out<-fluidRow(br(),br(),br(),br())
     }
 
   }
@@ -1482,7 +1482,7 @@ output$spaces_mobile_reg<-renderUI({
   out<-NULL
   if((length(reacval$mobile)>0)){
     if(reacval$mobile){
-      out<-fluidRow(br(),br(),br())
+      out<-fluidRow(br(),br(),br(),br())
     }
 
   }
@@ -1492,7 +1492,7 @@ output$spaces_mobile_prov<-renderUI({
   out<-NULL
   if((length(reacval$mobile)>0)){
     if(reacval$mobile){
-      out<-fluidRow(br(),br(),br())
+      out<-fluidRow(br(),br(),br(),br())
     }
 
   }
@@ -1503,7 +1503,7 @@ output$spaces_mobile_prov<-renderUI({
     out<-NULL
     if((length(reacval$mobile)>0)){
       if(reacval$mobile){
-        out<-fluidRow(br(),br(),br())
+        out<-fluidRow(br(),br(),br(),br())
       }
 
     }
@@ -1515,7 +1515,7 @@ output$spaces_mobile_prov<-renderUI({
       out<-NULL
       if((length(reacval$mobile)>0)){
         if(reacval$mobile){
-          out<-fluidRow(br(),br(),br())
+          out<-fluidRow(br(),br(),br(),br())
         }
 
       }
@@ -1529,52 +1529,29 @@ output$spaces_mobile_prov<-renderUI({
     out<-NULL
     if((length(reacval$mobile)>0)){
       if(reacval$mobile){
-        out<-list(br(),br(),br())
+        out<-list(br(),br(),br(),br())
       }
     }
 
        })
 
-output$legenda_regioni<- renderUI({
-  out<-NULL
-  if((length(reacval$mobile)>0)){
-    if(reacval$mobile){
-    out<-fluidRow(column(7,offset=2,style="padding:30px;background-color: #ffffff;",HTML(readChar("../docs/legenda_regioni_bullet.Rhtml",file.info("../docs/legenda_regioni_bullet.Rhtml")$size))))
 
-  }}
-  })
 
-  output$legenda_regioni_bullet<- renderUI({
-    out<-NULL
-    if((length(reacval$mobile)>0)){
-      if(reacval$mobile){
-      out<-fluidRow(column(7,offset=2,style="padding:30px;background-color: #ffffff;",HTML(readChar("../docs/legenda_regioni_bullet.Rhtml",file.info("../docs/legenda_regioni_bullet.Rhtml")$size))))
 
-    }}
-    })
-output$spazi_plot_province<-renderUI({
-  out<-NULL
-  if(reacval$mobile){
-  if(input$regionSel == 'Lombardia' || input$regionSel == 'Piemonte'){
-    out<-fluidRow()
-  }}
 
-  })
 output$tasti_social<-renderUI({
   url_tweet <- "https://twitter.com/intent/tweet?text=CoVid19&url=https://www.pangeadds.eu/demos/CoVid19/"
   url_link <- "https://www.linkedin.com/shareArticle?mini=true&url=https://www.pangeadds.eu/demos/CoVid19/"
   url_fb<-"https://www.facebook.com/sharer/sharer.php?u=#url=https://www.pangeadds.eu/demos/CoVid19/"
-list(tags$li(actionButton("twitter_share",label = "Twitter",color='#1DA1F2',icon = icon("twitter"),
-         onclick = sprintf("window.open('%s')", url_tweet)),class='dropdown' ,
-				 tags$style(type='text/css', "#twitter_share { background-color:#1DA1F2;color:#ffffff;margin-top: 20px;margin-bottom: 20px;margin-right: 10px;margin-left: 10px;}")),
-
-         tags$li(actionButton("linkedin_share",label = "LinkedIn",color='#1DA1F2',icon = icon("linkedin-in"),
-               onclick = sprintf("window.open('%s')", url_link)),class='dropdown' ,
-							 tags$style(type='text/css', "#linkedin_share { background-color:#0e76a8;color:#ffffff;margin-top: 20px;margin-bottom: 20px;margin-right: 30px;margin-left: 10px;}")),
-
-         tags$li(actionButton("fb_share",label = "Facebook",color='#4267B2',icon = icon("fab fa-facebook-f"),
-               onclick = sprintf("window.open('%s')", url_fb)),class='dropdown' ,
-               tags$style(type='text/css', "#fb_share { background-color:#0e76a8;color:#ffffff;margin-top: 20px;margin-bottom: 20px;margin-right: 30px;margin-left: 10px;}")))
+fluidRow(style="padding:30px;",align='center',br(),br(),br(),br(),
+#column(10,
+  column(3,
+  actionButton("twitter_share",label = "",style="align:center;width:40px;color: #fff; background-color: #38A1F3; border-color: #38A1F3",icon = icon("twitter"),
+         onclick = sprintf("window.open('%s')", url_tweet))),
+  column(3,actionButton("linkedin_share",label = "",style="width:40px;color: #fff; background-color: #0077B5; border-color: #0077B5",icon = icon("linkedin-in"),
+               onclick = sprintf("window.open('%s')", url_link))),
+  column(3,actionButton("fb_share",label = "",style="width:40px;color: #fff; background-color: #4267b2; border-color: #4267b2",icon = icon("fab fa-facebook-f"),
+               onclick = sprintf("window.open('%s')", url_fb))))
 
   })
 

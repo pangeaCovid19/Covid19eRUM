@@ -205,17 +205,6 @@ dashboardPage(title="CoVid-19 in Italia",
 	dashboardHeader3( pagename="CoVid-19 in Italia", logo_img = "logo_pangea_esteso.png", width = 200,
 
 		tags$li(uiOutput('data_agg') ,class='dropdown', style=" color:#0b4975;font-weight: bold;margin-top:40px;margin-right: 40px;margin-left: 60px;")
-	# tags$li(actionButton("twitter_share",label = "Twitter",color='#1DA1F2',icon = icon("twitter"),
-	#          onclick = sprintf("window.open('%s')", url_tweet)),class='dropdown' ,
-	# 				 tags$style(type='text/css', "#twitter_share { background-color:#1DA1F2;color:#ffffff;margin-top: 20px;margin-bottom: 20px;margin-right: 10px;margin-left: 10px;}")),
-	#
-	#          tags$li(actionButton("linkedin_share",label = "LinkedIn",color='#1DA1F2',icon = icon("linkedin-in"),
-	#                onclick = sprintf("window.open('%s')", url_link)),class='dropdown' ,
-	# 							 tags$style(type='text/css', "#linkedin_share { background-color:#0e76a8;color:#ffffff;margin-top: 20px;margin-bottom: 20px;margin-right: 10px;margin-left: 10px;}")),
-	#
-	#          tags$li(actionButton("fb_share",label = "Facebook",color='#4267B2',icon = icon("fab fa-facebook-f"),
-	#                onclick = sprintf("window.open('%s')", url_fb)),class='dropdown' ,
-	#                tags$style(type='text/css', "#fb_share { background-color:#0e76a8;color:#ffffff;margin-top: 20px;margin-bottom: 20px;margin-right: 30px;margin-left: 10px;}"))
 
 
 												 ),
@@ -243,7 +232,8 @@ dashboardPage(title="CoVid-19 in Italia",
 			),
 			sidebarMenu(id='presentazione',
 				menuItem2("Chi Siamo", tabName = "chisiamo", icon = icon("fas fa-users"))
-			)
+			),
+			uiOutput('tasti_social')
 		 #selectInput("regionSel", label="Regione", choices=regioniList, selected = "Lombardia")
 	),
 
