@@ -1307,52 +1307,6 @@ output$tabCompare <- renderDT({
 })
 
 
-
-
-
-# output$tab_desktop<-renderUI({
-#
-#   fluidRow(style="padding-left:30px;padding-right:30px;border-style: solid;border-color:#009933;",#" border-color :#009933;",
-#   	h1("Analisi previsionale nelle province italiane"),
-#   	fluidRow(
-#   		column(12,h4("In questa pagina proponiamo il confronto tra i dati registrati, sia regionali che nazionali e due modelli di crescita. Il primo modello (esponenziale) descrive una diffusione incontrollata, mentre il secondo (esponenziale quadratico) tenta di tenere conto dell'effetto di misure contenitive. Per maggiori dettagli, controlla la sezione Descrizione Modelli"))
-#
-#   	),
-#
-#   		 br(),
-#   		fluidRow(style="padding:30px;background-color:#ffffff",
-#   			column(2,fluidRow(selectizeInput("regionLinLogFit", label="Tipo Grafico", choices=c("Lineare", "Logaritmico"), selected = "Lineare")),
-# 				radioButtons("modelloFit", label="Tipologia Modello", choices=c("Esp. quadratico","Esponenziale"), selected="Esp. quadratico"),
-# 				checkboxGroupInput("regionSelFit", label="Seleziona regioni", choices=regioniList, selected = regioni2fit)),
-#   		column(10,
-#
-#   			fluidRow(column(6,align="center",h4("Andamento casi positivi per regione con previsione a 3 giorni")),column(6,align="center",h4("Andamenti globali in Italia con previsione a 3 giorni"))),
-#   			fluidRow(
-#   				column(width=6,align="left", plotlyOutput(outputId="fitRegion"), #spiegaFitPos
-#   				),br(),
-#   				column(width=6,align="left",plotlyOutput(outputId="fitIta"), #spiegaFitTot
-#   				),br(),fluidRow(style="padding:20px;",spiegaFitTotePos)
-#   			)
-#       )
-#   		),br(),br(),
-#   		fluidRow(style="padding:30px;background-color:#ffffff",width=12,  h2("Previsione del numero di casi totali a medio termine con modello esponenziale quadratico"), plotlyOutput(outputId="fitCasesIta")
-#
-#   		),br(),
-#       fluidRow(
-#         box(width=12,
-#           column(width=4,
-#             selectizeInput("tipoCompare", label="Tipo Comparazione", choices=c("Totale", "Incremento Giornaliero"), , selected = "Lineare")
-#           ),
-#           column(width=4,
-#             uiOutput("dateCompare")
-#           ),
-#           DTOutput("tabCompare"),spiegaTabellaCompare
-#
-#         )
-#       ),br()
-#   	)
-#
-#   })
 output$tab_desktop<-renderUI({
 
   fluidRow(style="padding-left:30px;padding-right:30px;border-style: solid;border-color:#009933;",#" border-color :#009933;",
@@ -1612,6 +1566,28 @@ list(tags$li(actionButton("twitter_share",label = "Twitter",color='#1DA1F2',icon
 
   })
 
+stampa_report<-function(x){
+  data<-substring(x, nchar(x)-14,nchar(x)-5)
+  testo<-paste0("Report del ",data)
+  path<-paste0('pastDiary/tabReport_',data,'.html')
+  linea<- list(a(testo,href=path,target="_blank",rel="noopener noreferrer"),br())
+
+}
+
+output$storico_report<-renderUI({
+    files <- list.files("www/pastDiary")
+    files<-sort(files,decreasing=T)
+    a<-lapply(files,function(x) stampa_report(x))
+    #a<-a('link prova',href="pastDiary/tabReport_2020-03-19.html",target="_blank",rel="noopener noreferrer")
+
+
+
+
+    })
+
+
+
+  #
 
 
 
