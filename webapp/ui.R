@@ -76,12 +76,12 @@ tiTab <- tabItem(tabName = "tiPlots",
 									h4("I dati relativi al numero di posti letto in terapia intensiva per regione sono aggiornati al 2018 e non vengono riaggiornati in base agli sforzi che il sistema sanitario sta portando avanti in questi giorni. Non ha scopo allarmistico ma solo di mostrare quali siano le criticità che il nostro paese sta affrontando a causa del CoVid19 "),
 									 br(),
 
-										fluidRow(style="padding:20px;background-color:#ffffff",
-											h3("Previsione del numero di letti occupati da pazienti con Covid19 e disponibilità per regione (posti letto aggiornati al 2018)"),
-											plotlyOutput("terapiaIntPlotPercPrev"),
+#										fluidRow(style="padding:20px;background-color:#ffffff",
+#											h3("Previsione del numero di letti occupati da pazienti con Covid19 e disponibilità per regione (posti letto aggiornati al 2018)"),
+#											plotlyOutput("terapiaIntPlotPercPrev"),
 #											plotlyOutput("terapiaIntPlotPercPrevNEW"), calcolo terapia intensiva su numero di terapie intensive per farlo partire ricaricare il demone
-											spiegaTerIntPrevisione
-										),br(),
+#											spiegaTerIntPrevisione
+#										),br(),
 	                	fluidRow(style="padding:20px;background-color:#ffffff",
 											h3( "Percentuale in terapia intensiva occupati da pazienti con CoVid19 (posti letto aggiornati al 2018)"),
 											plotlyOutput("terapiaIntPlotPercNow"),
