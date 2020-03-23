@@ -2,6 +2,9 @@ library(shinydashboard)
 library(shinyWidgets)
 source("dashboardPangea.R")
 includeCSS("style.css")
+url_tweet <- "https://twitter.com/intent/tweet?text=CoVid19&url=https://www.pangeadds.eu/demos/CoVid19/"
+url_link <- "https://www.linkedin.com/shareArticle?mini=true&url=https://www.pangeadds.eu/demos/CoVid19/"
+url_fb<-"https://www.facebook.com/sharer/sharer.php?u=#url=https://www.pangeadds.eu/demos/CoVid19/"
 #HTML(readChar("../docs/intro.html",file.info("../docs/intro.html")$size))
 # dashboardBody(
 # 		tags$style(".fa-users color: #ff00ff ; }"
@@ -102,28 +105,32 @@ regTab <- tabItem(tabName = "regPlots",
 						fluidRow(style="padding:20px;background-color:#ffffff",
 							h3("Andamento dei casi confermati"),
 							selectizeInput("variabileLineRegioni", label="Variabile da mostrare", 	choices=campiTotali , selected = "totale_casi", multiple=FALSE),
-							plotlyOutput(outputId="lineRegioni"),
+							fluidRow(style="overflow-x:scroll;padding:20px;",plotlyOutput(outputId="lineRegioni")),
+							#uiOutput('legenda_regioni'),
 							spiegaLinePlot,
 							#plotlyOutput(outputId="puntiRegioni"),
 							##################################################
 							##################################################
 							#FIXME per togliere i grafici nuovi commentare fino a plotlyOutput(outputId="puntiRegioni")
-							fluidRow(tyle="padding:20px;background-color:#ffffff",
+							fluidRow(style="padding:20px;background-color:#ffffff",
 								h3("Confronto tra variabili"),
+								fluidRow(style="padding:10px;",
 								column(width=3,
 									selectizeInput("confrontox", label="Variabile su asse X", 	choices=campiTotali , selected = "totale_casi", multiple=FALSE)
+								#),
+								#column(width=3,
+									,selectizeInput("confrontoy", label="Variabile su asse Y", 	choices=campiTotali , selected = "tamponi", multiple=FALSE)
 								),
-								column(width=3,
-									selectizeInput("confrontoy", label="Variabile su asse Y", 	choices=campiTotali , selected = "tamponi", multiple=FALSE)
+								column(width=2,offset=1,fluidRow(h1(' ')),
+									prettyRadioButtons('confrontoTipoGratico',"Assi del grafico",choices = c('Lineari', 'Logaritmici') , selected = "Logaritmici", status = "primary",shape = 'round',outline = FALSE,animation = 'jelly',icon = icon('check'))
+									#selectizeInput("confrontoTipoGratico", label="Assi del grafico", 	choices=c('Lineari', 'Logaritmici') , selected = "Logaritmici", multiple=FALSE)
 								),
-								column(width=3,
-									selectizeInput("confrontoTipoGratico", label="Assi del grafico", 	choices=c('Lineari', 'Logaritmici') , selected = "Logaritmici", multiple=FALSE)
-								),
-								column(width=3,
+								column(width=6,fluidRow(h1(' ')),
 									uiOutput("confrontoGiornoUI")
-								)
+								))
 							),
-							plotlyOutput(outputId="puntiRegioni"),
+							fluidRow(style='padding:30px;',fluidRow(style='padding:20px;overflow-x:scroll;',plotlyOutput(outputId="puntiRegioni"))),
+							#uiOutput('legenda_regioni_bullet'),
 							##################################################
 							##################################################
 						)
@@ -148,14 +155,17 @@ prvTab <- tabItem(tabName = "prvPlots",
 							h1("Diffusione nelle province e nelle città metropolitane italiane"), br(),
 							#
 							fluidRow(style="padding:20px;background-color:#ffffff",
-								uiOutput("selProvince"),
+							fluidRow(style='padding:30px;',
+								uiOutput("selProvince")),
 								h3("Mappa dei casi confermati"),
 										#plotOutput(outputId="mapProvinceGG", height = 800),
 										leafletOutput(outputId="mapProvince"),
 										spiegaMappa
 								),br(),
-								fluidRow(style="padding:20px;background-color:#ffffff",
-								h3("Andamento dei casi confermati"),plotlyOutput(outputId="lineProvince"), spiegaLinePlot
+								fluidRow(style="padding:40px;background-color:#ffffff",
+								h3("Andamento dei casi confermati"),
+
+								fluidRow(style="overflow-x:scroll;",align='center',plotlyOutput(outputId="lineProvince")),uiOutput('spazi_plot_province'), spiegaLinePlot
 								)
 
 							,br(),
@@ -180,7 +190,22 @@ prvTab <- tabItem(tabName = "prvPlots",
 
 dashboardPage(title="CoVid-19 in Italia",
 	skin = "black",
-	dashboardHeader3( pagename="CoVid-19 in Italia", logo_img = "logo_pangea_esteso.png", width = 200),
+	dashboardHeader3( pagename="CoVid-19 in Italia", logo_img = "logo_pangea_esteso.png", width = 200#uiOutput('tasti_social')
+	# tags$li(actionButton("twitter_share",label = "Twitter",color='#1DA1F2',icon = icon("twitter"),
+	#          onclick = sprintf("window.open('%s')", url_tweet)),class='dropdown' ,
+	# 				 tags$style(type='text/css', "#twitter_share { background-color:#1DA1F2;color:#ffffff;margin-top: 20px;margin-bottom: 20px;margin-right: 10px;margin-left: 10px;}")),
+	#
+	#          tags$li(actionButton("linkedin_share",label = "LinkedIn",color='#1DA1F2',icon = icon("linkedin-in"),
+	#                onclick = sprintf("window.open('%s')", url_link)),class='dropdown' ,
+	# 							 tags$style(type='text/css', "#linkedin_share { background-color:#0e76a8;color:#ffffff;margin-top: 20px;margin-bottom: 20px;margin-right: 10px;margin-left: 10px;}")),
+	#
+	#          tags$li(actionButton("fb_share",label = "Facebook",color='#4267B2',icon = icon("fab fa-facebook-f"),
+	#                onclick = sprintf("window.open('%s')", url_fb)),class='dropdown' ,
+	#                tags$style(type='text/css', "#fb_share { background-color:#0e76a8;color:#ffffff;margin-top: 20px;margin-bottom: 20px;margin-right: 30px;margin-left: 10px;}"))
+
+
+												 ),
+
 
 ## bbar content
 	dashboardSidebar(uiOutput('sidebar'),

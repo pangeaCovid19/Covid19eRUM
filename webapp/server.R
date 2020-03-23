@@ -174,7 +174,19 @@ output$lineRegioni <- renderPlotly({
           theme(axis.text.x=element_text(angle=45, hjust=1)) +
 					guides(fill=guide_legend(title="regione")) +
           xlab("")+ylab(var2plotNew)
-    ggplotly(p, tooltip = c("text")) %>% config(locale = 'it')
+    if(reacval$mobile){
+      p<-p+scale_x_date(date_breaks="3 day",date_labels="%b %d")}
+    else{
+      p<-p+scale_x_date(date_breaks="2 day",date_labels="%b %d")
+    }
+    plot<-ggplotly(p, tooltip = c("text")) %>% config(locale = 'it')
+
+    if(reacval$mobile){
+
+      plot<-plot%>%layout(legend=list(orientation='h',x=-0,y=-0.3))%>%
+            layout(legend=list(font=list(size=12)),dragmode=F,autosize = T,heigth=3000,width = 600)
+    }
+    plot
 
   }
 })
@@ -183,7 +195,7 @@ output$lineRegioni <- renderPlotly({
 output$confrontoGiornoUI <- renderUI({
 	allDataReg <- copy(reacval$dataTables_reg)
 	if (is.null(allDataReg))retunr(NULL)
-	sliderInput("confrontoGiorno", "Giorno:", min = min(allDataReg$data) + 1, max = max(allDataReg$data), value = max(allDataReg$data), animate = animationOptions(interval = 1500), timeFormat="%b %d")
+	sliderInput("confrontoGiorno", "Giorno:", min = min(allDataReg$data) + 1, max = max(allDataReg$data), value = max(allDataReg$data), animate = animationOptions(interval = 1500), timeFormat="%b %d",width='90%')
 
 })
 
@@ -242,7 +254,13 @@ output$puntiRegioni <- renderPlotly({
 
 		if(assiGraph=="Logaritmici") p <- p + scale_y_log10()+ scale_x_log10()
 
-  ggplotly(p, tooltip = c("text")) %>% config(locale = 'it')
+  plot<-ggplotly(p, tooltip = c("text")) %>% config(locale = 'it')
+  if(reacval$mobile){
+
+    plot<-plot%>%layout(legend=list(orientation='h',x=-0,y=-0.3))%>%
+          layout(legend=list(font=list(size=12)),dragmode=F,autosize = T,heigth=3000,width = 600)
+  }
+  plot
 
 })
 
@@ -331,6 +349,7 @@ palRegioni <- reactive({
 })
 
 output$mapRegioni <- renderLeaflet({
+  #withProgress({
 	if(verbose) cat("\n renderLeaflet:mapRegioni --- ")
   allDataReg <- copy(reacval$dataTables_reg_flt)
 
@@ -367,6 +386,7 @@ output$mapRegioni <- renderLeaflet({
 									title = paste0("casi")))
 		}
 	}
+  #},value=0,message="Elaborazione ",detail="")
 })
 
 output$mapRegioniGG <- renderPlot({
@@ -408,12 +428,19 @@ output$lineProvince <- renderPlotly({
           scale_color_manual(values=d3hexcols20) +
           theme(axis.text.x=element_text(angle=45, hjust=1)) +
           labs(x="")
+          if(reacval$mobile){
+            p<-p+scale_x_date(date_breaks="3 day",date_labels="%b %d")}
+          else{
+            p<-p+scale_x_date(date_breaks="2 day",date_labels="%b %d")
+          }
     plot<-ggplotly(p, tooltip = c("text")) %>% config(locale = 'it')
 
     if(reacval$mobile){
-      plot<-plot%>%layout(legend=list(orientation='h',x=0.6,y=-0.4))
 
+      plot<-plot%>%layout(legend=list(orientation='h',x=-0,y=-0.3))%>%
+            layout(legend=list(font=list(size=12)),dragmode=F,autosize = T,heigth=3000,width = 600)
     }
+
     plot
   }
 })
@@ -432,9 +459,9 @@ output$tabProvince <- renderDT({
     allDataPrv$data <- strftime(allDataPrv$data, format="%d-%m-%Y")
 		allDataPrv$`casi su 10mila abit` <- round(allDataPrv$`casi su 10mila abit`,2)
 
-    datatable(allDataPrv,
+    datatable(allDataPrv,extensions = c('Scroller'),
       selection = list(target = NULL),
-      options= c(list(paging = F, searching = F, info=F, ordering=T, order=list(list(2, 'desc'))), DT_lang_opt),
+      options= c(list(dom = 't',scroller=T,scrollX="300",scrollY="300",paging = T,paging = F, searching = F, info=F, ordering=T, order=list(list(2, 'desc'))), DT_lang_opt),
       rownames=F)
   }
 })
@@ -603,6 +630,8 @@ prevRegion <- reactive({
 
 
 output$fitRegion <- renderPlotly({
+
+
 	if(verbose) cat("\n renderPlotly:fitRegion")
   allDataReg <- copy(reacval$dataTables_reg)
 	regioniSel <- input$regionSelFit
@@ -655,15 +684,20 @@ output$fitRegion <- renderPlotly({
               '<br>Regione: ', regione,
               '<br>Casi: ', `casi totali`
               )))) +
-       scale_color_manual(values=d3hexcols20) + scale_x_date(date_breaks="2 day",date_labels="%b %d") +
+       scale_color_manual(values=d3hexcols20) +# scale_x_date(date_breaks="3 day",date_labels="%b %d") +
 			 theme(axis.text.x=element_text(angle=45,hjust=1)) +
        labs(x="")
+    if(reacval$mobile){
+      p<-p+scale_x_date(date_breaks="3 day",date_labels="%b %d")}
+    else{
+      p<-p+scale_x_date(date_breaks="2 day",date_labels="%b %d")
+    }
 
     if (tipoGraph == "Logaritmico") p <- p + scale_y_log10()
 
     plot<-ggplotly(p, tooltip = c("text")) %>% config(locale = 'it')
     if(reacval$mobile){
-    plot<-plot%>%layout(legend=list(orientation='h',x=0,y=-0.2))
+    plot<-plot%>%layout(legend=list(orientation='h',x=0,y=-0.4))
     }
     plot
   }
@@ -755,15 +789,19 @@ if(verbose) cat("\n renderPlotly:fitIta")
                  '<br>Variabile: ', variabilePrevista,
                  '<br>Casi: ', casi
                  )))) +
-			 scale_color_manual(values=d3hexcols20) + scale_x_date(date_breaks="2 day",date_labels="%b %d") +
+			 scale_color_manual(values=d3hexcols20) +# scale_x_date(date_breaks="3 day",date_labels="%b %d") +
        theme(axis.text.x = element_text(angle=45,hjust=1)) +
        labs(x="", color = "variabile prevista")
-
+       if(reacval$mobile){
+         p<-p+scale_x_date(date_breaks="3 day",date_labels="%b %d")}
+       else{
+         p<-p+scale_x_date(date_breaks="2 day",date_labels="%b %d")
+       }
     if (tipoGraph == "Logaritmico") p <- p + scale_y_log10()
 
     plot<-ggplotly(p, tooltip = c("text")) %>% config(locale = 'it')
     if(reacval$mobile){
-      plot<-plot%>%layout(legend=list(orientation='h',x=0.01,y=-0.2))
+      plot<-plot%>%layout(legend=list(orientation='h',x=0.01,y=-0.4))
       }
     plot
   }
@@ -1261,8 +1299,14 @@ output$tab_desktop<-renderUI({
       fluidRow(
 
         column(5,pickerInput(inputId = "regionSelFit", label = "Seleziona regioni", choices = regioniList,selected=regioni2fit, options = list(size=10,`actions-box` = TRUE, `selected-text-format` = "count >20"), multiple = TRUE)),
-        column(4,selectizeInput("regionLinLogFit", label="Tipo Grafico", choices=c("Lineare", "Logaritmico"), selected = "Lineare")),
-        column(3,radioButtons("modelloFit", label="Tipologia Modello", choices=c("Esp. quadratico", "Esponenziale" ), selected="Esp. quadratico"))),
+        column(4,
+          prettyRadioButtons('regionLinLogFit',"Tipo Grafico",choices = c("Lineare", "Logaritmico"), selected = "Lineare",status = "success",shape = 'round',outline = FALSE,animation = 'jelly',icon = icon('check'))
+          #selectizeInput("regionLinLogFit", label="Tipo Grafico", choices=c("Lineare", "Logaritmico"), selected = "Lineare")
+          ),
+        column(3,
+          prettyRadioButtons('modelloFit',"Tipologia Modello",choices = c("Esp. quadratico", "Esponenziale" ), selected="Esp. quadratico",status = "success",shape = 'round',outline = FALSE,animation = 'jelly',icon = icon('check'))
+          #radioButtons("modelloFit", label="Tipologia Modello", choices=c("Esp. quadratico", "Esponenziale" ), selected="Esp. quadratico")
+          )),
 
         fluidRow(align="center",h4("Andamento casi positivi per regione con previsione a 3 giorni")),
          plotlyOutput(outputId="fitRegion"), spiegaFitPos
@@ -1302,9 +1346,16 @@ output$tab_mobile<-renderUI({
   		fluidRow(style="padding:30px;background-color:#ffffff",
       fluidRow(
 
-        column(5,pickerInput(inputId = "regionSelFit", label = "Seleziona regioni", choices = regioniList,selected=regioni2fit, options = list(size=10,`actions-box` = TRUE, `selected-text-format` = "count >20"), multiple = TRUE)),
-        column(4,selectizeInput("regionLinLogFit", label="Tipo Grafico", choices=c("Lineare", "Logaritmico"), selected = "Lineare")),
-        column(3,radioButtons("modelloFit", label="Tipologia Modello", choices=c("Esp. quadratico", "Esponenziale" ), selected="Esp. quadratico"))),
+        fluidRow(style="padding-left:30px;",pickerInput(inputId = "regionSelFit", label = "Seleziona regioni", choices = regioniList,selected=regioni2fit, options = list(size=10,`actions-box` = TRUE, `selected-text-format` = "count >20"), multiple = TRUE)),
+        fluidRow(style="padding-left:30px;",
+        column(4,
+          prettyRadioButtons('regionLinLogFit',"Tipo Grafico",choices = c("Lineare", "Logaritmico"), selected = "Lineare",status = "success",shape = 'round',outline = FALSE,animation = 'jelly',icon = icon('check'))
+          #selectizeInput("regionLinLogFit", label="Tipo Grafico", choices=c("Lineare", "Logaritmico"), selected = "Lineare")
+          ),
+        column(4,
+          prettyRadioButtons('modelloFit',"Tipologia Modello",choices = c("Esp. quadratico", "Esponenziale" ), selected="Esp. quadratico",status = "success",shape = 'round',outline = FALSE,animation = 'jelly',icon = icon('check'))
+          #radioButtons("modelloFit", label="Tipologia Modello", choices=c("Esp. quadratico", "Esponenziale" ), selected="Esp. quadratico")
+          ))),
 
         fluidRow(style="background-color:#ffffff",column(10,offset=1,align="center",h4("Andamento casi positivi per regione con previsione a 3 giorni"))),
          fluidRow(style="padding:10px;background-color:#ffffff",plotlyOutput(outputId="fitRegion")), spiegaFitPos
@@ -1433,6 +1484,49 @@ output$spaces_mobile_prov<-renderUI({
     }
 
        })
+
+output$legenda_regioni<- renderUI({
+  out<-NULL
+  if((length(reacval$mobile)>0)){
+    if(reacval$mobile){
+    out<-fluidRow(column(7,offset=2,style="padding:30px;background-color: #ffffff;",HTML(readChar("../docs/legenda_regioni_bullet.Rhtml",file.info("../docs/legenda_regioni_bullet.Rhtml")$size))))
+
+  }}
+  })
+
+  output$legenda_regioni_bullet<- renderUI({
+    out<-NULL
+    if((length(reacval$mobile)>0)){
+      if(reacval$mobile){
+      out<-fluidRow(column(7,offset=2,style="padding:30px;background-color: #ffffff;",HTML(readChar("../docs/legenda_regioni_bullet.Rhtml",file.info("../docs/legenda_regioni_bullet.Rhtml")$size))))
+
+    }}
+    })
+output$spazi_plot_province<-renderUI({
+  out<-NULL
+  if(reacval$mobile){
+  if(input$regionSel == 'Lombardia' || input$regionSel == 'Piemonte'){
+    out<-fluidRow()
+  }}
+
+  })
+output$tasti_social<-renderUI({
+  url_tweet <- "https://twitter.com/intent/tweet?text=CoVid19&url=https://www.pangeadds.eu/demos/CoVid19/"
+  url_link <- "https://www.linkedin.com/shareArticle?mini=true&url=https://www.pangeadds.eu/demos/CoVid19/"
+  url_fb<-"https://www.facebook.com/sharer/sharer.php?u=#url=https://www.pangeadds.eu/demos/CoVid19/"
+list(tags$li(actionButton("twitter_share",label = "Twitter",color='#1DA1F2',icon = icon("twitter"),
+         onclick = sprintf("window.open('%s')", url_tweet)),class='dropdown' ,
+				 tags$style(type='text/css', "#twitter_share { background-color:#1DA1F2;color:#ffffff;margin-top: 20px;margin-bottom: 20px;margin-right: 10px;margin-left: 10px;}")),
+
+         tags$li(actionButton("linkedin_share",label = "LinkedIn",color='#1DA1F2',icon = icon("linkedin-in"),
+               onclick = sprintf("window.open('%s')", url_link)),class='dropdown' ,
+							 tags$style(type='text/css', "#linkedin_share { background-color:#0e76a8;color:#ffffff;margin-top: 20px;margin-bottom: 20px;margin-right: 30px;margin-left: 10px;}")),
+
+         tags$li(actionButton("fb_share",label = "Facebook",color='#4267B2',icon = icon("fab fa-facebook-f"),
+               onclick = sprintf("window.open('%s')", url_fb)),class='dropdown' ,
+               tags$style(type='text/css', "#fb_share { background-color:#0e76a8;color:#ffffff;margin-top: 20px;margin-bottom: 20px;margin-right: 30px;margin-left: 10px;}")))
+
+  })
 
 
 
