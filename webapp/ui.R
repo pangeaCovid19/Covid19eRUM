@@ -25,11 +25,16 @@ diariotab<-tabItem(tabName="diario",
 
 							fluidRow(style="padding:30px;border-style: solid;border-color: rgb(243,118,37);",
 
+											h1("Diario"),br(),
 
 											fluidRow(style="padding:30px;background-color:#ffffff;",
-											h1("Diario della diffusione"),br(),a("Editoriale del 22 Marzo 2020",href="Report21marzo2020.html",target="_blank",rel="noopener noreferrer"),br(),
+											h2("Editoriale"),br(),
+											a("Editoriale del 22 Marzo 2020",href="Report21marzo2020.html",target="_blank",rel="noopener noreferrer")),br(),
+											fluidRow(style="padding:30px;background-color:#ffffff;",
+											h2("Report"),br(),
 											h4("Clicca sui link per i report aggiornati:"),
-											a(uiOutput("data_report"),href="tabReport.html",target="_blank",rel="noopener noreferrer")
+											#a(uiOutput("data_report"),href="tabReport.html",target="_blank",rel="noopener noreferrer"),
+											uiOutput('storico_report')
 										  )
 											# ,br(),
 											# fluidRow(style="padding:20px;background-color:#ffffff",
@@ -197,7 +202,7 @@ prvTab <- tabItem(tabName = "prvPlots",
 
 dashboardPage(title="CoVid-19 in Italia",
 	skin = "black",
-	dashboardHeader3( pagename="CoVid-19 in Italia", logo_img = "logo_pangea_esteso.png", width = 200#uiOutput('tasti_social')
+	dashboardHeader3( pagename="CoVid-19 in Italia", logo_img = "logo_pangea_esteso.png", width = 200      #,uiOutput('tasti_social')
 	# tags$li(actionButton("twitter_share",label = "Twitter",color='#1DA1F2',icon = icon("twitter"),
 	#          onclick = sprintf("window.open('%s')", url_tweet)),class='dropdown' ,
 	# 				 tags$style(type='text/css', "#twitter_share { background-color:#1DA1F2;color:#ffffff;margin-top: 20px;margin-bottom: 20px;margin-right: 10px;margin-left: 10px;}")),
@@ -232,7 +237,7 @@ dashboardPage(title="CoVid-19 in Italia",
 				menuItem2("Matematica della diffusione", tabName = "intro", icon = icon("fas fa-square-root-alt"))
 			),
 			sidebarMenu(id='diariodibordo',
-				menuItem2("Diario della diffusione", tabName = "diario", icon = icon("fas fa-book-open"))
+				menuItem2("Diario ", tabName = "diario", icon = icon("fas fa-book-open"))
 			),
 			sidebarMenu(id='presentazione',
 				menuItem2("Chi Siamo", tabName = "chisiamo", icon = icon("fas fa-users"))
