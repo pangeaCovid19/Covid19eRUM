@@ -27,9 +27,16 @@ diariotab<-tabItem(tabName="diario",
 
 
 											fluidRow(style="padding:30px;background-color:#ffffff;",
-											h1("Diario della diffusione"),br(),
+											h1("Diario della diffusione"),br(),a("Editoriale del 22 Marzo 2020",href="Report21marzo2020.html",target="_blank",rel="noopener noreferrer"),br(),
 											h4("Clicca sui link per i report aggiornati:"),
-											a(uiOutput("data_report"),href="tabReport.html",target="_blank",rel="noopener noreferrer")	)))
+											a(uiOutput("data_report"),href="tabReport.html",target="_blank",rel="noopener noreferrer")
+										  )
+											# ,br(),
+											# fluidRow(style="padding:20px;background-color:#ffffff",
+											# 	column(width=12, h3("Tabella letalità per fascia di età"),DTOutput(outputId="letality"), spiegaTabella
+											# )
+							)
+						)
 
 
 introTab<-tabItem(tabName="intro",

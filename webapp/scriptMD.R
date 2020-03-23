@@ -35,13 +35,23 @@ confrontoModelloPrevisioni<-function(data, contagi, datastart=as.Date("2020-03-1
 }
 #modello<-readRDS(sprintf("www/pastModels/modelliIta_%s.RDS"))
 #modelloexp<-readRDS(sprintf("www/pastModels/modelliItaExp_%s.RDS"))
-
-
 setindex(datiRegioni,NULL)
 italia<-datiRegioni[,lapply(.SD,sum),by=.(data),.SDcols=7:15]
 setkey(italia,data)
-italia[,decedutiGiorni:=c(deceduti[1],diff(deceduti))]
 getLastDate<-function() max(italia$data)
+getCoeffTS<-function(datastart=as.Date("2020-03-10"), datafinish = getLastDate()) {
+	datelist<-seq(datastart,datafinish,by="day")
+	modellist<-lapply(datelist, function(x) readRDS(sprintf("www/pastModels/modelliIta_%s.RDS",x)))
+	#names(modellist)<-datelist
+	res<-lapply(modellist,function(x) lapply(x,coef))
+	nomi<-names(modellist[[1]])
+	tmp<-matrix(unlist(res,recursive=FALSE),nrow=4)
+	ritorno<-setNames(lapply(seq_len(nrow(tmp)),function(x) do.call(rbind,tmp[x,])),nomi)
+	lapply(ritorno,function(x) cbind(Data=datelist,setNames(as.data.frame(x),c("B","K","M"))))
+}
+
+coeffts<-getCoeffTS()
+italia[,decedutiGiorni:=c(deceduti[1],diff(deceduti))]
 lastdaydata<-function(x=italia) x[data==getLastDate()]
 segno<-function(x) c("una diminuzione","un incremento")[(x>0)+1]
 

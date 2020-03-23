@@ -8,6 +8,7 @@ writeLog<-function(message, log) {
 readData<-function(file, popolazione) {
 	tmp<-read.csv(file,stringsAsFactors=FALSE)
 	tmp$data<-as.Date(tmp$data)
+	tmp$note<-NULL
 	paTrentino <- grep('bolz|trent', tmp$denominazione_regione, ignore.case=T)
 	tmp$denominazione_regione[paTrentino] <- "Trentino - Alto Adige"
 	if ("codice_provincia" %in% names(tmp)) {
@@ -154,3 +155,4 @@ rmarkdown::render("articolo.Rmd",output_file="www/tabReport.html")
 
 if(!dir.exists("www/pastDiary/")) dir.create("www/pastDiary/")
 rmarkdown::render("articolo.Rmd",output_file=paste0("www/pastDiary/tabReport_", dataMax,".html"))
+rmarkdown::render("art21mar2020.Rmd",output_file=paste0("www/Report21marzo2020.html"))
