@@ -177,7 +177,7 @@ prvTab <- tabItem(tabName = "prvPlots",
 								fluidRow(style="padding:40px;background-color:#ffffff",
 								h3("Andamento dei casi confermati"),
 
-								fluidRow(style="overflow-x:scroll;",align='center',plotlyOutput(outputId="lineProvince")),uiOutput('spazi_plot_province'), spiegaLinePlot
+								fluidRow(style="overflow-x:scroll;",align='center',plotlyOutput(outputId="lineProvince")), spiegaLinePlot
 								)
 
 							,br(),
@@ -202,7 +202,9 @@ prvTab <- tabItem(tabName = "prvPlots",
 
 dashboardPage(title="CoVid-19 in Italia",
 	skin = "black",
-	dashboardHeader3( pagename="CoVid-19 in Italia", logo_img = "logo_pangea_esteso.png", width = 200      #,uiOutput('tasti_social')
+	dashboardHeader3( pagename="CoVid-19 in Italia", logo_img = "logo_pangea_esteso.png", width = 200,
+
+		tags$li(uiOutput('data_agg') ,class='dropdown', style=" color:#0b4975;font-weight: bold;margin-top:40px;margin-right: 40px;margin-left: 60px;")
 	# tags$li(actionButton("twitter_share",label = "Twitter",color='#1DA1F2',icon = icon("twitter"),
 	#          onclick = sprintf("window.open('%s')", url_tweet)),class='dropdown' ,
 	# 				 tags$style(type='text/css', "#twitter_share { background-color:#1DA1F2;color:#ffffff;margin-top: 20px;margin-bottom: 20px;margin-right: 10px;margin-left: 10px;}")),
