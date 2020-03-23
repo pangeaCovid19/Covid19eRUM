@@ -139,10 +139,10 @@ observe({
 #  language = "it", separator = " a ")
 #})
 
-output$data_report <- renderUI({
-
-  paste("Report del ", get_last_date())
-})
+output$data_agg<-renderText({
+  str<-get_last_date()
+  str<-paste("Dati aggiornati al:",str)
+  })
 
 
 ## REGIONI
@@ -697,7 +697,7 @@ output$fitRegion <- renderPlotly({
 
     plot<-ggplotly(p, tooltip = c("text")) %>% config(locale = 'it')
     if(reacval$mobile){
-    plot<-plot%>%layout(legend=list(orientation='h',x=0,y=-0.4))
+        plot<-plot%>%layout(dragmode=F,legend=list(orientation='h',x=0,y=-0.4))
     }
     plot
   }
@@ -801,7 +801,7 @@ if(verbose) cat("\n renderPlotly:fitIta")
 
     plot<-ggplotly(p, tooltip = c("text")) %>% config(locale = 'it')
     if(reacval$mobile){
-      plot<-plot%>%layout(legend=list(orientation='h',x=0.01,y=-0.4))
+      plot<-plot%>%layout(dragmode=F,legend=list(orientation='h',x=0.01,y=-0.4))
       }
     plot
   }
@@ -849,13 +849,19 @@ output$fitCasesIta <- renderPlotly({
                '<br>Casi: ', round(casi))), stat="identity", width = 0.8))+
   #          geom_text(data=datiIta, aes(x=data, y=casi, label=label), cex=2.5, color="black", fontface = "bold") +
   					scale_fill_manual(values=d3hexcols)+
-            scale_x_date(date_breaks="2 day",date_labels="%b %d")+
+          #  scale_x_date(date_breaks="2 day",date_labels="%b %d")+
             theme(axis.text.x=element_text(angle=45,hjust=1)) +
             labs(x="") +
             theme(legend.title = element_blank())
+
+            if(reacval$mobile){
+              p<-p+scale_x_date(date_breaks="3 day",date_labels="%b %d")}
+            else{
+              p<-p+scale_x_date(date_breaks="2 day",date_labels="%b %d")
+            }
       plot<-ggplotly(p, tooltip = c("text")) %>% config(locale = 'it')
       if(reacval$mobile){
-        plot<-plot%>%layout(legend=list(orientation='h',x=0,y=-0.2))
+        plot<-plot%>%layout(dragmode=F,legend=list(orientation='h',x=0,y=-0.2))
       }
       plot
    }
@@ -907,19 +913,24 @@ output$percDeltaTot <- renderPlotly({
           '<br>Variazione prevista: ', paste0(round(deltaPerc,1),'%'),
           '<br>Intervallo previsione:', paste0('[', round(LowerRangePerc,1), '%, ', round(UpperRangePerc,1),'%]')
         )),width=0.7,
-            colour="orange",
-            #alpha=0.6, size=1,
+            colour="red",
+            alpha=0.4,
+            size=0.3,
             position=position_dodge(.9)
           )+
           scale_fill_manual(values=d3hexcols)+
-          scale_x_date(date_breaks="2 day",date_labels="%b %d")+
+          #scale_x_date(date_breaks="2 day",date_labels="%b %d")+
           theme(axis.text.x=element_text(angle=45,hjust=1),legend.title = element_blank())+
           labs(x="", y="Variazione %")
-
+          if(reacval$mobile){
+            p<-p+scale_x_date(date_breaks="3 day",date_labels="%b %d")}
+          else{
+            p<-p+scale_x_date(date_breaks="2 day",date_labels="%b %d")
+          }
   plot<-ggplotly(p, tooltip = c("text")) %>% config(locale = 'it')
-  #     if(reacval$mobile){
-  #       plot<-plot%>%layout(legend=list(orientation='h',x=0,y=-0.2))
-  #     }
+      if(reacval$mobile){
+        plot<-plot%>%layout(dragmode=F,legend=list(orientation='h',x=0,y=-0.2))
+      }
        plot
   # }
 })
@@ -949,10 +960,11 @@ output$terapiaIntPlotPercNow<- renderPlotly({
 	        theme(axis.text.x=element_text(angle=45,hjust=1))+
 					geom_hline(yintercept=100, linetype="dashed", color = "lightgrey")+
           labs(x="", y="% letti occupati per CoVid19")
-	ggplotly(p, tooltip = c("text")) %>% config(locale = 'it')
-  # if(reacval$mobile){
-  #   p<-p+coord_flip()
-  # }
+	p<-ggplotly(p, tooltip = c("text")) %>% config(locale = 'it')
+
+  if(reacval$mobile){
+    p<-p%>%layout(dragmode=F)
+  }
   p
 
 })
@@ -977,7 +989,7 @@ output$terapiaIntPlotNow<- renderPlotly({
         labs(x="", y="numero letti")
   plot<- ggplotly(p, tooltip = c("text")) %>% config(locale = 'it')
   if(reacval$mobile){
-    plot<-plot%>%layout(legend=list(orientation='h',x=0.6,y=-0.4))
+    plot<-plot%>%layout(dragmode=F,legend=list(orientation='h',x=0.6,y=-0.4))
 
   }
   plot
@@ -1086,7 +1098,7 @@ output$terapiaIntPlotPercPrevNEW<- renderPlotly({
   plot<-ggplotly(p, tooltip = c("text")) %>% config(locale = 'it')
 
   if(reacval$mobile){
-    plot<-plot%>%layout(legend=list(orientation='h',x=0.6,y=-0.4))
+    plot<-plot%>%layout(dragmode=F,legend=list(orientation='h',x=0.6,y=-0.4))
 
   }
   plot
@@ -1144,7 +1156,7 @@ output$terapiaIntPlotPercPrev<- renderPlotly({
   plot<-ggplotly(p, tooltip = c("text")) %>% config(locale = 'it')
 
   if(reacval$mobile){
-    plot<-plot%>%layout(legend=list(orientation='h',x=0.6,y=-0.4))
+    plot<-plot%>%layout(dragmode=F,legend=list(orientation='h',x=0.6,y=-0.4))
 
   }
   plot
@@ -1579,9 +1591,6 @@ output$storico_report<-renderUI({
     files<-sort(files,decreasing=T)
     a<-lapply(files,function(x) stampa_report(x))
     #a<-a('link prova',href="pastDiary/tabReport_2020-03-19.html",target="_blank",rel="noopener noreferrer")
-
-
-
 
     })
 
