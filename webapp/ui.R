@@ -47,7 +47,7 @@ diariotab<-tabItem(tabName="diario",
 introTab<-tabItem(tabName="intro",
 
 				uiOutput("spaces_mobile_intro"),
-
+				
 							fluidRow(style="padding:30px;border-style: solid;border-color:#85ede1;",
 										#	h1("Quanto veloce si diffonde il Coronavirus in Italia "),
 

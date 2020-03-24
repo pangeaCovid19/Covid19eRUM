@@ -98,6 +98,8 @@ allData_reg_flt$`casi su 10mila abit` <- round(allData_reg_flt$totale_casi / all
 ## fine parte per mappe
 regioniList <- sort(unique(allData_reg_flt$denominazione_regione))
 
+color_regioni<-d3hexcols20
+names(color_regioni)<-regioniList
 
 allData_reg <- readRDS(paste0(dir_reg, regRDS))
 mtimeProv <- file.info(paste0(dir_prov,provRDS))$mtime
@@ -138,20 +140,20 @@ risultatiFit <- HTML("<div style='padding-top:10px;'></div>")
 
 
 spiegaFitPos <- HTML("<div style='padding-top:10px;'>In questo grafico mostriamo la serie storica dei casi confermati di
-CoVid19 nelle regioni selezionate ed una previsione che si estende fino a tre giorni, linea tratteggiata. I grafici sono interattivi, è possibile conoscere il valore esatto di punti e delle linee scorrendo con il mouse cu di essi.
-Abbiamo utilizzando modelli esponenziali dando maggiore importanza ai dati pi&ugrave; recenti. Se si seleziona l'opzione
+CoVid19 nelle regioni selezionate ed una previsione che si estende fino a tre giorni, linea tratteggiata. I grafici sono interattivi, è possibile conoscere il valore esatto di punti e delle linee scorrendo con il mouse su di essi.
+Abbiamo utilizzato modelli esponenziali dando maggiore importanza ai dati pi&ugrave; recenti. Se si seleziona l'opzione
 &quot;Logaritmico&quot; come tipo di grafico, l'asse delle ordinate diventa logaritmico e un andamento esponenziale &egrave; rappresentato da una retta.</div>")
 
 spiegaFitTot <- HTML("<div style='padding-top:10px;'>In questo grafico mostriamo la serie storica dei casi confermati,
 dei pazienti ospedalizzati, dei pazienti in terapia intensiva e dei defunti a causa del CoVid19 in Italia ed una
-previsione che si estende fino a tre giorni, linea tratteggiata. I grafici sono interattivi, è possibile conoscere il valore esatto di punti e delle linee scorrendo con il mouse cu di essi. Abbiamo utilizzando modelli esponenziali dando maggiore
+previsione che si estende fino a tre giorni, linea tratteggiata. I grafici sono interattivi, è possibile conoscere il valore esatto di punti e delle linee scorrendo con il mouse su di essi. Abbiamo utilizzato modelli esponenziali dando maggiore
 importanza ai dati pi&ugrave; recenti. Se si seleziona l'opzione &quot;Logaritmico&quot; come tipo di grafico, l'asse delle ordinate
 diventa logaritmico e un andamento esponenziale &egrave; rappresentato da una retta.</div>")
 
 spiegaFitTotePos<- HTML("<div style='padding-top:10px;'>In entrambi i grafici mostriamo la serie storica dei casi confermati di
-CoVid19 nelle regioni selezionate ed una previsione che si estende fino a tre giorni, linea tratteggiata. Nel primo sono rappresentati per regione selezionata e nel secondo sono suddivisi tra
-pazienti ospedalizzati, pazienti in terapia intensiva e dei defunti.
-Abbiamo utilizzando modelli esponenziali dando maggiore importanza ai dati pi&ugrave; recenti. Se si seleziona l'opzione
+CoVid19 in Italia ed una previsione che si estende fino a tre giorni, linea tratteggiata. Nel primo sono rappresentati per regione selezionata e nel secondo sono suddivisi tra
+pazienti ospedalizzati, pazienti in terapia intensiva e defunti.
+Abbiamo utilizzato modelli esponenziali dando maggiore importanza ai dati pi&ugrave; recenti. Se si seleziona l'opzione
 &quot;Logaritmico&quot; come tipo di grafico, l'asse delle ordinate diventa logaritmico e un andamento esponenziale &egrave; rappresentato da una retta.</div>")
 
 

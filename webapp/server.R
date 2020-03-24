@@ -170,7 +170,7 @@ output$lineRegioni <- renderPlotly({
             aes(x=data, y=VAR2PLOT, color=regione,
             text = paste('Regione:', regione, '<br>Data:', strftime(data, format="%d-%m-%Y"),
              '<br>Casi: ', VAR2PLOT)))) +
-          scale_color_manual(values=d3hexcols20) +
+          scale_color_manual(values=color_regioni) +
           theme(axis.text.x=element_text(angle=45, hjust=1)) +
 					guides(fill=guide_legend(title="regione")) +
           xlab("")+ylab(var2plotNew)
@@ -247,7 +247,7 @@ output$puntiRegioni <- renderPlotly({
 		 		)
 		 )
 	 ) +
-	  scale_color_manual(values=d3hexcols20) +
+	  scale_color_manual(values=color_regioni) +
 	  theme(axis.text.x=element_text(angle=45, hjust=1)) +
 		guides(fill=guide_legend(title="regione")) +
 	  xlab(xVarNew)+ylab(yVarNew)
@@ -349,7 +349,7 @@ palRegioni <- reactive({
 })
 
 output$mapRegioni <- renderLeaflet({
-  #withProgress({
+  withProgress({
 	if(verbose) cat("\n renderLeaflet:mapRegioni --- ")
   allDataReg <- copy(reacval$dataTables_reg_flt)
 
@@ -386,7 +386,7 @@ output$mapRegioni <- renderLeaflet({
 									title = paste0("casi")))
 		}
 	}
-  #},value=0,message="Elaborazione ",detail="")
+  },value=0,message="Caricamento ",detail="")
 })
 
 output$mapRegioniGG <- renderPlot({
@@ -414,6 +414,9 @@ output$updatePrvUI <- renderUI({
 })
 
 output$lineProvince <- renderPlotly({
+#  withProgress({
+
+
 	if(verbose) cat("\n renderPlotly:lineProvince")
   myReg <- input$regionSel
   allDataPrv <- copy(reacval$dataTables_prv)
@@ -443,6 +446,8 @@ output$lineProvince <- renderPlotly({
 
     plot
   }
+  #},value=0,message="Caricamento ",detail="")
+
 })
 
 
@@ -661,6 +666,8 @@ output$fitRegion <- renderPlotly({
     ## e non legata a 'ggplotly'
     ## per ora metto gli intervalli di previsione nei tooltip
     datamax<-max(prevDT$data)
+
+
 		p <- ggplot() + my_ggtheme() +
        #geom_errorbar(data=prevDT, aes(x=data, y=`casi totali`, ymin=LowerRange, ymax=UpperRange, color=regione), width=0.1) +
        #geom_ribbon(data=prevDT, aes(x=data, y=`casi totali`, ymin=LowerRange, ymax=UpperRange, fill=regione), alpha=.35, guides=F) +
@@ -684,7 +691,7 @@ output$fitRegion <- renderPlotly({
               '<br>Regione: ', regione,
               '<br>Casi: ', `casi totali`
               )))) +
-       scale_color_manual(values=d3hexcols20) +# scale_x_date(date_breaks="3 day",date_labels="%b %d") +
+       scale_color_manual(values=color_regioni) +# scale_x_date(date_breaks="3 day",date_labels="%b %d") +
 			 theme(axis.text.x=element_text(angle=45,hjust=1)) +
        labs(x="")
     if(reacval$mobile){
@@ -1331,19 +1338,20 @@ output$tab_desktop<-renderUI({
       fluidRow(style="padding:30px;background-color:#ffffff",
       fluidRow(
 
-        column(5,pickerInput(inputId = "regionSelFit", label = "Seleziona regioni", choices = regioniList,selected=regioni2fit, options = list(size=10,`actions-box` = TRUE, `selected-text-format` = "count >20"), multiple = TRUE)),
+
         column(4,
-          prettyRadioButtons('regionLinLogFit',"Tipo Grafico",choices = c("Lineare", "Logaritmico"), selected = "Lineare",status = "success",shape = 'round',outline = FALSE,animation = 'jelly',icon = icon('check'))
+          prettyRadioButtons('regionLinLogFit',"Tipo Grafico",choices = c("Lineare", "Logaritmico"), selected = "Lineare",status = "success",shape = 'round',inline = T,animation = 'jelly',icon = icon('check'))
           #selectizeInput("regionLinLogFit", label="Tipo Grafico", choices=c("Lineare", "Logaritmico"), selected = "Lineare")
           ),
         column(3,
-          prettyRadioButtons('modelloFit',"Tipologia Modello",choices = c("Esp. quadratico", "Esponenziale" ), selected="Esp. quadratico",status = "success",shape = 'round',outline = FALSE,animation = 'jelly',icon = icon('check'))
+          prettyRadioButtons('modelloFit',"Tipologia Modello",choices = c("Esp. quadratico", "Esponenziale" ), selected="Esp. quadratico",status = "success",shape = 'round',inline = T,animation = 'jelly',icon = icon('check'))
           #radioButtons("modelloFit", label="Tipologia Modello", choices=c("Esp. quadratico", "Esponenziale" ), selected="Esp. quadratico")
-          )),
+          )),br(),
 
         fluidRow(align="center",h3("Andamento casi positivi per regione con previsione a 3 giorni")),
+        fluidRow(style='padding-left:30px',pickerInput(inputId = "regionSelFit", label = "Seleziona regioni", choices = regioniList,selected=regioni2fit, options = list(size=10,`actions-box` = TRUE, `selected-text-format` = "count >20"), multiple = TRUE)),
          plotlyOutput(outputId="fitRegion"), spiegaFitPos
-        ),br(),
+        ),
         fluidRow(style="padding:30px;background-color:#ffffff",
         fluidRow(align="center",h3("Andamenti globali in Italia con previsione a 3 giorni")),
          plotlyOutput(outputId="fitIta"), spiegaFitTot
@@ -1387,24 +1395,25 @@ output$tab_mobile<-renderUI({
   		fluidRow(style="padding:30px;background-color:#ffffff",
       fluidRow(
 
-        fluidRow(style="padding-left:30px;",pickerInput(inputId = "regionSelFit", label = "Seleziona regioni", choices = regioniList,selected=regioni2fit, options = list(size=10,`actions-box` = TRUE, `selected-text-format` = "count >20"), multiple = TRUE)),
+
         fluidRow(style="padding-left:30px;",
         column(4,
-          prettyRadioButtons('regionLinLogFit',"Tipo Grafico",choices = c("Lineare", "Logaritmico"), selected = "Lineare",status = "success",shape = 'round',outline = FALSE,animation = 'jelly',icon = icon('check'))
+          prettyRadioButtons('regionLinLogFit',"Tipo Grafico",choices = c("Lineare", "Logaritmico"), selected = "Lineare",status = "success",shape = 'round',inline = T,animation = 'jelly',icon = icon('check'))
           #selectizeInput("regionLinLogFit", label="Tipo Grafico", choices=c("Lineare", "Logaritmico"), selected = "Lineare")
           ),
         column(4,
-          prettyRadioButtons('modelloFit',"Tipologia Modello",choices = c("Esp. quadratico", "Esponenziale" ), selected="Esp. quadratico",status = "success",shape = 'round',outline = FALSE,animation = 'jelly',icon = icon('check'))
+          prettyRadioButtons('modelloFit',"Tipologia Modello",choices = c("Esp. quadratico", "Esponenziale" ), selected="Esp. quadratico",status = "success",shape = 'round',inline = T,animation = 'jelly',icon = icon('check'))
           #radioButtons("modelloFit", label="Tipologia Modello", choices=c("Esp. quadratico", "Esponenziale" ), selected="Esp. quadratico")
           ))),
 
         fluidRow(style="background-color:#ffffff",column(10,offset=1,align="center",h4("Andamento casi positivi per regione con previsione a 3 giorni"))),
-         fluidRow(style="padding:10px;background-color:#ffffff",plotlyOutput(outputId="fitRegion")), spiegaFitPos
-        ),br(),
+        fluidRow(style="padding-left:30px;",pickerInput(inputId = "regionSelFit", label = "Seleziona regioni", choices = regioniList,selected=regioni2fit, options = list(size=10,`actions-box` = TRUE, `selected-text-format` = "count >20"), multiple = TRUE)),
+         fluidRow(style="padding:10px;background-color:#ffffff",plotlyOutput(outputId="fitRegion")), #spiegaFitPos
+        ),
 
         fluidRow(style="background-color:#ffffff",column(10,offset=1,align="center",h4("Andamenti globali in Italia con previsione a 3 giorni"))),
          fluidRow(style="padding:10px;background-color:#ffffff",plotlyOutput(outputId="fitIta")),
-         fluidRow( style="padding:20px;background-color:#ffffff;",spiegaFitTot),
+         fluidRow( style="padding:20px;background-color:#ffffff;",spiegaFitTotePos),
 
         br(),br(),
         fluidRow(style="background-color:#ffffff",column(10,offset=1,align="center",h4("Variazione percentuale casi totali giorno per giorno"))),
