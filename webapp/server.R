@@ -822,8 +822,10 @@ prevItaLongTerm <- reactive({
 
     prevDT <- get_predictions(modelliIta, tsIta, nahead=nahead, alldates=F)
     setnames(prevDT, old=c("outName"), new=c("variabilePrevista"))
+    assign("prevDT1",prevDT, envir=.GlobalEnv)
+
     setDF(prevDT)
-		prevDT[prevDT$variabilePrevista == "totale_casi",]
+		#prevDT[prevDT$variabilePrevista == "totale_casi",]
   }
 })
 
@@ -832,14 +834,22 @@ output$fitCasesIta <- renderPlotly({
   if(verbose) cat("\n renderPlotly:fitCasesIta")
   prevItaDT <- copy(prevItaLongTerm())
   tsIta <- copy(getTimeSeriesReact()[["Italia"]])
+  varInput<-input$varSel
+  testoLegenda<-varInput
+  if (varInput=="totale contagiati") varInput<-"totale_casi"
+
+  assign("prevItaDT1",prevItaDT, envir=.GlobalEnv)
+  assign("tsIta1",tsIta, envir=.GlobalEnv)
 
   if (!is.null(prevItaDT) & !is.null(tsIta)) {
   		setnames(prevItaDT, old=c('Attesi'), new=c('casi'))
-      setnames(tsIta, old=c('totale_casi'), new=c('casi'))
+      prevItaDT<-prevItaDT[prevItaDT$variabilePrevista == varInput,]
+      #setnames(tsIta, old='casi', new=c('totale_casi'))
+      setnames(tsIta, old=varInput, new=c('casi'))
       num_rows <- nrow(tsIta)
       datiIta <- rbind(tsIta[, c("data", "casi")], prevItaDT[, c("data", "casi")])
-      datiIta$tipo <- c(rep("osservati", num_rows), rep("predetti", nrow(datiIta) - num_rows))
-      datiIta$tipo <- factor(datiIta$tipo, levels=c("osservati", "predetti"))
+      datiIta$tipo <- c(rep("osservazioni", num_rows), rep("previsioni", nrow(datiIta) - num_rows))
+      datiIta$tipo <- factor(datiIta$tipo, levels=c("osservazioni", "previsioni"))
 
 			indmax <- which.max(datiIta$casi)
       vdate <- datiIta$data[indmax]
@@ -855,7 +865,10 @@ output$fitCasesIta <- renderPlotly({
           #  scale_x_date(date_breaks="2 day",date_labels="%b %d")+
             theme(axis.text.x=element_text(angle=45,hjust=1)) +
             labs(x="") +
-            theme(legend.title = element_blank())
+            theme(#legend.title = element_blank()
+          )+
+          guides(fill=guide_legend(title=testoLegenda))
+
 
             if(reacval$mobile){
               p<-p+scale_x_date(date_breaks="3 day",date_labels="%b %d")}
@@ -896,7 +909,7 @@ creaDFossEprev<-reactive({
   assign("tmp1",tmp, envir=.GlobalEnv)
   datamax<-max(tmp$data)
   df<-rbind(tmp,prevItaDT[which( prevItaDT$data>datamax),c("data", "totale_casi", "variabilePrevista", "UpperRange", "LowerRange", "tipo")])
-  assign("df1",df, envir=.GlobalEnv)
+  #assign("df1",df, envir=.GlobalEnv)
   df
 
 })
@@ -906,7 +919,9 @@ output$percDeltaTot <- renderPlotly({
 
   df<-creaDFossEprev()
 
-  varInput<-"totale_casi"
+  varInput<-input$varSel
+  testoLegenda<-varInput
+  if (varInput=="totale contagiati") varInput<-"totale_casi"
   subdf<-df[which(df$variabilePrevista==varInput),]
 
   subdf$deltaPerc<-c(NA,diff(subdf$totale_casi))/c(NA,subdf$totale_casi[1:(nrow(subdf)-1)])*100
@@ -949,8 +964,11 @@ output$percDeltaTot <- renderPlotly({
           )+
           scale_fill_manual(values=d3hexcols)+
           #scale_x_date(date_breaks="2 day",date_labels="%b %d")+
-          theme(axis.text.x=element_text(angle=45,hjust=1),legend.title = element_blank())+
-          labs(x="", y="Variazione %")
+          theme(axis.text.x=element_text(angle=45,hjust=1)
+          #,legend.title = element_blank()
+        )+
+          labs(x="", y="Variazione %")+
+          guides(fill=guide_legend(title=testoLegenda))
           if(reacval$mobile){
             p<-p+scale_x_date(date_breaks="3 day",date_labels="%b %d")}
           else{
@@ -1437,18 +1455,22 @@ output$tab_desktop<-renderUI({
          plotlyOutput(outputId="fitRegion"), spiegaFitPos
         ),br(),
         fluidRow(style="padding:30px;background-color:#ffffff",
-        fluidRow(align="center",h3("Andamenti globali in Italia con previsione a 3 giorni")),
-         plotlyOutput(outputId="fitIta"), spiegaFitTot
+          fluidRow(align="center",h3("Andamenti globali in Italia con previsione a 3 giorni")),
+          plotlyOutput(outputId="fitIta"), spiegaFitTot
 
       ),
 
       br(),br(),
-      fluidRow(style="background-color:#ffffff",column(10,offset=1,align="center",h3("Variazione percentuale casi totali giorno per giorno"))),
+
+      fluidRow(style="background-color:#ffffff",
+        fluidRow(
+          column(5,align="center",pickerInput(inputId = "varSel", label = "Seleziona variabile", choices = c("deceduti","totale contagiati"),selected="totale_casi",options = list(size=10,`actions-box` = TRUE, `selected-text-format` = "count >20"), multiple = FALSE))),
+          column(10,offset=1,align="center",h3("Variazione percentuale giorno per giorno"))),
         fluidRow(style="padding:10px;background-color:#ffffff",plotlyOutput(outputId="percDeltaTot")),
       br(),br(),
 
 
-      fluidRow(style="background-color:#ffffff",column(10,offset=1,align="center", h3("Previsione del numero di casi totali a medio termine con modello esponenziale quadratico"))),
+      fluidRow(style="background-color:#ffffff",column(10,offset=1,align="center", h3("Previsione del numero di casi a medio termine con modello esponenziale quadratico"))),
         fluidRow(style="padding:10px;background-color:#ffffff",plotlyOutput(outputId="fitCasesIta"))
 
       ,br(),
