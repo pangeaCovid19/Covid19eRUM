@@ -6,6 +6,14 @@ writeLog<-function(message, log) {
 	cat(sprintf("%s - %s\n",format(Sys.time()),message),file=log,append=TRUE)
 }
 readData<-function(file, popolazione) {
+	tmpp<-readLines(file)
+	righeheader<-grep("totale_casi",tmpp)
+	if (length(righeheader)>1) {
+		tmpp<-tmpp[-righeheader[-1]]
+		writeLines(tmpp,file)
+		rm(tmpp)
+		rm(righeheader)
+	}
 	tmp<-read.csv(file,stringsAsFactors=FALSE)
 	tmp$data<-as.Date(tmp$data)
 	tmp$note<-NULL

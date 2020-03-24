@@ -14,7 +14,7 @@ source("scriptMD.R")
 ```
 
 
-In data 18 Marzo, abbiamo lanciato la [nostra applicazione](https://www.pangeadds.eu/demos/CoVid19/) che permette di monitorare la diffusione del Coronavirus in Italia tramite rappresentazioni geografiche, andamenti temporali e occupazione di posti in terapia intensiva. Oltre tutto questo, ci sono anche *previsioni* (il corsivo è d'obbligo, approfondiremo quanto punto più avanti) sul totale dei casi, i deceduti e le [altre quantità monitorate dalla Protezione Civile](https://github.com/pcm-dpc/COVID-19).
+In data 18 Marzo, abbiamo lanciato la [nostra applicazione](https://www.pangeadds.eu/demos/CoVid19/) che permette di monitorare la diffusione del Coronavirus in Italia tramite rappresentazioni geografiche, andamenti temporali e occupazione di posti in terapia intensiva. Oltre tutto questo, ci sono anche *previsioni* (il corsivo è d'obbligo, approfondiremo questo punto più avanti) sul totale dei casi, i deceduti e le [altre quantità monitorate dalla Protezione Civile](https://github.com/pcm-dpc/COVID-19).
 
 Come sono andate le nostre *previsioni* in questi primi giorni? Quanto buone *sarebbero* dovute essere? La risposta breve è: meglio di quanto sarebbe stato lecito attendersi (e meglio di quanto sia facile spiegare).
 
