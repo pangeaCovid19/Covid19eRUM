@@ -139,10 +139,10 @@ observe({
 #  language = "it", separator = " a ")
 #})
 
-output$data_report <- renderUI({
-
-  paste("Report del ", get_last_date())
-})
+output$data_agg<-renderText({
+  str<-get_last_date()
+  str<-paste("Dati aggiornati al:",str)
+  })
 
 
 ## REGIONI
@@ -697,7 +697,7 @@ output$fitRegion <- renderPlotly({
 
     plot<-ggplotly(p, tooltip = c("text")) %>% config(locale = 'it')
     if(reacval$mobile){
-    plot<-plot%>%layout(legend=list(orientation='h',x=0,y=-0.4))
+        plot<-plot%>%layout(dragmode=F,legend=list(orientation='h',x=0,y=-0.4))
     }
     plot
   }
@@ -804,7 +804,7 @@ if(verbose) cat("\n renderPlotly:fitIta")
 
     plot<-ggplotly(p, tooltip = c("text")) %>% config(locale = 'it')
     if(reacval$mobile){
-      plot<-plot%>%layout(legend=list(orientation='h',x=0.01,y=-0.4))
+      plot<-plot%>%layout(dragmode=F,legend=list(orientation='h',x=0.01,y=-0.4))
       }
     plot
   }
@@ -852,13 +852,19 @@ output$fitCasesIta <- renderPlotly({
                '<br>Casi: ', round(casi))), stat="identity", width = 0.8))+
   #          geom_text(data=datiIta, aes(x=data, y=casi, label=label), cex=2.5, color="black", fontface = "bold") +
   					scale_fill_manual(values=d3hexcols)+
-            scale_x_date(date_breaks="2 day",date_labels="%b %d")+
+          #  scale_x_date(date_breaks="2 day",date_labels="%b %d")+
             theme(axis.text.x=element_text(angle=45,hjust=1)) +
             labs(x="") +
             theme(legend.title = element_blank())
+
+            if(reacval$mobile){
+              p<-p+scale_x_date(date_breaks="3 day",date_labels="%b %d")}
+            else{
+              p<-p+scale_x_date(date_breaks="2 day",date_labels="%b %d")
+            }
       plot<-ggplotly(p, tooltip = c("text")) %>% config(locale = 'it')
       if(reacval$mobile){
-        plot<-plot%>%layout(legend=list(orientation='h',x=0,y=-0.2))
+        plot<-plot%>%layout(dragmode=F,legend=list(orientation='h',x=0,y=-0.2))
       }
       plot
    }
@@ -936,19 +942,24 @@ output$percDeltaTot <- renderPlotly({
           '<br>Variazione prevista: ', paste0(round(deltaPerc,1),'%'),
           '<br>Intervallo previsione:', paste0('[', round(LowerRangePerc,1), '%, ', round(UpperRangePerc,1),'%]')
         )),width=0.7,
-            colour="orange",
-            #alpha=0.6, size=1,
+            colour="red",
+            alpha=0.4,
+            size=0.3,
             position=position_dodge(.9)
           )+
           scale_fill_manual(values=d3hexcols)+
-          scale_x_date(date_breaks="2 day",date_labels="%b %d")+
+          #scale_x_date(date_breaks="2 day",date_labels="%b %d")+
           theme(axis.text.x=element_text(angle=45,hjust=1),legend.title = element_blank())+
           labs(x="", y="Variazione %")
-
+          if(reacval$mobile){
+            p<-p+scale_x_date(date_breaks="3 day",date_labels="%b %d")}
+          else{
+            p<-p+scale_x_date(date_breaks="2 day",date_labels="%b %d")
+          }
   plot<-ggplotly(p, tooltip = c("text")) %>% config(locale = 'it')
-  #     if(reacval$mobile){
-  #       plot<-plot%>%layout(legend=list(orientation='h',x=0,y=-0.2))
-  #     }
+      if(reacval$mobile){
+        plot<-plot%>%layout(dragmode=F,legend=list(orientation='h',x=0,y=-0.2))
+      }
        plot
   # }
 })
@@ -1041,10 +1052,11 @@ output$terapiaIntPlotPercNow<- renderPlotly({
 	        theme(axis.text.x=element_text(angle=45,hjust=1))+
 					geom_hline(yintercept=100, linetype="dashed", color = "lightgrey")+
           labs(x="", y="% letti occupati per CoVid19")
-	ggplotly(p, tooltip = c("text")) %>% config(locale = 'it')
-  # if(reacval$mobile){
-  #   p<-p+coord_flip()
-  # }
+	p<-ggplotly(p, tooltip = c("text")) %>% config(locale = 'it')
+
+  if(reacval$mobile){
+    p<-p%>%layout(dragmode=F)
+  }
   p
 
 })
@@ -1069,7 +1081,7 @@ output$terapiaIntPlotNow<- renderPlotly({
         labs(x="", y="numero letti")
   plot<- ggplotly(p, tooltip = c("text")) %>% config(locale = 'it')
   if(reacval$mobile){
-    plot<-plot%>%layout(legend=list(orientation='h',x=0.6,y=-0.4))
+    plot<-plot%>%layout(dragmode=F,legend=list(orientation='h',x=0.6,y=-0.4))
 
   }
   plot
@@ -1178,7 +1190,7 @@ output$terapiaIntPlotPercPrevNEW<- renderPlotly({
   plot<-ggplotly(p, tooltip = c("text")) %>% config(locale = 'it')
 
   if(reacval$mobile){
-    plot<-plot%>%layout(legend=list(orientation='h',x=0.6,y=-0.4))
+    plot<-plot%>%layout(dragmode=F,legend=list(orientation='h',x=0.6,y=-0.4))
 
   }
   plot
@@ -1236,7 +1248,7 @@ output$terapiaIntPlotPercPrev<- renderPlotly({
   plot<-ggplotly(p, tooltip = c("text")) %>% config(locale = 'it')
 
   if(reacval$mobile){
-    plot<-plot%>%layout(legend=list(orientation='h',x=0.6,y=-0.4))
+    plot<-plot%>%layout(dragmode=F,legend=list(orientation='h',x=0.6,y=-0.4))
 
   }
   plot
@@ -1399,52 +1411,6 @@ output$tabCompare <- renderDT({
 })
 
 
-
-
-
-# output$tab_desktop<-renderUI({
-#
-#   fluidRow(style="padding-left:30px;padding-right:30px;border-style: solid;border-color:#009933;",#" border-color :#009933;",
-#   	h1("Analisi previsionale nelle province italiane"),
-#   	fluidRow(
-#   		column(12,h4("In questa pagina proponiamo il confronto tra i dati registrati, sia regionali che nazionali e due modelli di crescita. Il primo modello (esponenziale) descrive una diffusione incontrollata, mentre il secondo (esponenziale quadratico) tenta di tenere conto dell'effetto di misure contenitive. Per maggiori dettagli, controlla la sezione Descrizione Modelli"))
-#
-#   	),
-#
-#   		 br(),
-#   		fluidRow(style="padding:30px;background-color:#ffffff",
-#   			column(2,fluidRow(selectizeInput("regionLinLogFit", label="Tipo Grafico", choices=c("Lineare", "Logaritmico"), selected = "Lineare")),
-# 				radioButtons("modelloFit", label="Tipologia Modello", choices=c("Esp. quadratico","Esponenziale"), selected="Esp. quadratico"),
-# 				checkboxGroupInput("regionSelFit", label="Seleziona regioni", choices=regioniList, selected = regioni2fit)),
-#   		column(10,
-#
-#   			fluidRow(column(6,align="center",h4("Andamento casi positivi per regione con previsione a 3 giorni")),column(6,align="center",h4("Andamenti globali in Italia con previsione a 3 giorni"))),
-#   			fluidRow(
-#   				column(width=6,align="left", plotlyOutput(outputId="fitRegion"), #spiegaFitPos
-#   				),br(),
-#   				column(width=6,align="left",plotlyOutput(outputId="fitIta"), #spiegaFitTot
-#   				),br(),fluidRow(style="padding:20px;",spiegaFitTotePos)
-#   			)
-#       )
-#   		),br(),br(),
-#   		fluidRow(style="padding:30px;background-color:#ffffff",width=12,  h2("Previsione del numero di casi totali a medio termine con modello esponenziale quadratico"), plotlyOutput(outputId="fitCasesIta")
-#
-#   		),br(),
-#       fluidRow(
-#         box(width=12,
-#           column(width=4,
-#             selectizeInput("tipoCompare", label="Tipo Comparazione", choices=c("Totale", "Incremento Giornaliero"), , selected = "Lineare")
-#           ),
-#           column(width=4,
-#             uiOutput("dateCompare")
-#           ),
-#           DTOutput("tabCompare"),spiegaTabellaCompare
-#
-#         )
-#       ),br()
-#   	)
-#
-#   })
 output$tab_desktop<-renderUI({
 
   fluidRow(style="padding-left:30px;padding-right:30px;border-style: solid;border-color:#009933;",#" border-color :#009933;",
@@ -1578,7 +1544,7 @@ output$spaces_mobile_prev<-renderUI({
   out<-NULL
   if((length(reacval$mobile)>0)){
     if(reacval$mobile){
-      out<-fluidRow(br(),br(),br())
+      out<-fluidRow(br(),br(),br(),br())
     }
 
   }
@@ -1588,7 +1554,7 @@ output$spaces_mobile_intro<-renderUI({
   out<-NULL
   if((length(reacval$mobile)>0)){
     if(reacval$mobile){
-      out<-fluidRow(br(),br(),br())
+      out<-fluidRow(br(),br(),br(),br())
     }
 
   }
@@ -1598,7 +1564,7 @@ output$spaces_mobile_ti<-renderUI({
   out<-NULL
   if((length(reacval$mobile)>0)){
     if(reacval$mobile){
-      out<-fluidRow(br(),br(),br())
+      out<-fluidRow(br(),br(),br(),br())
     }
 
   }
@@ -1608,7 +1574,7 @@ output$spaces_mobile_reg<-renderUI({
   out<-NULL
   if((length(reacval$mobile)>0)){
     if(reacval$mobile){
-      out<-fluidRow(br(),br(),br())
+      out<-fluidRow(br(),br(),br(),br())
     }
 
   }
@@ -1618,7 +1584,7 @@ output$spaces_mobile_prov<-renderUI({
   out<-NULL
   if((length(reacval$mobile)>0)){
     if(reacval$mobile){
-      out<-fluidRow(br(),br(),br())
+      out<-fluidRow(br(),br(),br(),br())
     }
 
   }
@@ -1629,7 +1595,7 @@ output$spaces_mobile_prov<-renderUI({
     out<-NULL
     if((length(reacval$mobile)>0)){
       if(reacval$mobile){
-        out<-fluidRow(br(),br(),br())
+        out<-fluidRow(br(),br(),br(),br())
       }
 
     }
@@ -1641,7 +1607,7 @@ output$spaces_mobile_prov<-renderUI({
       out<-NULL
       if((length(reacval$mobile)>0)){
         if(reacval$mobile){
-          out<-fluidRow(br(),br(),br())
+          out<-fluidRow(br(),br(),br(),br())
         }
 
       }
@@ -1655,55 +1621,51 @@ output$spaces_mobile_prov<-renderUI({
     out<-NULL
     if((length(reacval$mobile)>0)){
       if(reacval$mobile){
-        out<-list(br(),br(),br())
+        out<-list(br(),br(),br(),br())
       }
     }
 
        })
 
-output$legenda_regioni<- renderUI({
-  out<-NULL
-  if((length(reacval$mobile)>0)){
-    if(reacval$mobile){
-    out<-fluidRow(column(7,offset=2,style="padding:30px;background-color: #ffffff;",HTML(readChar("../docs/legenda_regioni_bullet.Rhtml",file.info("../docs/legenda_regioni_bullet.Rhtml")$size))))
 
-  }}
-  })
 
-  output$legenda_regioni_bullet<- renderUI({
-    out<-NULL
-    if((length(reacval$mobile)>0)){
-      if(reacval$mobile){
-      out<-fluidRow(column(7,offset=2,style="padding:30px;background-color: #ffffff;",HTML(readChar("../docs/legenda_regioni_bullet.Rhtml",file.info("../docs/legenda_regioni_bullet.Rhtml")$size))))
 
-    }}
-    })
-output$spazi_plot_province<-renderUI({
-  out<-NULL
-  if(reacval$mobile){
-  if(input$regionSel == 'Lombardia' || input$regionSel == 'Piemonte'){
-    out<-fluidRow()
-  }}
 
-  })
 output$tasti_social<-renderUI({
   url_tweet <- "https://twitter.com/intent/tweet?text=CoVid19&url=https://www.pangeadds.eu/demos/CoVid19/"
   url_link <- "https://www.linkedin.com/shareArticle?mini=true&url=https://www.pangeadds.eu/demos/CoVid19/"
   url_fb<-"https://www.facebook.com/sharer/sharer.php?u=#url=https://www.pangeadds.eu/demos/CoVid19/"
-list(tags$li(actionButton("twitter_share",label = "Twitter",color='#1DA1F2',icon = icon("twitter"),
-         onclick = sprintf("window.open('%s')", url_tweet)),class='dropdown' ,
-				 tags$style(type='text/css', "#twitter_share { background-color:#1DA1F2;color:#ffffff;margin-top: 20px;margin-bottom: 20px;margin-right: 10px;margin-left: 10px;}")),
-
-         tags$li(actionButton("linkedin_share",label = "LinkedIn",color='#1DA1F2',icon = icon("linkedin-in"),
-               onclick = sprintf("window.open('%s')", url_link)),class='dropdown' ,
-							 tags$style(type='text/css', "#linkedin_share { background-color:#0e76a8;color:#ffffff;margin-top: 20px;margin-bottom: 20px;margin-right: 30px;margin-left: 10px;}")),
-
-         tags$li(actionButton("fb_share",label = "Facebook",color='#4267B2',icon = icon("fab fa-facebook-f"),
-               onclick = sprintf("window.open('%s')", url_fb)),class='dropdown' ,
-               tags$style(type='text/css', "#fb_share { background-color:#0e76a8;color:#ffffff;margin-top: 20px;margin-bottom: 20px;margin-right: 30px;margin-left: 10px;}")))
+fluidRow(style="padding:30px;",align='center',br(),br(),br(),br(),
+#column(10,
+  column(3,
+  actionButton("twitter_share",label = "",style="align:center;width:40px;color: #fff; background-color: #38A1F3; border-color: #38A1F3",icon = icon("twitter"),
+         onclick = sprintf("window.open('%s')", url_tweet))),
+  column(3,actionButton("linkedin_share",label = "",style="width:40px;color: #fff; background-color: #0077B5; border-color: #0077B5",icon = icon("linkedin-in"),
+               onclick = sprintf("window.open('%s')", url_link))),
+  column(3,actionButton("fb_share",label = "",style="width:40px;color: #fff; background-color: #4267b2; border-color: #4267b2",icon = icon("fab fa-facebook-f"),
+               onclick = sprintf("window.open('%s')", url_fb))))
 
   })
 
+stampa_report<-function(x){
+  data<-substring(x, nchar(x)-14,nchar(x)-5)
+  testo<-paste0("Report del ",data)
+  path<-paste0('pastDiary/tabReport_',data,'.html')
+  linea<- list(a(testo,href=path,target="_blank",rel="noopener noreferrer"),br())
+
+}
+
+output$storico_report<-renderUI({
+    files <- list.files("www/pastDiary")
+    files<-sort(files,decreasing=T)
+    a<-lapply(files,function(x) stampa_report(x))
+    #a<-a('link prova',href="pastDiary/tabReport_2020-03-19.html",target="_blank",rel="noopener noreferrer")
+
+    })
+
+
+
+  #
 
 
 

@@ -25,11 +25,16 @@ diariotab<-tabItem(tabName="diario",
 
 							fluidRow(style="padding:30px;border-style: solid;border-color: rgb(243,118,37);",
 
+											h1("Diario"),br(),
 
 											fluidRow(style="padding:30px;background-color:#ffffff;",
-											h1("Diario della diffusione"),br(),a("Editoriale del 22 Marzo 2020",href="Report21marzo2020.html",target="_blank",rel="noopener noreferrer"),br(),
+											h2("Editoriale"),br(),
+											a("Editoriale del 22 Marzo 2020",href="Report21marzo2020.html",target="_blank",rel="noopener noreferrer")),br(),
+											fluidRow(style="padding:30px;background-color:#ffffff;",
+											h2("Report"),br(),
 											h4("Clicca sui link per i report aggiornati:"),
-											a(uiOutput("data_report"),href="tabReport.html",target="_blank",rel="noopener noreferrer")
+											#a(uiOutput("data_report"),href="tabReport.html",target="_blank",rel="noopener noreferrer"),
+											uiOutput('storico_report')
 										  )
 											# ,br(),
 											# fluidRow(style="padding:20px;background-color:#ffffff",
@@ -71,12 +76,12 @@ tiTab <- tabItem(tabName = "tiPlots",
 									h4("I dati relativi al numero di posti letto in terapia intensiva per regione sono aggiornati al 2018 e non vengono riaggiornati in base agli sforzi che il sistema sanitario sta portando avanti in questi giorni. Non ha scopo allarmistico ma solo di mostrare quali siano le criticità che il nostro paese sta affrontando a causa del CoVid19 "),
 									 br(),
 
-										fluidRow(style="padding:20px;background-color:#ffffff",
-											h3("Previsione del numero di letti occupati da pazienti con Covid19 e disponibilità per regione (posti letto aggiornati al 2018)"),
-											plotlyOutput("terapiaIntPlotPercPrev"),
+#										fluidRow(style="padding:20px;background-color:#ffffff",
+#											h3("Previsione del numero di letti occupati da pazienti con Covid19 e disponibilità per regione (posti letto aggiornati al 2018)"),
+#											plotlyOutput("terapiaIntPlotPercPrev"),
 #											plotlyOutput("terapiaIntPlotPercPrevNEW"), calcolo terapia intensiva su numero di terapie intensive per farlo partire ricaricare il demone
-											spiegaTerIntPrevisione
-										),br(),
+#											spiegaTerIntPrevisione
+#										),br(),
 	                	fluidRow(style="padding:20px;background-color:#ffffff",
 											h3( "Percentuale in terapia intensiva occupati da pazienti con CoVid19 (posti letto aggiornati al 2018)"),
 											plotlyOutput("terapiaIntPlotPercNow"),
@@ -172,7 +177,7 @@ prvTab <- tabItem(tabName = "prvPlots",
 								fluidRow(style="padding:40px;background-color:#ffffff",
 								h3("Andamento dei casi confermati"),
 
-								fluidRow(style="overflow-x:scroll;",align='center',plotlyOutput(outputId="lineProvince")),uiOutput('spazi_plot_province'), spiegaLinePlot
+								fluidRow(style="overflow-x:scroll;",align='center',plotlyOutput(outputId="lineProvince")), spiegaLinePlot
 								)
 
 							,br(),
@@ -197,18 +202,9 @@ prvTab <- tabItem(tabName = "prvPlots",
 
 dashboardPage(title="CoVid-19 in Italia",
 	skin = "black",
-	dashboardHeader3( pagename="CoVid-19 in Italia", logo_img = "logo_pangea_esteso.png", width = 200#uiOutput('tasti_social')
-	# tags$li(actionButton("twitter_share",label = "Twitter",color='#1DA1F2',icon = icon("twitter"),
-	#          onclick = sprintf("window.open('%s')", url_tweet)),class='dropdown' ,
-	# 				 tags$style(type='text/css', "#twitter_share { background-color:#1DA1F2;color:#ffffff;margin-top: 20px;margin-bottom: 20px;margin-right: 10px;margin-left: 10px;}")),
-	#
-	#          tags$li(actionButton("linkedin_share",label = "LinkedIn",color='#1DA1F2',icon = icon("linkedin-in"),
-	#                onclick = sprintf("window.open('%s')", url_link)),class='dropdown' ,
-	# 							 tags$style(type='text/css', "#linkedin_share { background-color:#0e76a8;color:#ffffff;margin-top: 20px;margin-bottom: 20px;margin-right: 10px;margin-left: 10px;}")),
-	#
-	#          tags$li(actionButton("fb_share",label = "Facebook",color='#4267B2',icon = icon("fab fa-facebook-f"),
-	#                onclick = sprintf("window.open('%s')", url_fb)),class='dropdown' ,
-	#                tags$style(type='text/css', "#fb_share { background-color:#0e76a8;color:#ffffff;margin-top: 20px;margin-bottom: 20px;margin-right: 30px;margin-left: 10px;}"))
+	dashboardHeader3( pagename="CoVid-19 in Italia", logo_img = "logo_pangea_esteso.png", width = 200,
+
+		tags$li(uiOutput('data_agg') ,class='dropdown', style=" color:#0b4975;font-weight: bold;margin-top:40px;margin-right: 40px;margin-left: 60px;")
 
 
 												 ),
@@ -232,11 +228,12 @@ dashboardPage(title="CoVid-19 in Italia",
 				menuItem2("Matematica della diffusione", tabName = "intro", icon = icon("fas fa-square-root-alt"))
 			),
 			sidebarMenu(id='diariodibordo',
-				menuItem2("Diario della diffusione", tabName = "diario", icon = icon("fas fa-book-open"))
+				menuItem2("Diario ", tabName = "diario", icon = icon("fas fa-book-open"))
 			),
 			sidebarMenu(id='presentazione',
 				menuItem2("Chi Siamo", tabName = "chisiamo", icon = icon("fas fa-users"))
-			)
+			),
+			uiOutput('tasti_social')
 		 #selectInput("regionSel", label="Regione", choices=regioniList, selected = "Lombardia")
 	),
 
