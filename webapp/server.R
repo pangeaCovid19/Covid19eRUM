@@ -735,12 +735,14 @@ output$fitIta <- renderPlotly({
 if(verbose) cat("\n renderPlotly:fitIta")
   allDataReg <- copy(reacval$dataTables_reg)
   tipoGraph <- input$regionLinLogFit
+  assign("allDataRegprova",allDataReg, envir=.GlobalEnv)
 
   if (!is.null(allDataReg)) {
 		tsIta <- getTimeSeriesReact()$Italia
 		if(saveRDSout) saveRDS(file="fitItaList.RDS",list(tsIta, allDataReg))
 		prevItaDT <-copy(prevIta())
 		setnames(prevItaDT, old=c('Attesi'), new=c('casi'))
+    assign("prevItaDT1",prevItaDT, envir=.GlobalEnv)
 
 		setDF(allDataReg)
 		varPrev <- unique(prevItaDT$variabilePrevista)
@@ -753,6 +755,7 @@ if(verbose) cat("\n renderPlotly:fitIta")
     		casi=unlist(lapply(2:5, function(x) dataIta[, x])),
     		variabilePrevista=rep(unique(varPrev), each=nrow(dataIta))
     )
+    assign("tmp1",tmp, envir=.GlobalEnv)
 
     ## attenzione ai compromessi tra ggplot & plotly...
     ## * per avere geom_line funzionante e i tooltip basati su testo
@@ -861,34 +864,60 @@ output$fitCasesIta <- renderPlotly({
    }
 })
 
+#funzione che mette insieme i dati osservati e le previsioni, comprensive di incertezze, creando un solo df
+creaDFossEprev<-reactive({
+  if(verbose) cat("\n creaDF")
+  allDataReg <- copy(reacval$dataTables_reg)
+  tsIta <- getTimeSeriesReact()$Italia
+  prevItaDT <-copy(prevIta())
+  setnames(prevItaDT, old=c('Attesi'), new=c('totale_casi'))
+  prevItaDT$tipo<-"previsioni"
+  #assign("prevItaDT1",prevItaDT, envir=.GlobalEnv)
+  setDF(allDataReg)
+  varPrev <- unique(prevItaDT$variabilePrevista)
+
+  dataRDX <- allDataReg[, c('data', varPrev)]
+  dataIta <- aggregate(dataRDX[,2:5], sum, by=list(data=dataRDX$data))
+
+  tmp <- data.frame(
+      data=rep(unique(dataIta$data), times=length(varPrev)),
+      totale_casi=unlist(lapply(2:5, function(x) dataIta[, x])),
+      variabilePrevista=rep(unique(varPrev), each=nrow(dataIta)),      stringsAsFactors=FALSE
+  )
+  tmp$UpperRange<-tmp$totale_casi
+  tmp$LowerRange<-tmp$totale_casi
+  tmp$tipo<-"osservazioni"
+  assign("tmp1",tmp, envir=.GlobalEnv)
+  datamax<-max(tmp$data)
+  df<-rbind(tmp,prevItaDT[which( prevItaDT$data>datamax),c("data", "totale_casi", "variabilePrevista", "UpperRange", "LowerRange", "tipo")])
+  assign("df1",df, envir=.GlobalEnv)
+  df
+
+})
+
 output$percDeltaTot <- renderPlotly({
   if(verbose) cat("\n renderPlotly:percDeltaTot")
-  prevItaDT <- copy(prevItaLongTerm())
-  tsIta <- copy(getTimeSeriesReact()[["Italia"]])
 
-    tsIta$deltaPerc<-c(NA,diff(tsIta$totale_casi))/c(NA,tsIta$totale_casi[1:(nrow(tsIta)-1)])*100
-    assign("tsItaprova",tsIta, envir=.GlobalEnv)
+  df<-creaDFossEprev()
 
-    prevItaDT <-copy(prevIta())
-    setnames(prevItaDT, old=c('Attesi'), new=c('totale_casi'))
-    prevItaDT$deltaPerc<-c(NA,diff(prevItaDT$totale_casi))/c(NA,prevItaDT$totale_casi[1:(nrow(prevItaDT)-1)])*100
+  varInput<-"totale_casi"
+  subdf<-df[which(df$variabilePrevista==varInput),]
 
-    prevItaDT$UpperRangePerc<-c(NA,diff(prevItaDT$UpperRange))/c(NA,prevItaDT$totale_casi[1:(nrow(prevItaDT)-1)])*100
+  subdf$deltaPerc<-c(NA,diff(subdf$totale_casi))/c(NA,subdf$totale_casi[1:(nrow(subdf)-1)])*100
 
-    prevItaDT$LowerRangePerc<-c(NA,diff(prevItaDT$LowerRange))/c(NA,prevItaDT$totale_casi[1:(nrow(prevItaDT)-1)])*100
+  # subdf$UpperRangePerc<-(c(NA,subdf$UpperRange[2:nrow(subdf)])-subdf$totale_casi)/c(NA,subdf$totale_casi[1:(nrow(subdf)-1)])*100
+  #
+  # subdf$LowerRangePerc<- -(c(NA,subdf$LowerRange[2:nrow(subdf)])-subdf$totale_casi)/c(NA,subdf$totale_casi[1:(nrow(subdf)-1)])*100
 
-    assign("prevItaDTprova",prevItaDT, envir=.GlobalEnv)
+  subdf$UpperRangePerc<-c(NA,diff(subdf$UpperRange))/c(NA,subdf$totale_casi[1:(nrow(subdf)-1)])*100
 
-  datamax<-max(tsIta$data)
-  tmp<-rbind(tsIta[,c("data","totale_casi","deltaPerc")],prevItaDT[which(prevItaDT$variabilePrevista=="totale_casi" & prevItaDT$data>datamax),c("data","totale_casi","deltaPerc")])
+  subdf$LowerRangePerc<-c(NA,diff(subdf$LowerRange))/c(NA,subdf$totale_casi[1:(nrow(subdf)-1)])*100
 
-  tmp$tipo<-NA
-  tmp$tipo[which(tmp$data<=datamax)]<-'osservata'
-  tmp$tipo[which(tmp$data>datamax)]<-'predetta'
-  assign("tmpprova",tmp, envir=.GlobalEnv)
+  assign("subdfprova",subdf, envir=.GlobalEnv)
+
 
   p <- ggplot() + my_ggtheme() +
-          suppressWarnings(geom_bar(data=tmp, aes(x=data, y=deltaPerc,
+          suppressWarnings(geom_bar(data=subdf, aes(x=data, y=deltaPerc,
           fill=tipo,
           text = paste('Data:', strftime(data, format="%d-%m-%Y"),
           '<br>Variazione: ', paste(round(deltaPerc,1),'%'))), stat="identity", width = 0.8))+
@@ -898,12 +927,12 @@ output$percDeltaTot <- renderPlotly({
           # suppressWarnings(geom_bar(data=prevItaDT[which(prevItaDT$data>datamax & prevItaDT$variabilePrevista=="totale_casi"),], aes(x=data, y=deltaPerc, #fill=tipo,
           # text = paste('Data:', strftime(data, format="%d-%m-%Y"),
           # '<br>Variazione prevista: ', paste0(round(deltaPerc,2),'%'))), stat="identity", width = 0.8, fill="orange"))+
-          geom_crossbar(data=prevItaDT[which(prevItaDT$data>datamax & prevItaDT$variabilePrevista=="totale_casi"),],
+          geom_crossbar(data=subdf[which(subdf$tipo=="previsioni"),],
             aes(x=data,
               y=deltaPerc,
               ymin=LowerRangePerc, ymax=UpperRangePerc,
             text = paste('Data:', strftime(data, format="%d-%m-%Y"),
-          #'<br>Variabile: ', variabilePrevista,
+          '<br>Variabile: ', varInput,
           '<br>Variazione prevista: ', paste0(round(deltaPerc,1),'%'),
           '<br>Intervallo previsione:', paste0('[', round(LowerRangePerc,1), '%, ', round(UpperRangePerc,1),'%]')
         )),width=0.7,
@@ -923,6 +952,69 @@ output$percDeltaTot <- renderPlotly({
        plot
   # }
 })
+
+# output$percDeltaTot <- renderPlotly({
+#   if(verbose) cat("\n renderPlotly:percDeltaTot")
+#   prevItaDT <- copy(prevItaLongTerm())
+#   tsIta <- copy(getTimeSeriesReact()[["Italia"]])
+#   df<-creaDFossEprev()
+#     tsIta$deltaPerc<-c(NA,diff(tsIta$totale_casi))/c(NA,tsIta$totale_casi[1:(nrow(tsIta)-1)])*100
+#     assign("tsItaprova",tsIta, envir=.GlobalEnv)
+#
+#     prevItaDT <-copy(prevIta())
+#     setnames(prevItaDT, old=c('Attesi'), new=c('totale_casi'))
+#     prevItaDT$deltaPerc<-c(NA,diff(prevItaDT$totale_casi))/c(NA,prevItaDT$totale_casi[1:(nrow(prevItaDT)-1)])*100
+#
+#     prevItaDT$UpperRangePerc<-c(NA,diff(prevItaDT$UpperRange))/c(NA,prevItaDT$totale_casi[1:(nrow(prevItaDT)-1)])*100
+#
+#     prevItaDT$LowerRangePerc<-c(NA,diff(prevItaDT$LowerRange))/c(NA,prevItaDT$totale_casi[1:(nrow(prevItaDT)-1)])*100
+#
+#     assign("prevItaDTprova",prevItaDT, envir=.GlobalEnv)
+#
+#   datamax<-max(tsIta$data)
+#   tmp<-rbind(tsIta[,c("data","totale_casi","deltaPerc")],prevItaDT[which(prevItaDT$variabilePrevista=="totale_casi" & prevItaDT$data>datamax),c("data","totale_casi","deltaPerc")])
+#
+#   tmp$tipo<-NA
+#   tmp$tipo[which(tmp$data<=datamax)]<-'osservata'
+#   tmp$tipo[which(tmp$data>datamax)]<-'predetta'
+#   assign("tmpprova",tmp, envir=.GlobalEnv)
+#
+#   p <- ggplot() + my_ggtheme() +
+#           suppressWarnings(geom_bar(data=tmp, aes(x=data, y=deltaPerc,
+#           fill=tipo,
+#           text = paste('Data:', strftime(data, format="%d-%m-%Y"),
+#           '<br>Variazione: ', paste(round(deltaPerc,1),'%'))), stat="identity", width = 0.8))+
+#    				# suppressWarnings(geom_bar(data=tsIta, aes(x=data, y=deltaPerc, #fill=tipo,
+#           # text = paste('Data:', strftime(data, format="%d-%m-%Y"),
+#           # '<br>Variazione: ', paste(round(deltaPerc,2),'%'))), stat="identity", width = 0.8, fill="steelblue"))+
+#           # suppressWarnings(geom_bar(data=prevItaDT[which(prevItaDT$data>datamax & prevItaDT$variabilePrevista=="totale_casi"),], aes(x=data, y=deltaPerc, #fill=tipo,
+#           # text = paste('Data:', strftime(data, format="%d-%m-%Y"),
+#           # '<br>Variazione prevista: ', paste0(round(deltaPerc,2),'%'))), stat="identity", width = 0.8, fill="orange"))+
+#           geom_crossbar(data=prevItaDT[which(prevItaDT$data>datamax & prevItaDT$variabilePrevista=="totale_casi"),],
+#             aes(x=data,
+#               y=deltaPerc,
+#               ymin=LowerRangePerc, ymax=UpperRangePerc,
+#             text = paste('Data:', strftime(data, format="%d-%m-%Y"),
+#           #'<br>Variabile: ', variabilePrevista,
+#           '<br>Variazione prevista: ', paste0(round(deltaPerc,1),'%'),
+#           '<br>Intervallo previsione:', paste0('[', round(LowerRangePerc,1), '%, ', round(UpperRangePerc,1),'%]')
+#         )),width=0.7,
+#             colour="orange",
+#             #alpha=0.6, size=1,
+#             position=position_dodge(.9)
+#           )+
+#           scale_fill_manual(values=d3hexcols)+
+#           scale_x_date(date_breaks="2 day",date_labels="%b %d")+
+#           theme(axis.text.x=element_text(angle=45,hjust=1),legend.title = element_blank())+
+#           labs(x="", y="Variazione %")
+#
+#   plot<-ggplotly(p, tooltip = c("text")) %>% config(locale = 'it')
+#   #     if(reacval$mobile){
+#   #       plot<-plot%>%layout(legend=list(orientation='h',x=0,y=-0.2))
+#   #     }
+#        plot
+#   # }
+# })
 
 
 
