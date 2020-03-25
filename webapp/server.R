@@ -350,7 +350,7 @@ palRegioni <- reactive({
 })
 
 output$mapRegioni <- renderLeaflet({
-  withProgress({
+
 	if(verbose) cat("\n renderLeaflet:mapRegioni --- ")
   allDataReg <- copy(reacval$dataTables_reg_flt)
 
@@ -387,7 +387,7 @@ output$mapRegioni <- renderLeaflet({
 									title = paste0("casi")))
 		}
 	}
-  },value=0,message="Caricamento ",detail="")
+
 })
 
 output$mapRegioniGG <- renderPlot({
