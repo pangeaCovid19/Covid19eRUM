@@ -47,7 +47,7 @@ diariotab<-tabItem(tabName="diario",
 introTab<-tabItem(tabName="intro",
 
 				uiOutput("spaces_mobile_intro"),
-				
+
 							fluidRow(style="padding:30px;border-style: solid;border-color:#85ede1;",
 										#	h1("Quanto veloce si diffonde il Coronavirus in Italia "),
 
@@ -111,13 +111,13 @@ regTab <- tabItem(tabName = "regPlots",
 						 uiOutput("selRegioni"),
 						 h3("Mappa dei casi confermati"),
 								#plotOutput(outputId="mapRegioniGG", height = 800),
-								leafletOutput(outputId="mapRegioni"),
+								addSpinner(leafletOutput(outputId="mapRegioni"), spin = "fading-circle", color = "#add437"),
 								spiegaMappa
 						),br(),
 						fluidRow(style="padding:20px;background-color:#ffffff",
 							h3("Andamento dei casi confermati"),
 							selectizeInput("variabileLineRegioni", label="Variabile da mostrare", 	choices=campiTotali , selected = "totale_casi", multiple=FALSE),
-							fluidRow(style="overflow-x:scroll;padding:20px;",plotlyOutput(outputId="lineRegioni")),
+							fluidRow(style="overflow-x:scroll;padding:20px;",addSpinner(plotlyOutput(outputId="lineRegioni"), spin = "fading-circle", color = "#add437")),
 							#uiOutput('legenda_regioni'),
 							spiegaLinePlot,
 							#plotlyOutput(outputId="puntiRegioni"),
@@ -141,7 +141,7 @@ regTab <- tabItem(tabName = "regPlots",
 									uiOutput("confrontoGiornoUI")
 								))
 							),
-							fluidRow(style='padding:30px;',fluidRow(style='padding:20px;overflow-x:scroll;',plotlyOutput(outputId="puntiRegioni"))),
+							fluidRow(style='padding:30px;',fluidRow(style='padding:20px;overflow-x:scroll;',addSpinner(plotlyOutput(outputId="puntiRegioni"), spin = "fading-circle", color = "#add437"))),
 							#uiOutput('legenda_regioni_bullet'),
 							##################################################
 							##################################################
@@ -152,7 +152,7 @@ regTab <- tabItem(tabName = "regPlots",
 						# 	spiegaTabella
 						# )
 						fluidRow(style="padding:20px;background-color:#ffffff",
-						h3("Tabella con casi confermati"),DTOutput(outputId="tabRegioni"),spiegaTabella
+						h3("Tabella con casi confermati"),addSpinner(DTOutput(outputId="tabRegioni"), spin = "fading-circle", color = "#add437"),spiegaTabella
 
 						)
 					,br()),br(),fluidRow(
@@ -171,18 +171,18 @@ prvTab <- tabItem(tabName = "prvPlots",
 								uiOutput("selProvince")),
 								h3("Mappa dei casi confermati"),
 										#plotOutput(outputId="mapProvinceGG", height = 800),
-										leafletOutput(outputId="mapProvince"),
+										addSpinner(leafletOutput(outputId="mapProvince"), spin = "fading-circle", color = "#add437"),
 										spiegaMappa
 								),br(),
 								fluidRow(style="padding:40px;background-color:#ffffff",
 								h3("Andamento dei casi confermati"),
 
-								fluidRow(style="overflow-x:scroll;",align='center',plotlyOutput(outputId="lineProvince")), spiegaLinePlot
+								fluidRow(style="overflow-x:scroll;",align='center',addSpinner(plotlyOutput(outputId="lineProvince"), spin = "fading-circle", color = "#add437")), spiegaLinePlot
 								)
 
 							,br(),
 							fluidRow(style="padding:20px;background-color:#ffffff",
-								column(width=12, h3("Tabella con casi confermati"),DTOutput(outputId="tabProvince"), spiegaTabella
+								column(width=12, h3("Tabella con casi confermati"),addSpinner(DTOutput(outputId="tabProvince"), spin = "fading-circle", color = "#add437"), spiegaTabella
 								)
 
 

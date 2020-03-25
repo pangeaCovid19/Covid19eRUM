@@ -1460,11 +1460,11 @@ output$tab_desktop<-renderUI({
 
         fluidRow(align="center",h3("Andamento casi positivi per regione con previsione a 3 giorni")),
         fluidRow(style='padding-left:30px',pickerInput(inputId = "regionSelFit", label = "Seleziona regioni", choices = regioniList,selected=regioni2fit, options = list(size=10,`actions-box` = TRUE, `selected-text-format` = "count >20"), multiple = TRUE)),
-         plotlyOutput(outputId="fitRegion"), spiegaFitPos
+         addSpinner(plotlyOutput(outputId="fitRegion"), spin = "fading-circle", color = "#009933"), spiegaFitPos
         ),
         fluidRow(style="padding:30px;background-color:#ffffff",
           fluidRow(align="center",h3("Andamenti globali in Italia con previsione a 3 giorni")),
-          plotlyOutput(outputId="fitIta"), spiegaFitTot
+          addSpinner(plotlyOutput(outputId="fitIta"), spin = "fading-circle", color = "#009933"), spiegaFitTot
 
       ),
 
@@ -1474,12 +1474,12 @@ output$tab_desktop<-renderUI({
         fluidRow(
           column(5,align="center",pickerInput(inputId = "varSel", label = "Seleziona variabile", choices = c("deceduti","totale contagiati"),selected="totale_casi",options = list(size=10,`actions-box` = TRUE, `selected-text-format` = "count >20"), multiple = FALSE))),
           column(10,offset=1,align="center",h3("Variazione percentuale giorno per giorno"))),
-        fluidRow(style="padding:10px;background-color:#ffffff",plotlyOutput(outputId="percDeltaTot")),
+        fluidRow(style="padding:10px;background-color:#ffffff",addSpinner(plotlyOutput(outputId="percDeltaTot"), spin = "fading-circle", color = "#009933")),
       br(),br(),
 
 
       fluidRow(style="background-color:#ffffff",column(10,offset=1,align="center", h3("Previsione del numero di casi a medio termine con modello esponenziale quadratico"))),
-        fluidRow(style="padding:10px;background-color:#ffffff",plotlyOutput(outputId="fitCasesIta"))
+        fluidRow(style="padding:10px;background-color:#ffffff",addSpinner(plotlyOutput(outputId="fitCasesIta"), spin = "fading-circle", color = "#009933"))
 
       ,br(),
       fluidRow(style="padding:30px;background-color:#ffffff",
@@ -1489,7 +1489,7 @@ output$tab_desktop<-renderUI({
           column(width=4,
             uiOutput("dateCompare")
           ),
-          DTOutput("tabCompare"),spiegaTabellaCompare
+          addSpinner(DTOutput("tabCompare"), spin = "fading-circle", color = "#009933"),spiegaTabellaCompare
 
 
       ),br()
@@ -1522,20 +1522,20 @@ output$tab_mobile<-renderUI({
 
         fluidRow(style="background-color:#ffffff",column(10,offset=1,align="center",h4("Andamento casi positivi per regione con previsione a 3 giorni"))),
         fluidRow(style="padding-left:30px;",pickerInput(inputId = "regionSelFit", label = "Seleziona regioni", choices = regioniList,selected=regioni2fit, options = list(size=10,`actions-box` = TRUE, `selected-text-format` = "count >20"), multiple = TRUE)),
-         fluidRow(style="padding:10px;background-color:#ffffff",plotlyOutput(outputId="fitRegion")), #spiegaFitPos
+         fluidRow(style="padding:10px;background-color:#ffffff",addSpinner(plotlyOutput(outputId="fitRegion"), spin = "fading-circle", color = "#009933")), #spiegaFitPos
         ),
 
         fluidRow(style="background-color:#ffffff",column(10,offset=1,align="center",h4("Andamenti globali in Italia con previsione a 3 giorni"))),
-         fluidRow(style="padding:10px;background-color:#ffffff",plotlyOutput(outputId="fitIta")),
+         fluidRow(style="padding:10px;background-color:#ffffff",addSpinner(plotlyOutput(outputId="fitIta"), spin = "fading-circle", color = "#009933")),
          fluidRow( style="padding:20px;background-color:#ffffff;",spiegaFitTotePos),
 
         br(),br(),
         fluidRow(style="background-color:#ffffff",column(10,offset=1,align="center",h4("Variazione percentuale casi totali giorno per giorno"))),
-          fluidRow(style="padding:10px;background-color:#ffffff",plotlyOutput(outputId="percDeltaTot")),
+          fluidRow(style="padding:10px;background-color:#ffffff",addSpinner(plotlyOutput(outputId="percDeltaTot"), spin = "fading-circle", color = "#009933")),
 
         br(),br(),
         fluidRow(style="background-color:#ffffff",column(10,offset=1,align="center",h4("Previsione del numero di casi totali a medio termine con modello esponenziale quadratico"))),
-          fluidRow(style="padding:10px;background-color:#ffffff",plotlyOutput(outputId="fitCasesIta",width="100%")),
+          fluidRow(style="padding:10px;background-color:#ffffff",addSpinner(plotlyOutput(outputId="fitCasesIta",width="100%"), spin = "fading-circle", color = "#009933")),
 
   		# br(),br(),
   		# fluidRow(style="padding:30px;background-color:#ffffff", h4("Previsione del numero di casi totali a medio termine con modello esponenziale quadratico")),
@@ -1551,7 +1551,7 @@ output$tab_mobile<-renderUI({
           column(width=4,
             uiOutput("dateCompare")
           ),
-          DTOutput("tabCompare"),spiegaTabellaCompare
+          addSpinner(DTOutput("tabCompare"), spin = "fading-circle", color = "#009933"),spiegaTabellaCompare
 
 
       ),br()
