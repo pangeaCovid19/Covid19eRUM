@@ -243,7 +243,13 @@ dashboardPage(title="CoVid-19 in Italia",
 					 var jsAgt = navigator.userAgent;
 					 Shiny.onInputChange("GetNavUserAgent",jsAgt);
 				 });</script>'),
-	    tags$head(tags$link(rel = "stylesheet", type = "text/css", href = "pangea.css")),
+	    tags$head(tags$link(rel = "stylesheet", type = "text/css", href = "pangea.css"),
+			tags$meta(property="og:title", content="CoVid-19 in Italia"),
+			tags$meta(property="og:image",content="plot.png"),
+			tags$meta(name="twitter:card",content="summary_large_image"),
+			tags$link(rel = "icon",href ="logo_piccolo.png",type = "image/x-icon")
+
+),
 
 
     tabItems(

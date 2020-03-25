@@ -195,6 +195,7 @@ output$lineRegioni <- renderPlotly({
 output$confrontoGiornoUI <- renderUI({
 	allDataReg <- copy(reacval$dataTables_reg)
 	if (is.null(allDataReg))retunr(NULL)
+
 	sliderInput("confrontoGiorno", "Giorno:", min = min(allDataReg$data) + 1, max = max(allDataReg$data), value = max(allDataReg$data), animate = animationOptions(interval = 1500), timeFormat="%b %d",width='90%')
 
 })
