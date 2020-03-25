@@ -841,7 +841,7 @@ output$fitCasesIta <- renderPlotly({
   if(verbose) cat("\n renderPlotly:fitCasesIta")
   prevItaDT <- copy(prevItaLongTerm())
   tsIta <- copy(getTimeSeriesReact()[["Italia"]])
-  varInput<-input$varSel
+  varInput<-input$varSel2
   testoLegenda<-varInput
   if (varInput=="totale contagiati") varInput<-"totale_casi"
 
@@ -1478,7 +1478,10 @@ output$tab_desktop<-renderUI({
       br(),br(),
 
 
-      fluidRow(style="background-color:#ffffff",column(10,offset=1,align="center", h3("Previsione del numero di casi a medio termine con modello esponenziale quadratico"))),
+      fluidRow(style="background-color:#ffffff",
+      fluidRow(
+        column(5,align="center",pickerInput(inputId = "varSel2", label = "Seleziona variabile", choices = c("deceduti","totale contagiati"),selected="totale_casi",options = list(size=10,`actions-box` = TRUE, `selected-text-format` = "count >20"), multiple = FALSE))),
+        column(10,offset=1,align="center", h3("Previsione del numero di casi a medio termine con modello esponenziale quadratico"))),
         fluidRow(style="padding:10px;background-color:#ffffff",plotlyOutput(outputId="fitCasesIta"))
 
       ,br(),
