@@ -842,7 +842,7 @@ output$fitCasesIta <- renderPlotly({
   if(verbose) cat("\n renderPlotly:fitCasesIta")
   prevItaDT <- copy(prevItaLongTerm())
   tsIta <- copy(getTimeSeriesReact()[["Italia"]])
-  varInput<-input$varSel
+  varInput<-input$varSel2
   testoLegenda<-varInput
   if (varInput=="totale contagiati") varInput<-"totale_casi"
 
@@ -872,7 +872,7 @@ output$fitCasesIta <- renderPlotly({
   					scale_fill_manual(values=d3hexcols)+
           #  scale_x_date(date_breaks="2 day",date_labels="%b %d")+
             theme(axis.text.x=element_text(angle=45,hjust=1)) +
-            labs(x="") +
+            labs(x="", y="Variazione %") +
             theme(#legend.title = element_blank()
           )+
           guides(fill=guide_legend(title=testoLegenda))
@@ -1473,13 +1473,16 @@ output$tab_desktop<-renderUI({
 
       fluidRow(style="background-color:#ffffff",
         fluidRow(
-          column(5,align="center",pickerInput(inputId = "varSel", label = "Seleziona variabile", choices = c("deceduti","totale contagiati"),selected="totale_casi",options = list(size=10,`actions-box` = TRUE, `selected-text-format` = "count >20"), multiple = FALSE))),
+          column(5,align="center",pickerInput(inputId = "varSel", label = "Seleziona variabile", choices = c("deceduti","totale contagiati"),selected="totale contagiati",options = list(size=10,`actions-box` = TRUE, `selected-text-format` = "count >20"), multiple = FALSE))),
           column(10,offset=1,align="center",h3("Variazione percentuale giorno per giorno"))),
         fluidRow(style="padding:10px;background-color:#ffffff",addSpinner(plotlyOutput(outputId="percDeltaTot"), spin = "fading-circle", color = "#009933")),
       br(),br(),
 
-
-      fluidRow(style="background-color:#ffffff",column(10,offset=1,align="center", h3("Previsione del numero di casi a medio termine con modello esponenziale quadratico"))),
+      br(),br(),
+      fluidRow(style="background-color:#ffffff",
+      fluidRow(
+        column(5,align="center",pickerInput(inputId = "varSel2", label = "Seleziona variabile", choices = c("deceduti","totale contagiati"),selected="totale contagiati",options = list(size=10,`actions-box` = TRUE, `selected-text-format` = "count >20"), multiple = FALSE))),
+        column(10,offset=1,align="center", h3("Previsione del numero di casi a medio termine con modello esponenziale quadratico"))),
         fluidRow(style="padding:10px;background-color:#ffffff",addSpinner(plotlyOutput(outputId="fitCasesIta"), spin = "fading-circle", color = "#009933"))
 
       ,br(),
@@ -1530,13 +1533,20 @@ output$tab_mobile<-renderUI({
          fluidRow(style="padding:10px;background-color:#ffffff",addSpinner(plotlyOutput(outputId="fitIta"), spin = "fading-circle", color = "#009933")),
          fluidRow( style="padding:20px;background-color:#ffffff;",spiegaFitTotePos),
 
-        br(),br(),
-        fluidRow(style="background-color:#ffffff",column(10,offset=1,align="center",h4("Variazione percentuale casi totali giorno per giorno"))),
-          fluidRow(style="padding:10px;background-color:#ffffff",addSpinner(plotlyOutput(outputId="percDeltaTot"), spin = "fading-circle", color = "#009933")),
+         br(),br(),
+         fluidRow(style="background-color:#ffffff",
+           fluidRow(
+             column(5,align="center",pickerInput(inputId = "varSel", label = "Seleziona variabile", choices = c("deceduti","totale contagiati"),selected="totale contagiati",options = list(size=10,`actions-box` = TRUE, `selected-text-format` = "count >20"), multiple = FALSE))),
+             column(10,offset=1,align="center",h3("Variazione percentuale giorno per giorno"))),
+           fluidRow(style="padding:10px;background-color:#ffffff",addSpinner(plotlyOutput(outputId="percDeltaTot"), spin = "fading-circle", color = "#009933")),
+         br(),br(),
 
-        br(),br(),
-        fluidRow(style="background-color:#ffffff",column(10,offset=1,align="center",h4("Previsione del numero di casi totali a medio termine con modello esponenziale quadratico"))),
-          fluidRow(style="padding:10px;background-color:#ffffff",addSpinner(plotlyOutput(outputId="fitCasesIta",width="100%"), spin = "fading-circle", color = "#009933")),
+
+         fluidRow(style="background-color:#ffffff",
+         fluidRow(
+           column(5,align="center",pickerInput(inputId = "varSel2", label = "Seleziona variabile", choices = c("deceduti","totale contagiati"),selected="totale contagiati",options = list(size=10,`actions-box` = TRUE, `selected-text-format` = "count >20"), multiple = FALSE))),
+           column(10,offset=1,align="center", h3("Previsione del numero di casi a medio termine con modello esponenziale quadratico"))),
+           fluidRow(style="padding:10px;background-color:#ffffff",addSpinner(plotlyOutput(outputId="fitCasesIta"), spin = "fading-circle", color = "#009933")),
 
   		# br(),br(),
   		# fluidRow(style="padding:30px;background-color:#ffffff", h4("Previsione del numero di casi totali a medio termine con modello esponenziale quadratico")),
