@@ -16,7 +16,7 @@ readData<-function(file, popolazione) {
 	}
 	tmp<-read.csv(file,stringsAsFactors=FALSE)
 	tmp$data<-as.Date(tmp$data)
-	tmp$note<-NULL
+	tmp[grep("note",names(tmp))]<-NULL
 	paTrentino <- grep('bolz|trent', tmp$denominazione_regione, ignore.case=T)
 	tmp$denominazione_regione[paTrentino] <- "Trentino - Alto Adige"
 	if ("codice_provincia" %in% names(tmp)) {
