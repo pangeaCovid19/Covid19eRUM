@@ -103,8 +103,18 @@ loglinmodel3<-function(dati, var="totale_casi", rangepesi=c(0,1), quadratico = F
 	fit
 }
 
+addColumn<-function(x,col,name) {
+	if (!inherits(x,"data.frame")) stop("wrong object")
+	if (is.data.table(x)) {
+		x[,c(name):=col]
+	} else {
+		x[[name]]<-col
+	}
+	x
+}
 
-loglinmodel4<-function(dati, var="totale_casi", rangepesi=c(0,1), quadratico = FALSE, dataMax=NULL) {
+
+loglinmodel4<-function(dati, var="totale_casi", rangepesi=c(0,1), quadratico = FALSE, delta=FALSE, dataMax=NULL) {
 	if(!is.null(dataMax)){
 		if(class(dataMax) == "Date") {
 			dati <- dati[(dati$data <=dataMax), ]
@@ -112,6 +122,9 @@ loglinmodel4<-function(dati, var="totale_casi", rangepesi=c(0,1), quadratico = F
 	}
 	regione <- copy(dati)
 	setnames(regione, old=var, new='var2fit')
+	if (delta) {
+		regione<-addColumn(regione,c(regione$var2fit[1],diff(regione$var2fit)),"var2fit")
+	}
 	regione$logcasi <- log(regione$var2fit)
 	regione<-regione[is.finite(regione$logcasi),]
 	pesi<-seq(rangepesi[1],rangepesi[2],length.out=nrow(regione))
@@ -123,6 +136,9 @@ loglinmodel4<-function(dati, var="totale_casi", rangepesi=c(0,1), quadratico = F
 		attr(fit,"mindata")<-min(regione$data)
 	} else {
 		fit<-lm(logcasi~data,regione,weights=pesi)
+	}
+	if (delta) {
+		attr(fit,"delta")<-TRUE
 	}
 	setnames(regione, old='var2fit', new=var)
 	#plot(regione$data,regione$logcasi,col="red",lwd=2,ty="b")
@@ -136,6 +152,11 @@ ismodelloQuadratico<-function(modello) {
 	!is.null(tmp) && tmp
 }
 
+ismodelloDelta<-function(modello) {
+	tmp<-attr(modello,"delta")
+	!is.null(tmp) && tmp
+}
+
 
 predictNextDays<-function(dati,modello,nahead=3, all=FALSE) {
 	if(all==TRUE){
@@ -145,11 +166,10 @@ predictNextDays<-function(dati,modello,nahead=3, all=FALSE) {
 		newdata$dataind<-as.numeric(newdata$data-attr(modello,"mindata"))+1
 		newdata$data2<-newdata$dataind^2
 	}
-	predizioni<-round(exp(predict(modello,newdata,interval="confidence")))
+	predizioni<-round(exp(predict(modello,newdata,interval="confidence",level=1-pnorm(-1)*2)))
 	colnames(predizioni)<-c("Attesi","LowerRange","UpperRange")
 	newdata<-cbind(newdata,predizioni)
 	return(newdata)
-	newdata
 }
 
 
