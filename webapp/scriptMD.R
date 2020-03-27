@@ -19,7 +19,7 @@ confrontoModelloPrevisioni<-function(data, contagi, datastart=as.Date("2020-03-1
 	funzione<-function(modexp, modquad, datoreale, currentdata, variabile) {
 		modexp<-modexp[[variabile]]
 		modquad<-modquad[[variabile]]
-		prevexp<-predict(modexp,data.frame(data=currentdata+1),interval="confidence")
+		prevexp<-predict(modexp,data.frame(data=currentdata+1),interval="confidence",level=1-pnorm(-1)*2)
 		prevquad<-predictNextDays(data.frame(data=currentdata),modquad,nahead=1)
 		sdexp<-prevexp[3]-prevexp[1]
 		delta<-abs(log(datoreale)-prevexp[1])/sdexp
@@ -81,7 +81,7 @@ coeffexptotalecasi<-coef(modelloexp[[1]])
 trexptotalecasi<-round(1/coeffexptotalecasi[2]*log(2),2)
 coeffexpdeceduti<-coef(modelloexp[[2]])
 trexpdeceduti<-round(1/coeffexpdeceduti[2]*log(2),2)
-previsioneesp<-predict(modelloexp[[1]],data.frame(data=data),interval="confidence")
+previsioneesp<-predict(modelloexp[[1]],data.frame(data=data),interval="confidence",level=1-pnorm(-1)*2)
 sdexp<-previsioneesp[3]-previsioneesp[1]
 delta<-abs(log(ultimidati$totale_casi)-previsioneesp[1])/sdexp
 pv<-pvalue(log(ultimidati$totale_casi),previsioneesp[1],sdexp)
