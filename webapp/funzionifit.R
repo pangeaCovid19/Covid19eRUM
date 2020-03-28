@@ -139,6 +139,7 @@ loglinmodel4<-function(dati, var="totale_casi", rangepesi=c(0,1), quadratico = F
 	}
 	if (delta) {
 		attr(fit,"delta")<-TRUE
+		attr(fit,"var2fit")<-var
 	}
 	setnames(regione, old='var2fit', new=var)
 	#plot(regione$data,regione$logcasi,col="red",lwd=2,ty="b")
@@ -161,6 +162,8 @@ ismodelloDelta<-function(modello) {
 predictNextDays<-function(dati,modello,nahead=3, all=FALSE) {
 	if(all==TRUE){
 		newdata <- data.frame(data = c(dati$data, max(dati$data)+seq_len(nahead))  )
+	} else if (ismodelloQuadratico(modello)) {
+		newdata<-data.frame(data = max(dati$data)+c(0,seq_len(nahead)))
 	} else newdata<-data.frame(data = max(dati$data)+seq_len(nahead))
 	if (ismodelloQuadratico(modello)) {
 		newdata$dataind<-as.numeric(newdata$data-attr(modello,"mindata"))+1
@@ -168,6 +171,16 @@ predictNextDays<-function(dati,modello,nahead=3, all=FALSE) {
 	}
 	predizioni<-round(exp(predict(modello,newdata,interval="confidence",level=1-pnorm(-1)*2)))
 	colnames(predizioni)<-c("Attesi","LowerRange","UpperRange")
+	if (ismodelloDelta(modello)) {
+		last<-dati[[attr(modello,"var2fit")]][dati$data==max(dati$data)]
+		predizioni<-apply(predizioni,2,cumsum)
+		offset<-predizioni[newdata$data==max(dati$data),"Attesi"]-last
+		predizioni<-predizioni-offset
+		if (all==FALSE) {
+			newdata<-newdata[-1,]
+			predizioni<-predizioni[-1,]
+		}
+	}
 	newdata<-cbind(newdata,predizioni)
 	return(newdata)
 }
