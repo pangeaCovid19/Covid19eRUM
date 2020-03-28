@@ -14,13 +14,15 @@ confrontoModelloPrevisioni<-function(data, contagi, datastart=as.Date("2020-03-1
 	modelliquad<-lapply(datelist, function(x) readRDS(sprintf("www/pastModels/modelliIta_%s.RDS",x)))
 	modelliexp<-lapply(datelist, function(x) readRDS(sprintf("www/pastModels/modelliItaExp_%s.RDS",x)))
 	contagi2<-contagi[[variabile]][match(datelist+1,contagi$data)]
+	supporto<-contagi[[variabile]][match(datelist,contagi$data)]
 	#contagi2<-contagi[data %in% datelist]
 	#setkey(contagi2,data)
-	funzione<-function(modexp, modquad, datoreale, currentdata, variabile) {
+	funzione<-function(modexp, modquad, datoreale, currentdata, lastdatoreale, variabile) {
 		modexp<-modexp[[variabile]]
 		modquad<-modquad[[variabile]]
 		prevexp<-predict(modexp,data.frame(data=currentdata+1),interval="confidence",level=1-pnorm(-1)*2)
-		prevquad<-predictNextDays(data.frame(data=currentdata),modquad,nahead=1)
+		xxx<-setNames(data.frame(data=currentdata,altro=lastdatoreale),c("data",variabile))
+		prevquad<-predictNextDays(xxx,modquad,nahead=1)
 		sdexp<-prevexp[3]-prevexp[1]
 		delta<-abs(log(datoreale)-prevexp[1])/sdexp
 		pv<-pvalue(log(datoreale),prevexp[1],sdexp)
@@ -31,7 +33,7 @@ confrontoModelloPrevisioni<-function(data, contagi, datastart=as.Date("2020-03-1
 		names(res)[2]<-variabile
 		res
 	}
-	do.call(rbind,mapply(funzione, modelliexp, modelliquad, contagi2, datelist, MoreArgs=list(variabile=variabile),SIMPLIFY=FALSE))
+	do.call(rbind,mapply(funzione, modelliexp, modelliquad, contagi2, datelist, supporto, MoreArgs=list(variabile=variabile),SIMPLIFY=FALSE))
 }
 #modello<-readRDS(sprintf("www/pastModels/modelliIta_%s.RDS"))
 #modelloexp<-readRDS(sprintf("www/pastModels/modelliItaExp_%s.RDS"))
@@ -86,7 +88,7 @@ sdexp<-previsioneesp[3]-previsioneesp[1]
 delta<-abs(log(ultimidati$totale_casi)-previsioneesp[1])/sdexp
 pv<-pvalue(log(ultimidati$totale_casi),previsioneesp[1],sdexp)
 
-previsionequad<-predictNextDays(data.frame(data=ldata),modello[[1]],nahead=1)
+previsionequad<-predictNextDays(data.frame(data=ldata,totale_casi=italia$totale_casi[italia$data==ldata]),modello[[1]],nahead=1)
 sdquad<-log(previsionequad$UpperRange/previsionequad$Attesi)
 deltaquad<-abs(log(ultimidati$totale_casi)-log(previsionequad$Attesi))/sdquad
 pvquad<-pvalue(log(ultimidati$totale_casi),log(previsionequad$Attesi),sdquad)

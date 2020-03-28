@@ -114,7 +114,7 @@ addColumn<-function(x,col,name) {
 }
 
 
-loglinmodel4<-function(dati, var="totale_casi", rangepesi=c(0,1), quadratico = FALSE, delta=FALSE, dataMax=NULL) {
+loglinmodel4<-function(dati, var="totale_casi", rangepesi=c(0,1), quadratico = FALSE, delta=quadratico, dataMax=NULL) {
 	if(!is.null(dataMax)){
 		if(class(dataMax) == "Date") {
 			dati <- dati[(dati$data <=dataMax), ]
@@ -124,6 +124,7 @@ loglinmodel4<-function(dati, var="totale_casi", rangepesi=c(0,1), quadratico = F
 	setnames(regione, old=var, new='var2fit')
 	if (delta) {
 		regione<-addColumn(regione,c(regione$var2fit[1],diff(regione$var2fit)),"var2fit")
+		regione$var2fit[regione$var2fit<0]<-0
 	}
 	regione$logcasi <- log(regione$var2fit)
 	regione<-regione[is.finite(regione$logcasi),]
@@ -160,7 +161,7 @@ ismodelloDelta<-function(modello) {
 
 
 predictNextDays<-function(dati,modello,nahead=3, all=FALSE) {
-	if(all==TRUE){
+	if(all){
 		newdata <- data.frame(data = c(dati$data, max(dati$data)+seq_len(nahead))  )
 	} else if (ismodelloQuadratico(modello)) {
 		newdata<-data.frame(data = max(dati$data)+c(0,seq_len(nahead)))
@@ -173,12 +174,13 @@ predictNextDays<-function(dati,modello,nahead=3, all=FALSE) {
 	colnames(predizioni)<-c("Attesi","LowerRange","UpperRange")
 	if (ismodelloDelta(modello)) {
 		last<-dati[[attr(modello,"var2fit")]][dati$data==max(dati$data)]
+		if (length(last)==0) last<-0
 		predizioni<-apply(predizioni,2,cumsum)
 		offset<-predizioni[newdata$data==max(dati$data),"Attesi"]-last
 		predizioni<-predizioni-offset
-		if (all==FALSE) {
-			newdata<-newdata[-1,]
-			predizioni<-predizioni[-1,]
+		if (!all) {
+			newdata<-newdata[-1,,drop=FALSE]
+			predizioni<-predizioni[-1,,drop=FALSE]
 		}
 	}
 	newdata<-cbind(newdata,predizioni)
