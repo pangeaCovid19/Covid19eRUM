@@ -139,18 +139,19 @@ while (i==0) {
 
 if ( TRUE) {
 	date <- seq(as.Date('2020-03-08'), dataMax, by=1)
-
+	modelswitch<-as.Date("2020-03-28")
 	longIta <- lapply(date, function(x){
 		modelliIta <- list()
 		modelliItaExp <- list()
+		delta<-x>=modelswitch
 		for(i in  1:length(campiPrevisioni)){
-			modelliIta[[i]]<-loglinmodel4(tsReg$Italia, var=campiPrevisioni[i], rangepesi=c(0,1), quadratico=TRUE, dataMax=x)
+			modelliIta[[i]]<-loglinmodel4(tsReg$Italia, var=campiPrevisioni[i], rangepesi=c(0,1), quadratico=TRUE, dataMax=x,delta=delta)
 			modelliItaExp[[i]]<-loglinmodel4(tsReg$Italia, var=campiPrevisioni[i], rangepesi=c(0,1), quadratico=FALSE, dataMax=x)
 		}
 		names(modelliIta) <- campiPrevisioni
 		names(modelliItaExp) <- campiPrevisioni
 
-		modelliReg <-lapply( tsReg[which(names(tsReg)!='Italia')], loglinmodel4, quadratico=TRUE, dataMax=x)
+		modelliReg <-lapply( tsReg[which(names(tsReg)!='Italia')], loglinmodel4, quadratico=TRUE, dataMax=x, delta=delta)
 		modelliRegExp <-lapply( tsReg[which(names(tsReg)!='Italia')], loglinmodel4, quadratico=FALSE, dataMax=x)
 
 		saveRDS(modelliReg,paste0("www/pastModels/modelliReg_", x,".RDS"))

@@ -163,7 +163,7 @@ ismodelloDelta<-function(modello) {
 predictNextDays<-function(dati,modello,nahead=3, all=FALSE) {
 	if(all){
 		newdata <- data.frame(data = c(dati$data, max(dati$data)+seq_len(nahead))  )
-	} else if (ismodelloQuadratico(modello)) {
+	} else if (ismodelloDelta(modello)) {
 		newdata<-data.frame(data = max(dati$data)+c(0,seq_len(nahead)))
 	} else newdata<-data.frame(data = max(dati$data)+seq_len(nahead))
 	if (ismodelloQuadratico(modello)) {

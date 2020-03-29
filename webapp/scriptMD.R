@@ -52,7 +52,7 @@ getCoeffTS<-function(datastart=as.Date("2020-03-10"), datafinish = getLastDate()
 	lapply(ritorno,function(x) cbind(Data=datelist,setNames(as.data.frame(x),c("B","K","M"))))
 }
 
-coeffts<-getCoeffTS()
+coeffts<-getCoeffTS(datafinish=as.Date("2020-03-27"))
 italia[,decedutiGiorni:=c(deceduti[1],diff(deceduti))]
 lastdaydata<-function(x=italia) x[data==getLastDate()]
 segno<-function(x) c("una diminuzione","un incremento")[(x>0)+1]
