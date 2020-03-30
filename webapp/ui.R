@@ -142,6 +142,23 @@ regTab <- tabItem(tabName = "regPlots",
 								))
 							),
 							fluidRow(style='padding:30px;',fluidRow(style='padding:20px;overflow-x:scroll;',addSpinner(plotlyOutput(outputId="puntiRegioni"), spin = "fading-circle", color = "#add437"))),
+							# confronto serie storiche
+							fluidRow(style="padding:20px;background-color:#ffffff",
+								h3("Confronto tra serie storiche"),
+								fluidRow(style="padding:10px;",
+									column(width=4,
+										selectizeInput("serieStoricheRegion1", label="Regione 1", 	, choices=regioniList, selected = "Lombardia", multiple=FALSE),
+										selectizeInput("serieStoricheRegion2", label="Regione 2", 	, choices=regioniList, selected = "Lazio", multiple=FALSE)
+									),
+									column(width=3,
+										uiOutput('selLagRegione1'),
+										uiOutput('selLagRegione2')
+									)
+								),
+
+								plotlyOutput(outputId="lineRegioniConfronto")
+							)
+						####### fine confronto serie storiche
 							#uiOutput('legenda_regioni_bullet'),
 							##################################################
 							##################################################

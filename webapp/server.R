@@ -407,6 +407,87 @@ output$mapRegioniGG <- renderPlot({
 })
 
 
+output$selLagRegione1 <- renderUI ({
+	if (verbose) cat("\nrenderUI-selLagRegione1")
+	myDate <- isolate(reacval$dateRange_reg)
+	regione1 	<- input$serieStoricheRegion1
+	if(is.null(regione1))return(NULL)
+	if(is.null(myDate))return(NULL)
+	dg <- as.numeric(myDate[2]-myDate[1])
+	sliderInput("lagRegione1", paste0("Lag ",regione1), min = -dg , max = dg, value = 0)
+})
+
+
+output$selLagRegione2 <- renderUI ({
+	if (verbose) cat("\nrenderUI-selLagRegione2")
+	regione2 	<- input$serieStoricheRegion2
+	myDate <- isolate(reacval$dateRange_reg)
+	if(is.null(regione2))return(NULL)
+	if(is.null(myDate))return(NULL)
+	dg <- as.numeric(myDate[2]-myDate[1])
+	sliderInput("lagRegione2", paste0("Lag ",regione2), min = -dg , max = dg, value = 0)
+})
+
+
+output$lineRegioniConfronto <- renderPlotly({
+	if(verbose) cat("\n renderPlotly:lineRegioniConfronto")
+  allDataReg <- copy(reacval$dataTables_reg)
+
+	regione1 <- input$serieStoricheRegion1
+	regione2 <- input$serieStoricheRegion2
+
+	lagReg1 <- input$lagRegione1
+	lagReg2 <- input$lagRegione2
+
+	if(verbose) cat("\n \t regione1:", c(regione1,regione2))
+	if(verbose) cat("\n \t selLagRegione2:", c(lagReg1,lagReg2))
+
+	var2plot <- input$variabileLineRegioni
+	if(is.null(var2plot)) var2plot <- "totale_casi"#return(NULL)
+	if (is.null(allDataReg)) return(NULL)
+	if (is.null(lagReg1)) return(NULL)
+	if (is.null(lagReg2)) return(NULL)
+	if (is.null(regione1)) return(NULL)
+	if (is.null(regione2)) return(NULL)
+
+	if(verbose) cat("\n\t letti input")
+
+	var2plotNew <- gsub("_", " ", var2plot)
+
+  setnames(allDataReg, old=c('denominazione_regione',var2plot), new=c('regione', 'VAR2PLOT'))
+
+	dataReg <- allDataReg[allDataReg$regione %in% c(regione1, regione2)]
+	setDT(dataReg)
+	dataReg[regione==regione1, datanew:=data+lagReg1]
+	dataReg[regione==regione2, datanew:=data+lagReg2]
+
+  p <- ggplot(dataReg) + my_ggtheme() +
+        suppressWarnings(geom_line(group=1, # group=1 serve per aggirare un bug di ggplotly con tooltip = c("text")
+          aes(x=datanew, y=VAR2PLOT, color=regione,
+          text = paste('Regione:', regione, '<br>Data:', strftime(data, format="%d-%m-%Y"),
+           '<br>Casi: ', VAR2PLOT)))) +
+				geom_point( aes(x=datanew, y=VAR2PLOT, color=regione)) +
+        scale_color_manual(values=d3hexcols20) +
+        theme(axis.text.x=element_text(angle=45, hjust=1)) +
+				guides(fill=guide_legend(title="regione")) +
+        xlab("")+ylab(var2plotNew)
+  if(reacval$mobile){
+    p<-p+scale_x_date(date_breaks="3 day",date_labels="%b %d")}
+  else{
+    p<-p+scale_x_date(date_breaks="2 day",date_labels="%b %d")
+  }
+  plot<-ggplotly(p, tooltip = c("text")) %>% config(locale = 'it')
+
+  if(reacval$mobile){
+
+    plot<-plot%>%layout(legend=list(orientation='h',x=-0,y=-0.3))%>%
+          layout(legend=list(font=list(size=12)),dragmode=F,autosize = T,heigth=3000,width = 600)
+  }
+  plot
+
+})
+
+
 ## PROVINCE
 
 output$updatePrvUI <- renderUI({
