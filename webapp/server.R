@@ -414,7 +414,7 @@ output$selLagRegione1 <- renderUI ({
 	regione1 	<- input$serieStoricheRegion1
 	if(is.null(regione1))return(NULL)
 	if(is.null(myDate))return(NULL)
-	dg <- as.numeric(myDate[2]-myDate[1])
+	dg <- ceiling(as.numeric(myDate[2]-myDate[1])/2)
 	sliderInput("lagRegione1", paste0("Lag ",regione1), min = -dg , max = dg, value = 0)
 })
 
@@ -425,12 +425,108 @@ output$selLagRegione2 <- renderUI ({
 	myDate <- isolate(reacval$dateRange_reg)
 	if(is.null(regione2))return(NULL)
 	if(is.null(myDate))return(NULL)
-	dg <- as.numeric(myDate[2]-myDate[1])
+	dg <- ceiling(as.numeric(myDate[2]-myDate[1])/2)
 	sliderInput("lagRegione2", paste0("Lag ",regione2), min = -dg , max = dg, value = 0)
+	noUiSliderInput( "lagRegione2", paste0("Lag ",regione2), min = -dg , max = dg, value = 0, step=1, orientation="vertical", height=100)
+
+})
+
+#reacCompare$listaRegioniCompare
+#reacCompare$listRegioni
+output$selLagRegioni <- renderUI ({
+	if (verbose) cat("\nrenderUI-selLagRegioni")
+	regioni <- input$regionSelSerieStoriche
+	myDate <- isolate(reacval$dateRange_reg)
+	if(is.null(regioni))return(NULL)
+	if(is.null(myDate))return(NULL)
+	dg <- ceiling(as.numeric(myDate[2]-myDate[1])/2)
+
+
+	 #sliderInput("lagRegione2", paste0("Lag ",regione2), min = -dg , max = dg, value = 0)
+	 res <- lapply(regioni, function(x) {
+ 	 initval<-0
+	 #perché non prendo direttamente l'input?
+ 	 if (paste0("selLag_",x) %in% names(input)){
+		 if(verbose) cat("\n\t IN if",paste0("selLag_",x), "->",initval)
+ 		 #initval<-reacLiveOp$listRegioni[[paste0("selLag_",x)]]
+ 		 initval<-isolate(input[[paste0("selLag_",x)]])
+ 	 } else if(verbose) cat("\n\t OUT if",paste0("selLag_",x), "->", initval)
+ 	 #sliderInput(paste0("iOraUtilizzoBuffer_",x), label = paste("Orario Utilizzo Buffer",x), min = minOra, max = maxOra,	value = valori2)
+	 noUiSliderInput( paste0("selLag_",x), paste0("Lag ",x), min = -dg , max = dg, value = initval, step=1, orientation="horizontal", height=10)
+	})
 })
 
 
+#
+#
+
 output$lineRegioniConfronto <- renderPlotly({
+	if(verbose) cat("\n renderPlotly:lineRegioniConfronto")
+  allDataReg <- copy(reacval$dataTables_reg)
+
+	regioni <- input$regionSelSerieStoriche
+	if (is.null(regioni)) return(NULL)
+	if(verbose) cat("\n \t regioni:", regioni)
+
+	lagRegioni <- unlist(
+		lapply(regioni, function(x) {
+			initval<-input[[paste0("selLag_",x)]]
+			if(verbose) cat("\t initval:", initval)
+			if (is.null(initval)) return(NULL)
+			initval
+ 		})
+	)
+	if (is.null(lagRegioni)) return(NULL)
+
+	names(lagRegioni) <- regioni
+
+	var2plot <- input$variabileCompare
+	if(is.null(var2plot)) var2plot <- "totale_casi"#return(NULL)
+	if (is.null(allDataReg)) return(NULL)
+
+	var2plotNew <- gsub("_", " ", var2plot)
+
+  setnames(allDataReg, old=c('denominazione_regione',var2plot), new=c('regione', 'VAR2PLOT'))
+
+#		assign("regioni", regioni, envir=.GlobalEnv)
+#			assign("lagRegioni", lagRegioni, envir=.GlobalEnv)
+#				assign("allDataReg1", allDataReg, envir=.GlobalEnv)
+
+	dataReg <- allDataReg[allDataReg$regione %in% regioni]
+	setDT(dataReg)
+	for(i in 1:length(regioni)){
+		reg <- regioni[i]
+		lag <- lagRegioni[which(names(lagRegioni)==reg)]
+		dataReg[regione==reg, datanew:=data+lag]
+	}
+
+  p <- ggplot(dataReg) + my_ggtheme() +
+        suppressWarnings(geom_line(group=1, # group=1 serve per aggirare un bug di ggplotly con tooltip = c("text")
+          aes(x=datanew, y=VAR2PLOT, color=regione,
+          text = paste('Regione:', regione, '<br>Data:', strftime(data, format="%d-%m-%Y"),
+           '<br>Casi: ', VAR2PLOT)))) +
+				geom_point( aes(x=datanew, y=VAR2PLOT, color=regione)) +
+        scale_color_manual(values=color_regioni) +
+        theme(axis.text.x=element_text(angle=45, hjust=1)) +
+				guides(fill=guide_legend(title="regione")) +
+        xlab("")+ylab(var2plotNew)
+  if(reacval$mobile){
+    p<-p+scale_x_date(date_breaks="3 day",date_labels="%b %d")}
+  else{
+    p<-p+scale_x_date(date_breaks="2 day",date_labels="%b %d")
+  }
+  plot<-ggplotly(p, tooltip = c("text")) %>% config(locale = 'it')
+
+  if(reacval$mobile){
+
+    plot<-plot%>%layout(legend=list(orientation='h',x=-0,y=-0.3))%>%
+          layout(legend=list(font=list(size=12)),dragmode=F,autosize = T,heigth=3000,width = 600)
+  }
+  plot
+
+})
+
+output$lineRegioniConfrontoOLD <- renderPlotly({
 	if(verbose) cat("\n renderPlotly:lineRegioniConfronto")
   allDataReg <- copy(reacval$dataTables_reg)
 
@@ -468,7 +564,7 @@ output$lineRegioniConfronto <- renderPlotly({
           text = paste('Regione:', regione, '<br>Data:', strftime(data, format="%d-%m-%Y"),
            '<br>Casi: ', VAR2PLOT)))) +
 				geom_point( aes(x=datanew, y=VAR2PLOT, color=regione)) +
-        scale_color_manual(values=d3hexcols20) +
+        scale_color_manual(values=color_regioni) +
         theme(axis.text.x=element_text(angle=45, hjust=1)) +
 				guides(fill=guide_legend(title="regione")) +
         xlab("")+ylab(var2plotNew)
