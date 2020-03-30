@@ -146,20 +146,20 @@ regTab <- tabItem(tabName = "regPlots",
 							fluidRow(style="padding:20px;background-color:#ffffff",
 								h3("Confronto tra serie storiche"),
 								fluidRow(style="padding:10px;",
-									column(width=4,
+									column(width=3,
 #										selectizeInput("serieStoricheRegion1", label="Regione 1", 	, choices=regioniList, selected = "Lombardia", multiple=FALSE),
 #										selectizeInput("serieStoricheRegion2", label="Regione 2", 	, choices=regioniList, selected = "Lazio", multiple=FALSE),
-										pickerInput(inputId = "regionSelSerieStoriche", label = "Seleziona regioni", choices = regioniList,selected=regioni2fit, options = list(size=10,`actions-box` = TRUE, `selected-text-format` = "count >20",maxOptions = 6), multiple = TRUE),
+										pickerInput(inputId = "regionSelSerieStoriche", label = "Seleziona regioni", choices = regioniList,selected=regioni2fit, options = pickerOptions(size=10,actionsBox = F,maxOptionsText=HTML('<font color=#ad0000>È possibile confrontare al più 6 regioni!</font>') ,selectedTextFormat = "count >20",maxOptions = 6), multiple = TRUE),
 										selectizeInput("variabileCompare", label="Variabile da confrontare", 	, choices=c("totale_casi", "deceduti"), selected = "Lazio", multiple=FALSE)
 									),
-									column(width=3,
+									column(width=9,
 #										uiOutput('selLagRegione1'),
 #										uiOutput('selLagRegione2'),
 										uiOutput('selLagRegioni')
 									)
 								),
-
-								plotlyOutput(outputId="lineRegioniConfronto")
+								fluidRow(style='padding:20px;overflow-x:scroll;',
+								addSpinner(plotlyOutput(outputId="lineRegioniConfronto"), spin = "fading-circle", color = "#add437"))
 							)
 						####### fine confronto serie storiche
 							#uiOutput('legenda_regioni_bullet'),

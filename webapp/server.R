@@ -411,28 +411,28 @@ output$mapRegioniGG <- renderPlot({
 })
 
 
-output$selLagRegione1 <- renderUI ({
-	if (verbose) cat("\nrenderUI-selLagRegione1")
-	myDate <- isolate(reacval$dateRange_reg)
-	regione1 	<- input$serieStoricheRegion1
-	if(is.null(regione1))return(NULL)
-	if(is.null(myDate))return(NULL)
-	dg <- ceiling(as.numeric(myDate[2]-myDate[1])/2)
-	sliderInput("lagRegione1", paste0("Lag ",regione1), min = -dg , max = dg, value = 0)
-})
-
-
-output$selLagRegione2 <- renderUI ({
-	if (verbose) cat("\nrenderUI-selLagRegione2")
-	regione2 	<- input$serieStoricheRegion2
-	myDate <- isolate(reacval$dateRange_reg)
-	if(is.null(regione2))return(NULL)
-	if(is.null(myDate))return(NULL)
-	dg <- ceiling(as.numeric(myDate[2]-myDate[1])/2)
-	sliderInput("lagRegione2", paste0("Lag ",regione2), min = -dg , max = dg, value = 0)
-	noUiSliderInput( "lagRegione2", paste0("Lag ",regione2), min = -dg , max = dg, value = 0, step=1, orientation="vertical", height=100)
-
-})
+# output$selLagRegione1 <- renderUI ({
+# 	if (verbose) cat("\nrenderUI-selLagRegione1")
+# 	myDate <- isolate(reacval$dateRange_reg)
+# 	regione1 	<- input$serieStoricheRegion1
+# 	if(is.null(regione1))return(NULL)
+# 	if(is.null(myDate))return(NULL)
+# 	dg <- ceiling(as.numeric(myDate[2]-myDate[1])/2)
+# 	sliderInput("lagRegione1", paste0("Lag ",regione1), min = -dg , max = dg, value = 0)
+# })
+#
+#
+# output$selLagRegione2 <- renderUI ({
+# 	if (verbose) cat("\nrenderUI-selLagRegione2")
+# 	regione2 	<- input$serieStoricheRegion2
+# 	myDate <- isolate(reacval$dateRange_reg)
+# 	if(is.null(regione2))return(NULL)
+# 	if(is.null(myDate))return(NULL)
+# 	dg <- ceiling(as.numeric(myDate[2]-myDate[1])/2)
+# 	sliderInput("lagRegione2", paste0("Lag ",regione2), min = -dg , max = dg, value = 0)
+# 	noUiSliderInput( "lagRegione2", paste0("Lag ",regione2), min = -dg , max = dg, value = 0, step=1, orientation="vertical", height=100)
+#
+# })
 
 #reacCompare$listaRegioniCompare
 #reacCompare$listRegioni
@@ -453,10 +453,20 @@ output$selLagRegioni <- renderUI ({
 		 if(verbose) cat("\n\t IN if",paste0("selLag_",x), "->",initval)
  		 #initval<-reacLiveOp$listRegioni[[paste0("selLag_",x)]]
  		 initval<-isolate(input[[paste0("selLag_",x)]])
- 	 } else if(verbose) cat("\n\t OUT if",paste0("selLag_",x), "->", initval)
+ 	 } else if(verbose)
+   { cat("\n\t OUT if",paste0("selLag_",x), "->", initval)}
  	 #sliderInput(paste0("iOraUtilizzoBuffer_",x), label = paste("Orario Utilizzo Buffer",x), min = minOra, max = maxOra,	value = valori2)
-	 noUiSliderInput( paste0("selLag_",x), paste0("Lag ",x), min = -dg , max = dg, value = initval, step=1, orientation="horizontal", height=10)
+   #sliderInput(paste0("selLag_",x), paste0("Lag ",x), min = -dg , max = dg, value = initval, step=1)
+   if(reacval$mobile){
+     noUiSliderInput( paste0("selLag_",x), x, min = -dg , max = dg, value = initval, step=1, orientation="horizontal",color=color_regioni[x],inline=T,width='140px',
+     format=wNumbFormat(decimals = 0,prefix = 'giorno '))
+   }else{
+     noUiSliderInput( paste0("selLag_",x), x, min = -dg , max = dg, value = initval, step=1, orientation="vertical",color=color_regioni[x],height='120px',inline=T,width='140px',
+     format=wNumbFormat(decimals = 0,prefix = 'giorno '))
+   }
+
 	})
+
 })
 
 
@@ -524,6 +534,9 @@ output$lineRegioniConfronto <- renderPlotly({
 
     plot<-plot%>%layout(legend=list(orientation='h',x=-0,y=-0.3))%>%
           layout(legend=list(font=list(size=12)),dragmode=F,autosize = T,heigth=3000,width = 600)
+  }
+  else{
+    plot<-plot%>%layout(legend=list(orientation='h',x=-0,y=-0.3))
   }
   plot
 
@@ -1671,7 +1684,7 @@ output$tab_desktop<-renderUI({
           )),br(),
 
         fluidRow(align="center",h3("Andamento casi positivi per regione con previsione a 3 giorni")),
-        fluidRow(style='padding-left:30px',pickerInput(inputId = "regionSelFit", label = "Seleziona regioni", choices = regioniList,selected=regioni2fit, options = list(size=10,`actions-box` = TRUE, `selected-text-format` = "count >20"), multiple = TRUE)),
+        fluidRow(style='padding-left:30px',pickerInput(inputId = "regionSelFit", label = "Seleziona regioni", choices = regioniList,selected=regioni2fit, options = pickerOptions(size=10,actionsBox = T ,selectedTextFormat = "count >20",deselectAllText='Deseleziona tutto',selectAllText='Seleziona tutto'), multiple = TRUE)),
          addSpinner(plotlyOutput(outputId="fitRegion"), spin = "fading-circle", color = "#009933"), spiegaFitPos
         ),
         fluidRow(style="padding:30px;background-color:#ffffff",
@@ -1738,7 +1751,7 @@ output$tab_mobile<-renderUI({
           ))),
 
         fluidRow(style="background-color:#ffffff",column(10,offset=1,align="center",h4("Andamento casi positivi per regione con previsione a 3 giorni"))),
-        fluidRow(style="padding-left:30px;",pickerInput(inputId = "regionSelFit", label = "Seleziona regioni", choices = regioniList,selected=regioni2fit, options = list(size=10,`actions-box` = TRUE, `selected-text-format` = "count >20"), multiple = TRUE)),
+        fluidRow(style="padding-left:30px;",pickerInput(inputId = "regionSelFit", label = "Seleziona regioni", choices = regioniList,selected=regioni2fit, options = pickerOptions(size=10,actionsBox = T ,selectedTextFormat = "count >20",deselectAllText='Deseleziona tutto',selectAllText='Seleziona tutto',mobile=T), multiple = TRUE)),
          fluidRow(style="padding:10px;background-color:#ffffff",addSpinner(plotlyOutput(outputId="fitRegion"), spin = "fading-circle", color = "#009933")), #spiegaFitPos
         ),
 

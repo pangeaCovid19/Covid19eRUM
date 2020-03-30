@@ -1,10 +1,12 @@
 .main-header .logo {
+	/* position: fixed; */
 	height: 80px;
 	padding-top: 12px;
 	background-color: white;
 }
 
 .main-header .sidebar-toggle {
+
 	height: 80px;
 	padding-top: 28px;
 }
@@ -15,19 +17,24 @@
 }
 
 .sidebar {
+	/* position: fixed; */
+
 	padding-bottom: 10px;
 	padding-top: 30px;
 }
 
 .sidebar .sidebar-menu[id=configs] {
+
 	padding-top: 30px;
 }
 
 .sidebar .sidebar-menu {
          padding-top: 0px;
+				 padding-right: 20px;
 }
 
 .main-header .navbar-custom-menu {
+
 	background-color: white;
 	height: 80px;
 }
@@ -102,3 +109,37 @@ hr{
 .fa-users{
 	color: rgb(37,117,173);
 }
+
+/* #shiny-notification-panel  {
+        position: absolute;
+        font-size:30px;
+        top: 80px;
+	height: 110px;
+
+	width:30%;
+	left:35%;
+        background-color: #004592;
+        margin-top: 86px;
+        padding: 2px 3px;
+        opacity: 0.5;
+        vertical-align: middle;
+        text-align: center;
+}
+.shiny-progress .progress-text .progress-message{
+    display: block;
+}
+.progress-bar {
+    background-color: #004592;
+		height: 50px;
+
+}
+
+.shiny-progress-notification .progress{
+    margin-bottom: 5px;
+    height: 30px;
+}
+div.progress-group{
+    width:100%;
+		padding-left:250px;
+		padding-right:250px;
+} */
