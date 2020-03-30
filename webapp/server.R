@@ -177,7 +177,7 @@ output$lineRegioni <- renderPlotly({
     if(reacval$mobile){
       p<-p+scale_x_date(date_breaks="3 day",date_labels="%b %d")}
     else{
-      p<-p+scale_x_date(date_breaks="2 day",date_labels="%b %d")
+      p<-p+scale_x_date(date_breaks="2 day",date_labels="%b %d")+theme(legend.title=element_blank())
     }
     plot<-ggplotly(p, tooltip = c("text")) %>% config(locale = 'it')
 
@@ -254,6 +254,9 @@ output$puntiRegioni <- renderPlotly({
 	  xlab(xVarNew)+ylab(yVarNew)
 
 		if(assiGraph=="Logaritmici") p <- p + scale_y_log10()+ scale_x_log10()
+    if(!reacval$mobile){
+      p <- p +theme(legend.title=element_blank())
+    }
 
   plot<-ggplotly(p, tooltip = c("text")) %>% config(locale = 'it')
   if(reacval$mobile){
@@ -435,7 +438,7 @@ output$lineProvince <- renderPlotly({
           if(reacval$mobile){
             p<-p+scale_x_date(date_breaks="3 day",date_labels="%b %d")}
           else{
-            p<-p+scale_x_date(date_breaks="2 day",date_labels="%b %d")
+            p<-p+scale_x_date(date_breaks="2 day",date_labels="%b %d")+theme(legend.title=element_blank())
           }
     plot<-ggplotly(p, tooltip = c("text")) %>% config(locale = 'it')
 
@@ -698,7 +701,7 @@ output$fitRegion <- renderPlotly({
     if(reacval$mobile){
       p<-p+scale_x_date(date_breaks="3 day",date_labels="%b %d")}
     else{
-      p<-p+scale_x_date(date_breaks="2 day",date_labels="%b %d")
+      p<-p+scale_x_date(date_breaks="2 day",date_labels="%b %d") +theme(legend.title=element_blank())
     }
 
     if (tipoGraph == "Logaritmico") p <- p + scale_y_log10()
@@ -707,6 +710,13 @@ output$fitRegion <- renderPlotly({
     if(reacval$mobile){
         plot<-plot%>%layout(dragmode=F,legend=list(orientation='h',x=0,y=-0.4))
     }
+  #   else{
+  #     plot<-plot%>%
+  # add_annotations( text="<b>Regioni </b>", xref="paper", yref="paper",
+  #                 x=1.02, xanchor="left",
+  #                 y=0.8, yanchor="bottom",    # Same y as legend below
+  #                 legendtitle=TRUE, showarrow=FALSE )%>%layout( legend=list(y=0.8, yanchor="top" ) )
+  #   }
     plot
   }
 })
@@ -806,13 +816,20 @@ if(verbose) cat("\n renderPlotly:fitIta")
        if(reacval$mobile){
          p<-p+scale_x_date(date_breaks="3 day",date_labels="%b %d")}
        else{
-         p<-p+scale_x_date(date_breaks="2 day",date_labels="%b %d")
+         p<-p+scale_x_date(date_breaks="2 day",date_labels="%b %d")+theme(legend.title=element_blank())
        }
     if (tipoGraph == "Logaritmico") p <- p + scale_y_log10()
 
     plot<-ggplotly(p, tooltip = c("text")) %>% config(locale = 'it')
     if(reacval$mobile){
       plot<-plot%>%layout(dragmode=F,legend=list(orientation='h',x=0.01,y=-0.4))
+      }
+      else{
+        plot<-plot%>%
+    add_annotations( text="<b>Variabile prevista </b>", xref="paper", yref="paper",
+                    x=1.02, xanchor="left",
+                    y=0.8, yanchor="bottom",    # Same y as legend below
+                    legendtitle=TRUE, showarrow=FALSE )%>%layout( legend=list(y=0.8, yanchor="top" ) )
       }
     plot
   }
@@ -881,11 +898,19 @@ output$fitCasesIta <- renderPlotly({
             if(reacval$mobile){
               p<-p+scale_x_date(date_breaks="3 day",date_labels="%b %d")}
             else{
-              p<-p+scale_x_date(date_breaks="2 day",date_labels="%b %d")
+              p<-p+scale_x_date(date_breaks="2 day",date_labels="%b %d")+theme(legend.title=element_blank())
             }
       plot<-ggplotly(p, tooltip = c("text")) %>% config(locale = 'it')
       if(reacval$mobile){
         plot<-plot%>%layout(dragmode=F,legend=list(orientation='h',x=0,y=-0.2))
+      }
+      else{
+        plot<-plot%>%
+ add_annotations( text=paste0('<b>',testoLegenda,"</b>"), xref="paper", yref="paper",
+                 x=1, xanchor="left",
+                 y=0.8, yanchor="bottom",    # Same y as legend below
+                 legendtitle=TRUE, showarrow=FALSE ) %>%
+ layout( legend=list(y=0.8,x=1, yanchor="top" ) )
       }
       plot
    }
@@ -975,16 +1000,24 @@ output$percDeltaTot <- renderPlotly({
           theme(axis.text.x=element_text(angle=45,hjust=1)
           #,legend.title = element_blank()
         )+
-          labs(x="", y="Variazione %")+
-          guides(fill=guide_legend(title=testoLegenda))
+          labs(x="", y="Variazione %")#+
+          # guides(fill=guide_legend(title=testoLegenda))
           if(reacval$mobile){
             p<-p+scale_x_date(date_breaks="3 day",date_labels="%b %d")}
           else{
-            p<-p+scale_x_date(date_breaks="2 day",date_labels="%b %d")
+            p<-p+scale_x_date(date_breaks="2 day",date_labels="%b %d")+theme(legend.title=element_blank())
           }
   plot<-ggplotly(p, tooltip = c("text")) %>% config(locale = 'it')
       if(reacval$mobile){
         plot<-plot%>%layout(dragmode=F,legend=list(orientation='h',x=0,y=-0.2))
+      }
+      else{
+        plot<-plot%>%
+ add_annotations( text=paste0('<b>',testoLegenda,"</b>"), xref="paper", yref="paper",
+                 x=1, xanchor="left",
+                 y=0.8, yanchor="bottom",    # Same y as legend below
+                 legendtitle=TRUE, showarrow=FALSE ) %>%
+ layout( legend=list(y=0.8,x=1, yanchor="top" ) )
       }
        plot
   # }
