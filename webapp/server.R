@@ -220,6 +220,7 @@ output$puntiRegioni <- renderPlotly({
 	if(is.null(yVar)) return(NULL)
 	if (is.null(allDataReg)) return(NULL)
 	if (is.null(assiGraph)) assiGraph <- "Lineari"
+	if (is.null(giorno)) return(NULL)
 
 #	validate((need("Selezionari assi co, nomi diversi")))
 
