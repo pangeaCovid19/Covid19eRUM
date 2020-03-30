@@ -147,12 +147,15 @@ regTab <- tabItem(tabName = "regPlots",
 								h3("Confronto tra serie storiche"),
 								fluidRow(style="padding:10px;",
 									column(width=4,
-										selectizeInput("serieStoricheRegion1", label="Regione 1", 	, choices=regioniList, selected = "Lombardia", multiple=FALSE),
-										selectizeInput("serieStoricheRegion2", label="Regione 2", 	, choices=regioniList, selected = "Lazio", multiple=FALSE)
+#										selectizeInput("serieStoricheRegion1", label="Regione 1", 	, choices=regioniList, selected = "Lombardia", multiple=FALSE),
+#										selectizeInput("serieStoricheRegion2", label="Regione 2", 	, choices=regioniList, selected = "Lazio", multiple=FALSE),
+										pickerInput(inputId = "regionSelSerieStoriche", label = "Seleziona regioni", choices = regioniList,selected=regioni2fit, options = list(size=10,`actions-box` = TRUE, `selected-text-format` = "count >20",maxOptions = 6), multiple = TRUE),
+										selectizeInput("variabileCompare", label="Variabile da confrontare", 	, choices=c("totale_casi", "deceduti"), selected = "Lazio", multiple=FALSE)
 									),
 									column(width=3,
-										uiOutput('selLagRegione1'),
-										uiOutput('selLagRegione2')
+#										uiOutput('selLagRegione1'),
+#										uiOutput('selLagRegione2'),
+										uiOutput('selLagRegioni')
 									)
 								),
 
