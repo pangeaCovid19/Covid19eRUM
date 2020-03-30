@@ -1587,17 +1587,19 @@ output$tab_desktop<-renderUI({
       br(),br(),
 
       fluidRow(style="background-color:#ffffff",
-        fluidRow(
-          column(5,align="center",pickerInput(inputId = "varSel", label = "Seleziona variabile", choices = c("deceduti","totale contagiati"),selected="totale contagiati",options = list(size=10,`actions-box` = TRUE, `selected-text-format` = "count >20"), multiple = FALSE))),
-          column(10,offset=1,align="center",h3("Variazione percentuale giorno per giorno"))),
+
+          column(10,offset=1,align="center",h3("Variazione percentuale giorno per giorno")),
+          fluidRow(style="padding-left:50px;",
+            pickerInput(inputId = "varSel", label = "Seleziona variabile", choices = c("deceduti","totale contagiati"),selected="totale contagiati",options = list(size=10,`actions-box` = TRUE, `selected-text-format` = "count >20"), multiple = FALSE))),
         fluidRow(style="padding:10px;background-color:#ffffff",addSpinner(plotlyOutput(outputId="percDeltaTot"), spin = "fading-circle", color = "#009933")),
       br(),br(),
 
       br(),br(),
       fluidRow(style="background-color:#ffffff",
-      fluidRow(
-        column(5,align="center",pickerInput(inputId = "varSel2", label = "Seleziona variabile", choices = c("deceduti","totale contagiati"),selected="totale contagiati",options = list(size=10,`actions-box` = TRUE, `selected-text-format` = "count >20"), multiple = FALSE))),
-        column(10,offset=1,align="center", h3("Previsione del numero di casi a medio termine con modello esponenziale quadratico"))),
+
+        column(10,offset=1,align="center", h3("Previsione del numero di casi a medio termine con modello esponenziale quadratico")),
+        fluidRow(style="padding-left:50px;",
+          pickerInput(inputId = "varSel2", label = "Seleziona variabile", choices = c("deceduti","totale contagiati"),selected="totale contagiati",options = list(size=10,`actions-box` = TRUE, `selected-text-format` = "count >20"), multiple = FALSE))),
         fluidRow(style="padding:10px;background-color:#ffffff",addSpinner(plotlyOutput(outputId="fitCasesIta"), spin = "fading-circle", color = "#009933"))
 
       ,br(),
@@ -1650,17 +1652,19 @@ output$tab_mobile<-renderUI({
 
          br(),br(),
          fluidRow(style="background-color:#ffffff",
-           fluidRow(
-             column(5,align="center",pickerInput(inputId = "varSel", label = "Seleziona variabile", choices = c("deceduti","totale contagiati"),selected="totale contagiati",options = list(size=10,`actions-box` = TRUE, `selected-text-format` = "count >20"), multiple = FALSE))),
-             column(10,offset=1,align="center",h3("Variazione percentuale giorno per giorno"))),
+
+             column(10,offset=1,align="center",h3("Variazione percentuale giorno per giorno")),
+             fluidRow(style="padding-left:50px;",
+              pickerInput(inputId = "varSel", label = "Seleziona variabile", choices = c("deceduti","totale contagiati"),selected="totale contagiati",options = list(size=10,`actions-box` = TRUE, `selected-text-format` = "count >20"), multiple = FALSE))),
            fluidRow(style="padding:10px;background-color:#ffffff",addSpinner(plotlyOutput(outputId="percDeltaTot"), spin = "fading-circle", color = "#009933")),
          br(),br(),
 
 
          fluidRow(style="background-color:#ffffff",
-         fluidRow(
-           column(5,align="center",pickerInput(inputId = "varSel2", label = "Seleziona variabile", choices = c("deceduti","totale contagiati"),selected="totale contagiati",options = list(size=10,`actions-box` = TRUE, `selected-text-format` = "count >20"), multiple = FALSE))),
-           column(10,offset=1,align="center", h3("Previsione del numero di casi a medio termine con modello esponenziale quadratico"))),
+
+           column(10,offset=1,align="center", h3("Previsione del numero di casi a medio termine con modello esponenziale quadratico")),
+           fluidRow(style="padding-left:50px;",
+            pickerInput(inputId = "varSel2", label = "Seleziona variabile", choices = c("deceduti","totale contagiati"),selected="totale contagiati",options = list(size=10,`actions-box` = TRUE, `selected-text-format` = "count >20"), multiple = FALSE))),
            fluidRow(style="padding:10px;background-color:#ffffff",addSpinner(plotlyOutput(outputId="fitCasesIta"), spin = "fading-circle", color = "#009933")),
 
   		# br(),br(),
