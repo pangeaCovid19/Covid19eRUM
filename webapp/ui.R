@@ -171,7 +171,7 @@ regTab <- tabItem(tabName = "regPlots",
 						# 	spiegaTabella
 						# )
 						fluidRow(style="padding:20px;background-color:#ffffff",
-						h3("Tabella con casi confermati"),addSpinner(DTOutput(outputId="tabRegioni"), spin = "fading-circle", color = "#add437"),spiegaTabella
+						h3("Tabella con casi confermati"),DTOutput(outputId="tabRegioni"), spiegaTabella
 
 						)
 					,br()),br(),fluidRow(
@@ -201,7 +201,7 @@ prvTab <- tabItem(tabName = "prvPlots",
 
 							,br(),
 							fluidRow(style="padding:20px;background-color:#ffffff",
-								column(width=12, h3("Tabella con casi confermati"),addSpinner(DTOutput(outputId="tabProvince"), spin = "fading-circle", color = "#add437"), spiegaTabella
+								column(width=12, h3("Tabella con casi confermati"),DTOutput(outputId="tabProvince"), spiegaTabella
 								)
 
 
@@ -223,7 +223,7 @@ dashboardPage(title="CoVid-19 in Italia",
 	skin = "black",
 	dashboardHeader3( pagename="CoVid-19 in Italia", logo_img = "logo_pangea_esteso.png", width = 200,
 
-		tags$li(uiOutput('data_agg') ,class='dropdown', style=" color:#0b4975;font-weight: bold;margin-top:40px;margin-right: 40px;margin-left: 60px;")
+		tags$li(uiOutput('data_agg') ,class='dropdown', style="color:#0b4975;font-weight: bold;margin-top:40px;margin-right: 40px;margin-left: 60px;")
 
 
 												 ),
