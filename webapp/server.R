@@ -521,7 +521,7 @@ output$lineRegioniConfronto <- renderPlotly({
            '<br>Casi: ', VAR2PLOT)))) +
 				geom_point( aes(x=datanew, y=VAR2PLOT, color=regione)) +
         scale_color_manual(values=color_regioni) +
-        theme(axis.text.x=element_text(angle=45, hjust=1)) +
+        theme(legend.title=element_blank())+theme(axis.text.x=element_text(angle=45, hjust=1)) +
 				guides(fill=guide_legend(title="regione")) +
         xlab("")+ylab(var2plotNew)
   if(reacval$mobile){
@@ -536,9 +536,9 @@ output$lineRegioniConfronto <- renderPlotly({
     plot<-plot%>%layout(legend=list(orientation='h',x=-0,y=-0.3))%>%
           layout(legend=list(font=list(size=12)),dragmode=F,autosize = T,heigth=3000,width = 600)
   }
-  else{
-    plot<-plot%>%layout(legend=list(orientation='h',x=-0,y=-0.3))
-  }
+  # else{
+  #   plot<-plot%>%layout(legend=list(orientation='h',x=-0,y=-0.3))
+  # }
   plot
 
 })
