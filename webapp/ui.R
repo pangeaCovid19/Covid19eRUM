@@ -166,7 +166,8 @@ regTab <- tabItem(tabName = "regPlots",
 							fluidRow(style="padding:20px;background-color:#ffffff",
 								h3("Nuovi casi in funzione del numero totale di casi"),
 									uiOutput('inputRegioniCasiVsNuovicasi'),
-									plotlyOutput('lineRegioniCasiVsNuovicasi')
+									plotlyOutput('lineRegioniCasiVsNuovicasi'),
+									spiegaGraficoCasiVsCasiNuovi
 							)
 							##################################################
 							##################################################
@@ -209,7 +210,8 @@ prvTab <- tabItem(tabName = "prvPlots",
 							fluidRow(style="padding:20px;background-color:#ffffff",
 								h3("Nuovi casi in funzione del numero totale di casi"),
 									uiOutput('inputProvinceCasiVsNuovicasi'),
-									plotlyOutput('lineProvinceCasiVsNuovicasi')
+									plotlyOutput('lineProvinceCasiVsNuovicasi'),
+									spiegaGraficoCasiVsCasiNuovi
 							)
 							##################################################
 

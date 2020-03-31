@@ -192,6 +192,12 @@ spiegaTerIntPercentuale <- HTML("<div style='padding-top:10px;'>In questo grafic
 spiegaTerIntAttuale <- HTML("<div style='padding-top:10px;'>In questo grafico vengono rappresentati il numero di posti letto in terapia intensiva, aggiornati al 2018, ed il numero di pazienti in terapia intensiva con CoVid19 per ogni regione.</div>")
 
 
+#########################
+
+
+spiegaGraficoCasiVsCasiNuovi <- HTML("<div style='padding-top:10px;'> In questo grafico viene rappresentato il numero dei nuovi casi negli ultimi 7 giorni in funzione del numero di casi totali. Sappiamo che il trend di crescita del numero di contagiati non può cresce in modo esponenziale molto a lungo, ma come facciamo ad accorgerci del momento in cui il trend sta cambiando? Questo grafico ci aiuta a visualizzare quel momento: la crescira esponenziale è caratterizzata da un numero di contagi giornalieri proporzionali al numero di contagi totali. Tale andamento è rappresentato da una retta in questo grafico. Nel momento in cui la crescita smetterà di essere esponenziale inizieremo a vedere la curva piegarsi verso il basso.</div>")
+
+
 fontiDati <- HTML("<div>Dati provenienti da:
 <ul>
 <li><a href='https://github.com/pcm-dpc/COVID-19'>Presidenza del Consiglio dei Ministri - Dipartimento della Protezione Civile
