@@ -448,6 +448,10 @@ output$selLagRegioni <- renderUI ({
 	 #sliderInput("lagRegione2", paste0("Lag ",regione2), min = -dg , max = dg, value = 0)
 	 res <- lapply(regioni, function(x) {
  	 initval<-0
+   print('ini')
+   print(names(input))
+   print(x)
+   print('fin')
 	 #perché non prendo direttamente l'input?
  	 if (paste0("selLag_",x) %in% names(input)){
 		 if(verbose) cat("\n\t IN if",paste0("selLag_",x), "->",initval)
