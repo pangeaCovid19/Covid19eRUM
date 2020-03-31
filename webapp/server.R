@@ -649,6 +649,8 @@ output$lineProvinceCasiVsNuovicasi <- renderPlotly({
 	var2plotNew <- gsub("_", " ", var2plot)
 	ndays <- 7
 
+	if(verbose) cat("\t dataMaxxi:", dataMaxxi)
+	if(verbose) print(str(dataMaxxi))
 	if (is.null(allDataPrv)) return(NULL)
 	if (is.null(var2plot)) return(NULL)
 	if (is.null(dataMaxxi)) dataMaxxi <- max(allDataPrv)
