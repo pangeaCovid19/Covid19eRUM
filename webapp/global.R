@@ -4,6 +4,7 @@ library(plotly)
 library(leaflet)
 library(data.table)
 library(DT)
+library(zoo)
 source("funzionifit.R")
 options(bitmapType="cairo")
 
@@ -17,6 +18,7 @@ assignout <- FALSE
 saveRDSout <- FALSE
 
 regioni2fit <- c('Lombardia', 'Emilia Romagna', 'Veneto')
+province2fit <- c('Bergamo', 'Brescia', 'Milano')
 
 dir_prov 	<- "www/pcm_data/"
 dir_reg		<- "www/dati-regioni/"
@@ -97,6 +99,7 @@ allData_reg_flt <- aggregate(list(totale_casi=allData_reg_flt$totale_casi, pop=a
 allData_reg_flt$`casi su 10mila abit` <- round(allData_reg_flt$totale_casi / allData_reg_flt$pop * 10000, 3)
 ## fine parte per mappe
 regioniList <- sort(unique(allData_reg_flt$denominazione_regione))
+provinceList <- sort(unique(allData_prv$denominazione_provincia))
 
 color_regioni<-d3hexcols20
 names(color_regioni)<-regioniList
@@ -187,6 +190,12 @@ spiegaTerIntPercentuale <- HTML("<div style='padding-top:10px;'>In questo grafic
 
 
 spiegaTerIntAttuale <- HTML("<div style='padding-top:10px;'>In questo grafico vengono rappresentati il numero di posti letto in terapia intensiva, aggiornati al 2018, ed il numero di pazienti in terapia intensiva con CoVid19 per ogni regione.</div>")
+
+
+#########################
+
+
+spiegaGraficoCasiVsCasiNuovi <- HTML("<div style='padding-top:10px;'> In questo grafico viene rappresentato il numero dei nuovi casi negli ultimi 7 giorni in funzione del numero di casi totali. Sappiamo che il trend di crescita del numero di contagiati non può cresce in modo esponenziale molto a lungo, ma come facciamo ad accorgerci del momento in cui il trend sta cambiando? Questo grafico ci aiuta a visualizzare quel momento: la crescira esponenziale è caratterizzata da un numero di contagi giornalieri proporzionali al numero di contagi totali. Tale andamento è rappresentato da una retta in questo grafico. Nel momento in cui la crescita smetterà di essere esponenziale inizieremo a vedere la curva piegarsi verso il basso.</div>")
 
 
 fontiDati <- HTML("<div>Dati provenienti da:

@@ -19,10 +19,15 @@ readData<-function(file, popolazione) {
 	tmp[grep("note",names(tmp))]<-NULL
 	paTrentino <- grep('bolz|trent', tmp$denominazione_regione, ignore.case=T)
 	tmp$denominazione_regione[paTrentino] <- "Trentino - Alto Adige"
+	paEmilia <- grep('Emilia', tmp$denominazione_regione, ignore.case=T)
+	tmp$denominazione_regione[paEmilia] <- "Emilia Romagna"
 	if ("codice_provincia" %in% names(tmp)) {
 		res<-merge(tmp, popolazione[,c("codice_provincia", "pop")], by="codice_provincia",all.x=TRUE)
 		return(res)
 	} else {
+		if("totale_positivi" %in% names(tmp))setnames(tmp, old=c("totale_positivi"), new=c("totale_attualmente_positivi") )
+		if("variazione_totale_positivi" %in% names(tmp))setnames(tmp, old=c("variazione_totale_positivi"), new=c("nuovi_attualmente_positivi" ) )
+
 		indTrentino <- which(tmp$denominazione_regione=="Trentino - Alto Adige")
 		tmp$lat[indTrentino] 	<- mean(tmp$lat[indTrentino])
 		tmp$long[indTrentino] 	<- mean(tmp$long[indTrentino])
@@ -137,7 +142,7 @@ while (i==0) {
 
 }
 
-if ( TRUE) {
+if ( FALSE) {
 	date <- seq(as.Date('2020-03-08'), dataMax, by=1)
 	modelswitch<-as.Date("2020-03-28")
 	longIta <- lapply(date, function(x){
@@ -160,8 +165,10 @@ if ( TRUE) {
 		saveRDS(modelliItaExp,paste0("www/pastModels/modelliItaExp_", x,".RDS"))
 	})
 }
-rmarkdown::render("articolo.Rmd",output_file="www/tabReport.html")
 
-if(!dir.exists("www/pastDiary/")) dir.create("www/pastDiary/")
-rmarkdown::render("articolo.Rmd",output_file=paste0("www/pastDiary/tabReport_", dataMax,".html"))
-rmarkdown::render("art21mar2020.Rmd",output_file=paste0("www/Report21marzo2020.html"))
+if(TRUE) {
+	rmarkdown::render("articolo.Rmd",output_file="www/tabReport.html")
+	if(!dir.exists("www/pastDiary/")) dir.create("www/pastDiary/")
+	rmarkdown::render("articolo.Rmd",output_file=paste0("www/pastDiary/tabReport_", dataMax,".html"))
+	rmarkdown::render("art21mar2020.Rmd",output_file=paste0("www/Report21marzo2020.html"))
+}

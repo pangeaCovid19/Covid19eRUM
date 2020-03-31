@@ -546,66 +546,148 @@ output$lineRegioniConfronto <- renderPlotly({
 
 })
 
-output$lineRegioniConfrontoOLD <- renderPlotly({
-	if(verbose) cat("\n renderPlotly:lineRegioniConfronto")
-  allDataReg <- copy(reacval$dataTables_reg)
+#-----------------------------------------------------
+output$inputRegioniCasiVsNuovicasi <- renderUI ({
+	if(verbose) cat("\n renderUI:inputRegioniCasiVsNuovicasi")
+	dataRange <- reacval$dateRange_reg
+		ndays <- 7
+	if(is.null(dataRange)) return(NULL)
+	fluidRow(style="padding:20px;background-color:#ffffff",
+		column(width=4,
+			pickerInput(inputId = "selezionaRegioniCasiVsNuoviCasi", label = "Seleziona regioni", choices = regioniList, selected=regioni2fit, options = pickerOptions(size=10,actionsBox = TRUE,maxOptionsText=HTML('') ,selectedTextFormat = "count >20", deselectAllText='Deseleziona tutto',selectAllText='Seleziona tutto'), multiple = TRUE)
+		),
+		column(width=3,
+			selectizeInput("variabileRegioniCasiVsNuoviCasi", label="Variabile da analizzare"	, choices=c("totale_casi", "deceduti"), selected = "totale_casi", multiple=FALSE)
+		),
+		column(width=4,
+			sliderInput("dataRegioniCasiVsNuoviCasi", "Giorno:",
+			min = min(dataRange) +ndays+ 1, max = max(dataRange),
+			value = max(dataRange), animate = animationOptions(interval = 1000), timeFormat="%b %d")
+		),
+	)
+})
 
-	regione1 <- input$serieStoricheRegion1
-	regione2 <- input$serieStoricheRegion2
+output$lineRegioniCasiVsNuovicasi <- renderPlotly({
+	if(verbose) cat("\n renderPlotly:lineRegioniCasiVsNuovicasi")
+  allDataReg 		<- copy(reacval$dataTables_reg)
+#	allDataReg <- copy(res)
+	regioni2plot 	<- input$selezionaRegioniCasiVsNuoviCasi
+	dataMax 			<- input$dataRegioniCasiVsNuoviCasi
+	var2plot 			<- input$variabileRegioniCasiVsNuoviCasi
 
-	lagReg1 <- input$lagRegione1
-	lagReg2 <- input$lagRegione2
-
-	if(verbose) cat("\n \t regione1:", c(regione1,regione2))
-	if(verbose) cat("\n \t selLagRegione2:", c(lagReg1,lagReg2))
-
-	var2plot <- input$variabileLineRegioni
-	if(is.null(var2plot)) var2plot <- "totale_casi"#return(NULL)
-	if (is.null(allDataReg)) return(NULL)
-	if (is.null(lagReg1)) return(NULL)
-	if (is.null(lagReg2)) return(NULL)
-	if (is.null(regione1)) return(NULL)
-	if (is.null(regione2)) return(NULL)
-
-	if(verbose) cat("\n\t letti input")
-
+	cat("0")
+	if(is.null(var2plot)) return(NULL)
 	var2plotNew <- gsub("_", " ", var2plot)
+	ndays <- 7
 
-  setnames(allDataReg, old=c('denominazione_regione',var2plot), new=c('regione', 'VAR2PLOT'))
+	cat("1")
+	if (is.null(allDataReg)) return(NULL)
+	if (is.null(var2plot)) return(NULL)
+	if (is.null(dataMax)) dataMax <- max(allDataReg)
 
-	dataReg <- allDataReg[allDataReg$regione %in% c(regione1, regione2)]
-	setDT(dataReg)
-	dataReg[regione==regione1, datanew:=data+lagReg1]
-	dataReg[regione==regione2, datanew:=data+lagReg2]
+		cat("2")
+	setDT(allDataReg)
+	allDataReg <- allDataReg[ denominazione_regione %in% regioni2plot, ]
+	allDataReg <- allDataReg[ data <= dataMax, ]
+	setorder(allDataReg, denominazione_regione, data)
 
-  p <- ggplot(dataReg) + my_ggtheme() +
-        suppressWarnings(geom_line(group=1, # group=1 serve per aggirare un bug di ggplotly con tooltip = c("text")
-          aes(x=datanew, y=VAR2PLOT, color=regione,
-          text = paste('Regione:', regione, '<br>Data:', strftime(data, format="%d-%m-%Y"),
-           '<br>Casi: ', VAR2PLOT)))) +
-				geom_point( aes(x=datanew, y=VAR2PLOT, color=regione)) +
-        scale_color_manual(values=color_regioni) +
-        theme(axis.text.x=element_text(angle=45, hjust=1)) +
+	setnames(allDataReg, old=c(var2plot), new=c( 'VAR2PLOT'))
+	allDataReg[, casi_nuovi:= c(0,diff(VAR2PLOT)),denominazione_regione]
+	allDataReg[, casi_roll:=c(rep(NA,ndays-1), rollsum(casi_nuovi, k=ndays)),denominazione_regione]
+	setorder(allDataReg, -data)
+
+		cat("3")
+	allDataReg <- allDataReg[ !is.na(casi_roll) , .(data, denominazione_regione, casi_roll, VAR2PLOT)]
+
+		cat("4")
+	p <- ggplot(allDataReg[ !is.na(casi_roll)]) + my_ggtheme() +
+					geom_point( aes(x=VAR2PLOT, y=casi_roll, color=denominazione_regione)) +
+					geom_line(group=1, # group=1 serve per aggirare un bug di ggplotly con tooltip = c("text")
+					aes(x=VAR2PLOT, y=casi_roll,color=denominazione_regione,
+					text = paste('Regione:', denominazione_regione, '<br>Totali:', VAR2PLOT,
+					paste0("<br>Casi ultimi ",ndays," giorni"), casi_roll)))+
+				scale_color_manual(values=color_regioni) +
+				theme(axis.text.x=element_text(angle=45, hjust=1)) +
 				guides(fill=guide_legend(title="regione")) +
-        xlab("")+ylab(var2plotNew)
-  if(reacval$mobile){
-    p<-p+scale_x_date(date_breaks="3 day",date_labels="%b %d")}
-  else{
-    p<-p+scale_x_date(date_breaks="2 day",date_labels="%b %d")
-  }
-  plot<-ggplotly(p, tooltip = c("text")) %>% config(locale = 'it')
-
-  if(reacval$mobile){
-
-    plot<-plot%>%layout(legend=list(orientation='h',x=-0,y=-0.3))%>%
-          layout(legend=list(font=list(size=12)),dragmode=F,autosize = T,heigth=3000,width = 600)
-  }
-  plot
+				xlab("Totali")+ylab(paste0("ultimi ",ndays," giorni"))+
+				scale_y_log10() + scale_x_log10()
+				p
 
 })
+#-----------------------------------------------------
 
 
 ## PROVINCE
+## #-----------------------------------------------------
+output$inputProvinceCasiVsNuovicasi <- renderUI ({
+	if(verbose) cat("\n renderUI:inputProvinceCasiVsNuovicasi")
+	if(!exists('provinceList')) provinceList <- sort(unique(allData_prv$denominazione_provincia))
+	if(!exists('province2fit')) province2fit <- c('Bergamo', 'Brescia', 'Milano')
+
+	dataRange <- reacval$dateRange_prv
+	ndays <- 7
+	if(is.null(dataRange)) return(NULL)
+	fluidRow(style="padding:20px;background-color:#ffffff",
+		column(width=4,
+			pickerInput(inputId = "selezionaProvinceCasiVsNuoviCasi", label = "Seleziona province", choices = provinceList, selected=province2fit, options = pickerOptions(size=10,actionsBox = TRUE,maxOptionsText=HTML('') ,selectedTextFormat = "count >20", deselectAllText='Deseleziona tutto',selectAllText='Seleziona tutto'), multiple = TRUE)
+		),
+#		column(width=3, non ci sono i deceduti
+#			selectizeInput("variabileProvinceCasiVsNuoviCasi", label="Variabile da analizzare"	, choices=c("totale_casi", "deceduti"), selected = "totale_casi", multiple=FALSE)
+#		),
+		column(width=4,
+			sliderInput("dataProvinceCasiVsNuoviCasi", "Giorno:",
+			min = min(dataRange) +ndays+ 1, max = max(dataRange),
+			value = max(dataRange), animate = animationOptions(interval = 1000), timeFormat="%b %d")
+		),
+	)
+})
+
+output$lineProvinceCasiVsNuovicasi <- renderPlotly({
+	if(verbose) cat("\n renderPlotly:lineProvinceCasiVsNuovicasi")
+  allDataPrv 		<- copy(reacval$dataTables_prv)
+	prov2plot 	<- input$selezionaProvinceCasiVsNuoviCasi
+	dataMaxxi 			<- input$dataProvinceCasiVsNuoviCasi
+	var2plot 			<- "totale_casi"
+
+	if(is.null(var2plot)) return(NULL)
+	var2plotNew <- gsub("_", " ", var2plot)
+	ndays <- 7
+
+	if(verbose) cat("\t dataMaxxi:", dataMaxxi)
+	if(verbose) print(str(dataMaxxi))
+	if (is.null(allDataPrv)) return(NULL)
+	if (is.null(var2plot)) return(NULL)
+	if (is.null(dataMaxxi)) dataMaxxi <- max(allDataPrv)
+
+	setDT(allDataPrv)
+	allDataPrv <- allDataPrv[ denominazione_provincia %in% prov2plot, ]
+	allDataPrv <- allDataPrv[ data <= dataMaxxi, ]
+	setorder(allDataPrv, denominazione_provincia, data)
+
+	setnames(allDataPrv, old=c(var2plot), new=c( 'VAR2PLOT'))
+	allDataPrv[, casi_nuovi:= c(0,diff(VAR2PLOT)),denominazione_provincia]
+	allDataPrv[, casi_roll:=c(rep(NA,ndays-1), rollsum(casi_nuovi, k=ndays)),denominazione_provincia]
+	setorder(allDataPrv, -data)
+
+		cat("3")
+	allDataPrv <- allDataPrv[ !is.na(casi_roll) , .(data, denominazione_provincia, casi_roll, VAR2PLOT)]
+
+		cat("4")
+	p <- ggplot(allDataPrv[ !is.na(casi_roll)]) + my_ggtheme() +
+					geom_point( aes(x=VAR2PLOT, y=casi_roll, color=denominazione_provincia)) +
+					geom_line(group=1, # group=1 serve per aggirare un bug di ggplotly con tooltip = c("text")
+					aes(x=VAR2PLOT, y=casi_roll,color=denominazione_provincia,
+					text = paste('Provincia:', denominazione_provincia, '<br>Totali:', VAR2PLOT,
+					paste0("<br>Casi ultimi ",ndays," giorni"), casi_roll)))+
+#				scale_color_manual(values=color_regioni) +
+				theme(axis.text.x=element_text(angle=45, hjust=1)) +
+				guides(fill=guide_legend(title="province")) +
+				xlab("Totali")+ylab(paste0("ultimi ",ndays," giorni"))+
+				scale_y_log10() + scale_x_log10()
+				p
+
+})
+#-----------------------------------------------------
 
 output$updatePrvUI <- renderUI({
 	if(verbose) cat("\n renderUI:updatePrvUI")

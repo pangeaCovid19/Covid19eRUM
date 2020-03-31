@@ -38,7 +38,7 @@ confrontoModelloPrevisioni<-function(data, contagi, datastart=as.Date("2020-03-1
 #modello<-readRDS(sprintf("www/pastModels/modelliIta_%s.RDS"))
 #modelloexp<-readRDS(sprintf("www/pastModels/modelliItaExp_%s.RDS"))
 setindex(datiRegioni,NULL)
-italia<-datiRegioni[,lapply(.SD,sum),by=.(data),.SDcols=7:15]
+italia<-datiRegioni[,lapply(.SD,sum),by=.(data),.SDcols=7:17]
 setkey(italia,data)
 getLastDate<-function() max(italia$data)
 getCoeffTS<-function(datastart=as.Date("2020-03-10"), datafinish = getLastDate()) {

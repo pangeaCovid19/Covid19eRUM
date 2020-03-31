@@ -124,24 +124,21 @@ regTab <- tabItem(tabName = "regPlots",
 							##################################################
 							##################################################
 							#FIXME per togliere i grafici nuovi commentare fino a plotlyOutput(outputId="puntiRegioni")
-							fluidRow(style="padding:20px;background-color:#ffffff",
-								h3("Confronto tra variabili"),
-								fluidRow(style="padding:10px;",
-								column(width=3,
-									selectizeInput("confrontox", label="Variabile su asse X", 	choices=campiTotali , selected = "totale_casi", multiple=FALSE)
-								#),
-								#column(width=3,
-									,selectizeInput("confrontoy", label="Variabile su asse Y", 	choices=campiTotali , selected = "tamponi", multiple=FALSE)
-								),
-								column(width=2,offset=1,fluidRow(h1(' ')),
-									prettyRadioButtons('confrontoTipoGratico',"Assi del grafico",choices = c('Lineari', 'Logaritmici') , selected = "Logaritmici", status = "primary",shape = 'round',outline = FALSE,animation = 'jelly',icon = icon('check'))
-									#selectizeInput("confrontoTipoGratico", label="Assi del grafico", 	choices=c('Lineari', 'Logaritmici') , selected = "Logaritmici", multiple=FALSE)
-								),
-								column(width=6,fluidRow(h1(' ')),
-									uiOutput("confrontoGiornoUI")
-								))
-							),
-							fluidRow(style='padding:30px;',fluidRow(style='padding:20px;overflow-x:scroll;',addSpinner(plotlyOutput(outputId="puntiRegioni"), spin = "fading-circle", color = "#add437"))),
+#							fluidRow(style="padding:20px;background-color:#ffffff",
+#								h3("Confronto tra variabili"),
+#								fluidRow(style="padding:10px;",
+#								column(width=3,
+#									selectizeInput("confrontox", label="Variabile su asse X", 	choices=campiTotali , selected = "totale_casi", multiple=FALSE)
+#									,selectizeInput("confrontoy", label="Variabile su asse Y", 	choices=campiTotali , selected = "tamponi", multiple=FALSE)
+#								),
+#								column(width=2,offset=1,fluidRow(h1(' ')),
+#									prettyRadioButtons('confrontoTipoGratico',"Assi del grafico",choices = c('Lineari', 'Logaritmici') , selected = "Logaritmici", status = "primary",shape = 'round',outline = FALSE,animation = 'jelly',icon = icon('check'))
+#								),
+#								column(width=6,fluidRow(h1(' ')),
+#									uiOutput("confrontoGiornoUI")
+#								))
+#							),
+#							fluidRow(style='padding:30px;',fluidRow(style='padding:20px;overflow-x:scroll;',addSpinner(plotlyOutput(outputId="puntiRegioni"), spin = "fading-circle", color = "#add437"))),
 							# confronto serie storiche
 							fluidRow(style="padding:20px;background-color:#ffffff",
 								h3("Confronto tra serie storiche"),
@@ -160,9 +157,18 @@ regTab <- tabItem(tabName = "regPlots",
 								),
 								fluidRow(style='padding:20px;overflow-x:scroll;',
 								addSpinner(plotlyOutput(outputId="lineRegioniConfronto"), spin = "fading-circle", color = "#add437"))
-							)
+							),
 						####### fine confronto serie storiche
 							#uiOutput('legenda_regioni_bullet'),
+							##################################################
+							##################################################
+							# CASI VS NUOVI CASI
+							fluidRow(style="padding:20px;background-color:#ffffff",
+								h3("Nuovi casi in funzione del numero totale di casi"),
+									uiOutput('inputRegioniCasiVsNuovicasi'),
+									plotlyOutput('lineRegioniCasiVsNuovicasi'),
+									spiegaGraficoCasiVsCasiNuovi
+							)
 							##################################################
 							##################################################
 						)
@@ -198,7 +204,16 @@ prvTab <- tabItem(tabName = "prvPlots",
 								h3("Andamento dei casi confermati"),
 
 								fluidRow(style="overflow-x:scroll;",align='center',addSpinner(plotlyOutput(outputId="lineProvince"), spin = "fading-circle", color = "#add437")), spiegaLinePlot
-								)
+							),
+							##################################################
+							# CASI VS NUOVI CASI
+							fluidRow(style="padding:20px;background-color:#ffffff",
+								h3("Nuovi casi in funzione del numero totale di casi"),
+									uiOutput('inputProvinceCasiVsNuovicasi'),
+									plotlyOutput('lineProvinceCasiVsNuovicasi'),
+									spiegaGraficoCasiVsCasiNuovi
+							)
+							##################################################
 
 							,br(),
 							fluidRow(style="padding:20px;background-color:#ffffff",
