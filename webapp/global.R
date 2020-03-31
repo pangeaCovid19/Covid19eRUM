@@ -17,6 +17,7 @@ assignout <- FALSE
 saveRDSout <- FALSE
 
 regioni2fit <- c('Lombardia', 'Emilia Romagna', 'Veneto')
+province2fit <- c('Bergamo', 'Brescia', 'Milano')
 
 dir_prov 	<- "www/pcm_data/"
 dir_reg		<- "www/dati-regioni/"
@@ -97,6 +98,7 @@ allData_reg_flt <- aggregate(list(totale_casi=allData_reg_flt$totale_casi, pop=a
 allData_reg_flt$`casi su 10mila abit` <- round(allData_reg_flt$totale_casi / allData_reg_flt$pop * 10000, 3)
 ## fine parte per mappe
 regioniList <- sort(unique(allData_reg_flt$denominazione_regione))
+provinceList <- sort(unique(allData_prv$denominazione_provincia))
 
 color_regioni<-d3hexcols20
 names(color_regioni)<-regioniList
