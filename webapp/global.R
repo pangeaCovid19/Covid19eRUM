@@ -4,6 +4,7 @@ library(plotly)
 library(leaflet)
 library(data.table)
 library(DT)
+library(zoo)
 source("funzionifit.R")
 options(bitmapType="cairo")
 
