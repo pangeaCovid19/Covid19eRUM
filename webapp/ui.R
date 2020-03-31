@@ -114,7 +114,7 @@ regTab <- tabItem(tabName = "regPlots",
 								addSpinner(leafletOutput(outputId="mapRegioni"), spin = "fading-circle", color = "#add437"),
 								spiegaMappa
 						),br(),
-						fluidRow(style="padding:20px;background-color:#ffffff",
+						fluidRow(style="padding:30px;background-color:#ffffff",
 							h3("Andamento dei casi confermati"),
 							selectizeInput("variabileLineRegioni", label="Variabile da mostrare", 	choices=campiTotali , selected = "totale_casi", multiple=FALSE),
 							fluidRow(style="overflow-x:scroll;padding:20px;",addSpinner(plotlyOutput(outputId="lineRegioni"), spin = "fading-circle", color = "#add437")),
@@ -155,7 +155,7 @@ regTab <- tabItem(tabName = "regPlots",
 										uiOutput('selLagRegioni')
 									)
 								),
-								fluidRow(style='padding:20px;overflow-x:scroll;',
+								fluidRow(style='padding:30px;overflow-x:scroll;',
 								addSpinner(plotlyOutput(outputId="lineRegioniConfronto"), spin = "fading-circle", color = "#add437"))
 							),
 						####### fine confronto serie storiche
@@ -163,10 +163,10 @@ regTab <- tabItem(tabName = "regPlots",
 							##################################################
 							##################################################
 							# CASI VS NUOVI CASI
-							fluidRow(style="padding:20px;background-color:#ffffff",
+							fluidRow(style="padding:30px;background-color:#ffffff",
 								h3("Nuovi casi in funzione del numero totale di casi"),
 									uiOutput('inputRegioniCasiVsNuovicasi'),
-									plotlyOutput('lineRegioniCasiVsNuovicasi'),
+									fluidRow(style="overflow-x:scroll;padding:20px;",addSpinner(plotlyOutput('lineRegioniCasiVsNuovicasi'), spin = "fading-circle", color = "#add437")),
 									spiegaGraficoCasiVsCasiNuovi
 							)
 							##################################################
@@ -207,10 +207,11 @@ prvTab <- tabItem(tabName = "prvPlots",
 							),
 							##################################################
 							# CASI VS NUOVI CASI
-							fluidRow(style="padding:20px;background-color:#ffffff",
+							fluidRow(style="padding:30px;background-color:#ffffff",
 								h3("Nuovi casi in funzione del numero totale di casi"),
 									uiOutput('inputProvinceCasiVsNuovicasi'),
-									plotlyOutput('lineProvinceCasiVsNuovicasi'),
+										fluidRow(style="overflow-x:scroll;",align='center',addSpinner(plotlyOutput('lineProvinceCasiVsNuovicasi'), spin = "fading-circle", color = "#add437")),
+
 									spiegaGraficoCasiVsCasiNuovi
 							)
 							##################################################

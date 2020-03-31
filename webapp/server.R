@@ -448,10 +448,7 @@ output$selLagRegioni <- renderUI ({
 	 #sliderInput("lagRegione2", paste0("Lag ",regione2), min = -dg , max = dg, value = 0)
 	 res <- lapply(regioni, function(x) {
  	 initval<-0
-   print('ini')
-   print(names(input))
-   print(x)
-   print('fin')
+
 	 #perché non prendo direttamente l'input?
  	 if (paste0("selLag_",x) %in% names(input)){
 		 if(verbose) cat("\n\t IN if",paste0("selLag_",x), "->",initval)
@@ -607,11 +604,17 @@ output$lineRegioniCasiVsNuovicasi <- renderPlotly({
 					text = paste('Regione:', denominazione_regione, '<br>Totali:', VAR2PLOT,
 					paste0("<br>Casi ultimi ",ndays," giorni"), casi_roll)))+
 				scale_color_manual(values=color_regioni) +
-				theme(axis.text.x=element_text(angle=45, hjust=1)) +
+				theme(legend.title=element_blank())+#theme(axis.text.x=element_text(angle=45, hjust=1)) +
 				guides(fill=guide_legend(title="regione")) +
 				xlab("Totali")+ylab(paste0("ultimi ",ndays," giorni"))+
 				scale_y_log10() + scale_x_log10()
-				p
+        plot<-ggplotly(p)
+            if(reacval$mobile){
+
+              plot<-plot%>%layout(legend=list(orientation='h',x=-0,y=-0.3))%>%
+                    layout(legend=list(font=list(size=12)),dragmode=F,autosize = T,heigth=3000,width = 600)
+            }
+				plot
 
 })
 #-----------------------------------------------------
@@ -680,11 +683,19 @@ output$lineProvinceCasiVsNuovicasi <- renderPlotly({
 					text = paste('Provincia:', denominazione_provincia, '<br>Totali:', VAR2PLOT,
 					paste0("<br>Casi ultimi ",ndays," giorni"), casi_roll)))+
 #				scale_color_manual(values=color_regioni) +
-				theme(axis.text.x=element_text(angle=45, hjust=1)) +
+				theme(legend.title=element_blank())+#theme(axis.text.x=element_text(angle=45, hjust=1)) +
 				guides(fill=guide_legend(title="province")) +
 				xlab("Totali")+ylab(paste0("ultimi ",ndays," giorni"))+
 				scale_y_log10() + scale_x_log10()
-				p
+
+        plot<-ggplotly(p)
+            if(reacval$mobile){
+
+              plot<-plot%>%layout(legend=list(orientation='h',x=-0,y=-0.3))%>%
+                    layout(legend=list(font=list(size=12)),dragmode=F,autosize = T,heigth=3000,width = 600)
+            }
+        plot
+
 
 })
 #-----------------------------------------------------
