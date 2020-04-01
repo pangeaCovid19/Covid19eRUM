@@ -104,6 +104,14 @@ provinceList <- sort(unique(allData_prv$denominazione_provincia))
 color_regioni<-d3hexcols20
 names(color_regioni)<-regioniList
 
+a<-lapply(regioniList,function(x){
+    province<-sort(unique(allData_prv[allData_prv$denominazione_regione==x,]$denominazione_provincia))
+    pal<-d3hexcols20[1:length(province)]
+    names(pal)<-province
+    return(pal)})
+color_prov<-unlist(a)
+
+
 allData_reg <- readRDS(paste0(dir_reg, regRDS))
 mtimeProv <- file.info(paste0(dir_prov,provRDS))$mtime
 mtimeReg 	<-file.info(paste0(dir_reg,regRDS))$mtime
@@ -140,6 +148,19 @@ map_regioni <- readRDS(file=paste0(dir_data, "map_regioni.RDS"))
 
 
 risultatiFit <- HTML("<div style='padding-top:10px;'></div>")
+
+
+
+
+spiegaFitMedioTermine<- HTML("<div style='padding-top:10px;'>In questo grafico viene mostrato il numero di cati totali (deceduti) con una previsione che si estende fino a 10 giorni: in blu la serie storica, in arancione i valori previsti per i prossimi giorni. Continuando a mantenere il distanziamento sociale come in atto da qualche settimana prevediamo che il numero di contagi totale non superi i 150 mila.</div>")
+
+
+spiegaVariazionePercentuale<- HTML("<div style='padding-top:10px;'>In questo grafico viene mostrato l'aumento percentuale dei casi totali rispetto al giorno precedente. Se l'aumento fosse esponenziale questo valore sarebbe costante in media, nel caso di andamento esponenziale quadratico avremmo una retta discendente. La diminuzione della variazione percentuale di casi totali indica che il rate di espansione del virus sta diminuendo. Questo potrebbe essere dovuto al raggiungimento di un numero di contagi così alto da rendere meno veloce un ulteriore propagazione del virus oppure essere il risultato delle misure di contenimento. Siamo convinti che questa diminutione sia il risultato del contenimento.</div>")
+
+spiegaConfrontoSerieRegioni<- HTML("<div style='padding-top:10px;'>In questo è possibile confrontare l'andamento temporale di contagi (deceduti) nelle diverse regioni di Italia. Grazie agli slider input è possibile spostare in avanti e indietro le diverse serie storiche.</div>")
+
+
+spiegaConfrontoSerieProvince<- HTML("<div style='padding-top:10px;'>In questo è possibile confrontare l'andamento temporale di contagi nelle diverse province italiane. Grazie agli slider input è possibile spostare in avanti e indietro le diverse serie storiche.</div>")
 
 
 spiegaFitPos <- HTML("<div style='padding-top:10px;'>In questo grafico mostriamo la serie storica dei casi confermati di

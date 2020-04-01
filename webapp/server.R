@@ -434,6 +434,115 @@ output$mapRegioniGG <- renderPlot({
 #
 # })
 
+#######################################################################
+
+output$selLagProvince <- renderUI ({
+	if (verbose) cat("\nrenderUI-selLagProvince")
+	province <- input$provSelSerieStoriche
+	myDate <- isolate(reacval$dateRange_prv)
+	if(is.null(province))return(NULL)
+	if(is.null(myDate))return(NULL)
+	dg <- ceiling(as.numeric(myDate[2]-myDate[1])/2)
+
+	 #sliderInput("lagRegione2", paste0("Lag ",regione2), min = -dg , max = dg, value = 0)
+	 res <- lapply(province, function(x) {
+ 	 initval<-0
+
+	 #perché non prendo direttamente l'input?
+ 	 if (paste0("selLag_",x) %in% names(input)){
+		 if(verbose) cat("\n\t IN if",paste0("selLag_",x), "->",initval)
+ 		 #initval<-reacLiveOp$listProvince[[paste0("selLag_",x)]]
+ 		 initval<-isolate(input[[paste0("selLag_",x)]])
+ 	 } else if(verbose)
+   { cat("\n\t OUT if",paste0("selLag_",x), "->", initval)}
+ 	 #sliderInput(paste0("iOraUtilizzoBuffer_",x), label = paste("Orario Utilizzo Buffer",x), min = minOra, max = maxOra,	value = valori2)
+   #sliderInput(paste0("selLag_",x), paste0("Lag ",x), min = -dg , max = dg, value = initval, step=1)
+   if(reacval$mobile){
+     noUiSliderInput( paste0("selLag_",x), x, min = -dg , max = dg, value = initval, step=1, orientation="horizontal",color=color_prov[x],inline=T,width='140px',
+     format=wNumbFormat(decimals = 0,prefix = 'giorno '))
+   }else{
+     noUiSliderInput( paste0("selLag_",x), x, min = -dg , max = dg, value = initval, step=1, orientation="vertical",color=color_prov[x],height='120px',inline=T,width='140px',
+     format=wNumbFormat(decimals = 0,prefix = 'giorno '))
+   }
+
+	})
+
+})
+
+
+#
+#
+
+output$lineProvinceConfronto <- renderPlotly({
+	if(verbose) cat("\n renderPlotly:lineProvinceConfronto")
+  allDataPrv <- copy(reacval$dataTables_prv)
+
+	selprov <- input$provSelSerieStoriche
+	if (is.null(selprov)) return(NULL)
+	if(verbose) cat("\n \t province:", selprov)
+
+	lagProvince <- unlist(
+		lapply(selprov, function(x) {
+			initval<-input[[paste0("selLag_",x)]]
+			if(verbose) cat("\t initval:", initval)
+			if (is.null(initval)) return(0)
+			initval
+ 		})
+	)
+	if (is.null(lagProvince)) return(NULL)
+
+	names(lagProvince) <- selprov
+
+	var2plot <- "totale_casi"
+	if(is.null(var2plot)) var2plot <- "totale_casi"#return(NULL)
+	if (is.null(allDataPrv)) return(NULL)
+
+	var2plotNew <- gsub("_", " ", var2plot)
+
+  setnames(allDataPrv, old=c('denominazione_provincia',var2plot), new=c('provincia', 'VAR2PLOT'))
+
+	assign('allDataPrv',allDataPrv,envir=.GlobalEnv)
+	assign('selprov',selprov,envir=.GlobalEnv)
+	assign('lagProvince',lagProvince,envir=.GlobalEnv)
+
+	dataPrv <- allDataPrv[allDataPrv$provincia %in% selprov, ]
+	setDT(dataPrv)
+	for(i in 1:length(selprov)){
+		prv <- selprov[i]
+		lag <- lagProvince[which(names(lagProvince)==prv)]
+		dataPrv[provincia==prv, datanew:=data+lag]
+	}
+
+  p <- ggplot(dataPrv) + my_ggtheme() +
+        suppressWarnings(geom_line(group=1, # group=1 serve per aggirare un bug di ggplotly con tooltip = c("text")
+          aes(x=datanew, y=VAR2PLOT, color=provincia,
+          text = paste('Provincia:', provincia, '<br>Data:', strftime(data, format="%d-%m-%Y"),
+           '<br>Casi: ', VAR2PLOT)))) +
+				geom_point( aes(x=datanew, y=VAR2PLOT, color=provincia)) +
+        scale_color_manual(values=color_prov) +
+        theme(legend.title=element_blank())+theme(axis.text.x=element_text(angle=45, hjust=1)) +
+				guides(fill=guide_legend(title="provincia")) +
+        xlab("")+ylab(var2plotNew)
+  if(reacval$mobile){
+    p<-p+scale_x_date(date_breaks="3 day",date_labels="%b %d")}
+  else{
+    p<-p+scale_x_date(date_breaks="2 day",date_labels="%b %d")
+  }
+  plot<-ggplotly(p, tooltip = c("text")) %>% config(locale = 'it')
+
+  if(reacval$mobile){
+
+    plot<-plot%>%layout(legend=list(orientation='h',x=-0,y=-0.3))%>%
+          layout(legend=list(font=list(size=12)),dragmode=F,autosize = T,heigth=3000,width = 600)
+  }
+  # else{
+  #   plot<-plot%>%layout(legend=list(orientation='h',x=-0,y=-0.3))
+  # }
+  plot
+
+})
+#######################################################################
+
 #reacCompare$listaRegioniCompare
 #reacCompare$listRegioni
 output$selLagRegioni <- renderUI ({
@@ -1797,7 +1906,7 @@ output$tab_desktop<-renderUI({
           column(10,offset=1,align="center",h3("Variazione percentuale giorno per giorno")),
           fluidRow(style="padding-left:50px;",
             pickerInput(inputId = "varSel", label = "Seleziona variabile", choices = c("deceduti","totale contagiati"),selected="totale contagiati",options = list(size=10,`actions-box` = TRUE, `selected-text-format` = "count >20"), multiple = FALSE))),
-        fluidRow(style="padding:10px;background-color:#ffffff",addSpinner(plotlyOutput(outputId="percDeltaTot"), spin = "fading-circle", color = "#009933")),
+        fluidRow(style="padding:10px;background-color:#ffffff",addSpinner(plotlyOutput(outputId="percDeltaTot"), spin = "fading-circle", color = "#009933"),spiegaVariazionePercentuale),
       br(),br(),
 
       br(),br(),
@@ -1806,7 +1915,8 @@ output$tab_desktop<-renderUI({
         column(10,offset=1,align="center", h3("Previsione del numero di casi a medio termine con modello esponenziale quadratico")),
         fluidRow(style="padding-left:50px;",
           pickerInput(inputId = "varSel2", label = "Seleziona variabile", choices = c("deceduti","totale contagiati"),selected="totale contagiati",options = list(size=10,`actions-box` = TRUE, `selected-text-format` = "count >20"), multiple = FALSE))),
-        fluidRow(style="padding:10px;background-color:#ffffff",addSpinner(plotlyOutput(outputId="fitCasesIta"), spin = "fading-circle", color = "#009933"))
+        fluidRow(style="padding:10px;background-color:#ffffff",addSpinner(plotlyOutput(outputId="fitCasesIta"), spin = "fading-circle", color = "#009933"), spiegaFitMedioTermine)
+
 
       ,br(),
       fluidRow(style="padding:30px;background-color:#ffffff",
@@ -1862,7 +1972,7 @@ output$tab_mobile<-renderUI({
              column(10,offset=1,align="center",h3("Variazione percentuale giorno per giorno")),
              fluidRow(style="padding-left:50px;",
               pickerInput(inputId = "varSel", label = "Seleziona variabile", choices = c("deceduti","totale contagiati"),selected="totale contagiati",options = list(size=10,`actions-box` = TRUE, `selected-text-format` = "count >20"), multiple = FALSE))),
-           fluidRow(style="padding:10px;background-color:#ffffff",addSpinner(plotlyOutput(outputId="percDeltaTot"), spin = "fading-circle", color = "#009933")),
+           fluidRow(style="padding:10px;background-color:#ffffff",addSpinner(plotlyOutput(outputId="percDeltaTot"), spin = "fading-circle", color = "#009933"), spiegaVariazionePercentuale),
          br(),br(),
 
 
@@ -1871,7 +1981,7 @@ output$tab_mobile<-renderUI({
            column(10,offset=1,align="center", h3("Previsione del numero di casi a medio termine con modello esponenziale quadratico")),
            fluidRow(style="padding-left:50px;",
             pickerInput(inputId = "varSel2", label = "Seleziona variabile", choices = c("deceduti","totale contagiati"),selected="totale contagiati",options = list(size=10,`actions-box` = TRUE, `selected-text-format` = "count >20"), multiple = FALSE))),
-           fluidRow(style="padding:10px;background-color:#ffffff",addSpinner(plotlyOutput(outputId="fitCasesIta"), spin = "fading-circle", color = "#009933")),
+           fluidRow(style="padding:10px;background-color:#ffffff",addSpinner(plotlyOutput(outputId="fitCasesIta"), spin = "fading-circle", color = "#009933"), spiegaFitMedioTermine),
 
   		# br(),br(),
   		# fluidRow(style="padding:30px;background-color:#ffffff", h4("Previsione del numero di casi totali a medio termine con modello esponenziale quadratico")),

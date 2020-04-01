@@ -156,7 +156,8 @@ regTab <- tabItem(tabName = "regPlots",
 									)
 								),
 								fluidRow(style='padding:30px;overflow-x:scroll;',
-								addSpinner(plotlyOutput(outputId="lineRegioniConfronto"), spin = "fading-circle", color = "#add437"))
+								addSpinner(plotlyOutput(outputId="lineRegioniConfronto"), spin = "fading-circle", color = "#add437")),
+								spiegaConfrontoSerieRegioni
 							),
 						####### fine confronto serie storiche
 							#uiOutput('legenda_regioni_bullet'),
@@ -204,6 +205,23 @@ prvTab <- tabItem(tabName = "prvPlots",
 								h3("Andamento dei casi confermati"),
 
 								fluidRow(style="overflow-x:scroll;",align='center',addSpinner(plotlyOutput(outputId="lineProvince"), spin = "fading-circle", color = "#add437")), spiegaLinePlot
+							),
+							# confronto serie storiche
+							fluidRow(style="padding:20px;background-color:#ffffff",
+								h3("Confronto tra serie storiche"),
+								fluidRow(style="padding:10px;",
+									column(width=3,
+										pickerInput(inputId = "provSelSerieStoriche", label = "Seleziona province", choices = provinceList,selected=province2fit, options = pickerOptions(size=10,actionsBox = F,maxOptionsText=HTML('<font color=#ad0000>È possibile confrontare al più 6 province!</font>') ,selectedTextFormat = "count >20",maxOptions = 6), multiple = TRUE)#,
+										#selectizeInput("variabileCompareProvince", label="Variabile da confrontare", 	, choices=c("totale_casi", "deceduti"), selected = "Lazio", multiple=FALSE)
+									),
+									column(width=9,
+										uiOutput('selLagProvince')
+									)
+								),
+								fluidRow(style='padding:30px;overflow-x:scroll;',
+								addSpinner(plotlyOutput(outputId="lineProvinceConfronto"), spin = "fading-circle", color = "#add437")
+								),
+								spiegaConfrontoSerieProvince
 							),
 							##################################################
 							# CASI VS NUOVI CASI
