@@ -219,7 +219,7 @@ prvTab <- tabItem(tabName = "prvPlots",
 									)
 								),
 								fluidRow(style='padding:30px;overflow-x:scroll;',
-								addSpinner(plotlyOutput(outputId="lineProvinceConfronto"), spin = "fading-circle", color = "#add437")
+									addSpinner(plotlyOutput(outputId="lineProvinceConfronto"), spin = "fading-circle", color = "#add437")
 								),
 								spiegaConfrontoSerieProvince
 							),
@@ -229,7 +229,6 @@ prvTab <- tabItem(tabName = "prvPlots",
 								h3("Nuovi casi in funzione del numero totale di casi"),
 									uiOutput('inputProvinceCasiVsNuovicasi'),
 										fluidRow(style="overflow-x:scroll;",align='center',addSpinner(plotlyOutput('lineProvinceCasiVsNuovicasi'), spin = "fading-circle", color = "#add437")),
-
 									spiegaGraficoCasiVsCasiNuovi
 							)
 							##################################################

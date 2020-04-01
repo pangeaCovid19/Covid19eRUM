@@ -458,10 +458,10 @@ output$selLagProvince <- renderUI ({
  	 #sliderInput(paste0("iOraUtilizzoBuffer_",x), label = paste("Orario Utilizzo Buffer",x), min = minOra, max = maxOra,	value = valori2)
    #sliderInput(paste0("selLag_",x), paste0("Lag ",x), min = -dg , max = dg, value = initval, step=1)
    if(reacval$mobile){
-     noUiSliderInput( paste0("selLag_",x), x, min = -dg , max = dg, value = initval, step=1, orientation="horizontal",inline=T,width='140px',
+     noUiSliderInput( paste0("selLag_",x), x, min = -dg , max = dg, value = initval, step=1, orientation="horizontal",inline=T,width='140px', color=color_province[x],
      format=wNumbFormat(decimals = 0,prefix = 'giorno '))
    }else{
-     noUiSliderInput( paste0("selLag_",x), x, min = -dg , max = dg, value = initval, step=1, orientation="vertical",height='120px',inline=T,width='140px',
+     noUiSliderInput( paste0("selLag_",x), x, min = -dg , max = dg, value = initval, step=1, orientation="vertical",height='120px',inline=T,width='140px', color=color_province[x],
      format=wNumbFormat(decimals = 0,prefix = 'giorno '))
    }
 
@@ -519,7 +519,7 @@ output$lineProvinceConfronto <- renderPlotly({
           text = paste('Provincia:', provincia, '<br>Data:', strftime(data, format="%d-%m-%Y"),
            '<br>Casi: ', VAR2PLOT)))) +
 				geom_point( aes(x=datanew, y=VAR2PLOT, color=provincia)) +
- #       scale_color_manual(values=color_prov) +
+        scale_color_manual(values=color_province) +
         theme(legend.title=element_blank())+theme(axis.text.x=element_text(angle=45, hjust=1)) +
 				guides(fill=guide_legend(title="provincia")) +
         xlab("")+ylab(var2plotNew)
@@ -791,7 +791,7 @@ output$lineProvinceCasiVsNuovicasi <- renderPlotly({
 					aes(x=VAR2PLOT, y=casi_roll,color=denominazione_provincia,
 					text = paste('Provincia:', denominazione_provincia, '<br>Totali:', VAR2PLOT,
 					paste0("<br>Casi ultimi ",ndays," giorni"), casi_roll)))+
-#				scale_color_manual(values=color_regioni) +
+				scale_color_manual(values=color_province) +
 				theme(legend.title=element_blank())+#theme(axis.text.x=element_text(angle=45, hjust=1)) +
 				guides(fill=guide_legend(title="province")) +
 				xlab("Totali")+ylab(paste0("ultimi ",ndays," giorni"))+
@@ -829,7 +829,7 @@ output$lineProvince <- renderPlotly({
             aes(x=data, y=`casi totali`, color=provincia,
             text = paste('Provincia:', provincia, '<br>Data:', strftime(data, format="%d-%m-%Y"),
              '<br>Casi: ', `casi totali`)))) +
-          scale_color_manual(values=d3hexcols20) +
+          scale_color_manual(values=color_province) +
           theme(axis.text.x=element_text(angle=45, hjust=1)) +
           labs(x="")
           if(reacval$mobile){
