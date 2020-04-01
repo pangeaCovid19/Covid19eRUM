@@ -458,10 +458,10 @@ output$selLagProvince <- renderUI ({
  	 #sliderInput(paste0("iOraUtilizzoBuffer_",x), label = paste("Orario Utilizzo Buffer",x), min = minOra, max = maxOra,	value = valori2)
    #sliderInput(paste0("selLag_",x), paste0("Lag ",x), min = -dg , max = dg, value = initval, step=1)
    if(reacval$mobile){
-     noUiSliderInput( paste0("selLag_",x), x, min = -dg , max = dg, value = initval, step=1, orientation="horizontal",color=color_prov[x],inline=T,width='140px',
+     noUiSliderInput( paste0("selLag_",x), x, min = -dg , max = dg, value = initval, step=1, orientation="horizontal",inline=T,width='140px',
      format=wNumbFormat(decimals = 0,prefix = 'giorno '))
    }else{
-     noUiSliderInput( paste0("selLag_",x), x, min = -dg , max = dg, value = initval, step=1, orientation="vertical",color=color_prov[x],height='120px',inline=T,width='140px',
+     noUiSliderInput( paste0("selLag_",x), x, min = -dg , max = dg, value = initval, step=1, orientation="vertical",height='120px',inline=T,width='140px',
      format=wNumbFormat(decimals = 0,prefix = 'giorno '))
    }
 
@@ -519,7 +519,7 @@ output$lineProvinceConfronto <- renderPlotly({
           text = paste('Provincia:', provincia, '<br>Data:', strftime(data, format="%d-%m-%Y"),
            '<br>Casi: ', VAR2PLOT)))) +
 				geom_point( aes(x=datanew, y=VAR2PLOT, color=provincia)) +
-        scale_color_manual(values=color_prov) +
+ #       scale_color_manual(values=color_prov) +
         theme(legend.title=element_blank())+theme(axis.text.x=element_text(angle=45, hjust=1)) +
 				guides(fill=guide_legend(title="provincia")) +
         xlab("")+ylab(var2plotNew)
