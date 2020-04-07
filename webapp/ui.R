@@ -91,8 +91,33 @@ tiTab <- tabItem(tabName = "tiPlots",
 											h3("Diponibilità di letti in terapia intensiva e numero di occupanti con CoVid19 (posti letto aggiornati al 2018)"),
 											addSpinner(plotlyOutput("terapiaIntPlotNow"), spin = "fading-circle", color = "#cc0000"),
 											spiegaTerIntAttuale
-										),
-
+										),br(),
+										fluidRow(style="padding:20px;background-color:#ffffff",
+											fluidRow(style="padding:20px;background-color:#ffffff",
+												column( 6, h3("Numero dei pazienti ospedalizzati per regione")),
+												column(1),
+												column(2,
+													pickerInput(inputId = "varSelTI", label = "Seleziona variabile", choices = c("terapia intensiva","pazienti ospedalizzati"),selected="terapia intensiva",options = list(size=10,`actions-box` = TRUE, `selected-text-format` = "count >20"), multiple = FALSE)
+												),
+												column(3,
+													pickerInput(inputId = "regionSelSerieStoricheTI", label = "Seleziona regioni", choices = regioniList,selected=regioniList, options = pickerOptions(size=10,actionsBox = T ,selectedTextFormat = "count >20",deselectAllText='Deseleziona tutto',selectAllText='Seleziona tutto'), multiple = TRUE)
+												)
+											),
+											addSpinner(plotlyOutput("terapiaIntStoricoTot"), spin = "fading-circle", color = "#cc0000")
+										),br(),
+#										fluidRow(style="padding:20px;background-color:#ffffff",
+#											fluidRow(style="padding:20px;background-color:#ffffff",
+#												column( 6, h3("Numero di casi i terapia intensiva per provincia")),
+#												column(1),
+#												column(2,
+#													pickerInput(inputId = "varSelTIprov", label = "Seleziona variabile", choices = c("terapia intensiva","pazienti ospedalizzati"),selected="terapia intensiva",options = list(size=10,`actions-box` = TRUE, `selected-text-format` = "count >20"), multiple = FALSE)))
+#												),
+#												column(3,
+#													pickerInput(inputId = "regionSelSerieStoricheTIxProv", label = "Seleziona regioni", choices = regioniList,selected="Lombardia", options = pickerOptions(size=10,actionsBox = T ,selectedTextFormat = "count >20",deselectAllText='Deseleziona tutto',selectAllText='Seleziona tutto'), multiple = TRUE)
+#												)
+#											),
+#											addSpinner(plotlyOutput("terapiaIntStoricoReg"), spin = "fading-circle", color = "#cc0000")
+#										),
 
 							br()),br(),
               fluidRow(

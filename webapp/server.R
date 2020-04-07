@@ -1150,27 +1150,30 @@ output$fitIta <- renderPlotly({
 if(verbose) cat("\n renderPlotly:fitIta")
   allDataReg <- copy(reacval$dataTables_reg)
   tipoGraph <- input$regionLinLogFit
-  assign("allDataRegprova",allDataReg, envir=.GlobalEnv)
+  if(assignout) assign("allDataRegprova",allDataReg, envir=.GlobalEnv)
+	#FIXME per plottare terapie intensiva ed ospedalizzati aggiungere "terapia_intensiva" e "totale_ospedalizzati"
+	varPrev <- c("totale_casi", "deceduti" )
 
   if (!is.null(allDataReg)) {
 		tsIta <- getTimeSeriesReact()$Italia
 		if(saveRDSout) saveRDS(file="fitItaList.RDS",list(tsIta, allDataReg))
+
 		prevItaDT <-copy(prevIta())
 		setnames(prevItaDT, old=c('Attesi'), new=c('casi'))
-    assign("prevItaDT1",prevItaDT, envir=.GlobalEnv)
+    if (assignout) assign("prevItaDT1",prevItaDT, envir=.GlobalEnv)
+		prevItaDT <- prevItaDT[ prevItaDT$variabilePrevista %in% varPrev, ]
 
 		setDF(allDataReg)
-		varPrev <- unique(prevItaDT$variabilePrevista)
 
 		dataRDX <- allDataReg[, c('data', varPrev)]
-		dataIta <- aggregate(dataRDX[,2:5], sum, by=list(data=dataRDX$data))
+		dataIta <- aggregate(dataRDX[,-1], sum, by=list(data=dataRDX$data))
 
     tmp <- data.frame(
     		data=rep(unique(dataIta$data), times=length(varPrev)),
-    		casi=unlist(lapply(2:5, function(x) dataIta[, x])),
+    		casi=unlist(lapply(-1, function(x) dataIta[, x])),
     		variabilePrevista=rep(unique(varPrev), each=nrow(dataIta))
     )
-    assign("tmp1",tmp, envir=.GlobalEnv)
+    if (assignout) assign("tmp1",tmp, envir=.GlobalEnv)
 
     ## attenzione ai compromessi tra ggplot & plotly...
     ## * per avere geom_line funzionante e i tooltip basati su testo
@@ -1483,7 +1486,58 @@ output$percDeltaTot <- renderPlotly({
 #   # }
 # })
 
+output$terapiaIntStoricoTot<- renderPlotly({
+	if(verbose) cat("\n renderPlotly:terapiaIntStoricoTot")
+	selregione <- input$regionSelSerieStoricheTI
+	tipoplot <- input$varSelTI
+	if(is.null(selregione)) return(NULL)
+	if(is.null(tipoplot)) return(NULL)
 
+	dati <- copy(allData_reg)
+	if(is.null(dati)) return(NULL)
+	setDT(dati)
+	setnames(dati, old='denominazione_regione', new="regione")
+	dati <-dati[regione %in% selregione]
+	setorder(dati, regione, data)
+#dati[, casi_nuovi:= c(0,diff(totale_casi)),regione]
+	if(tipoplot=="terapia intensiva"){
+		dati[, numero_pazienti:= terapia_intensiva,regione]
+	} else {
+		dati[, numero_pazienti:= totale_ospedalizzati,regione]
+	}
+
+	p <- 	ggplot(dati) + my_ggtheme() +
+				geom_bar(aes(y = numero_pazienti, x = data, fill=regione), stat="identity") +
+		 	scale_fill_manual(values=color_regioni) +
+			guides(fill=guide_legend(title="regione")) +
+			theme(axis.text.x=element_text(angle=45, hjust=1)) +
+			ylab("Casi Totali")
+	p
+
+})
+
+
+output$terapiaIntStoricoReg<- renderPlotly({
+	if(verbose) cat("\n renderPlotly:terapiaIntStoricoTot")
+	selregione <- input$regionSelSerieStoricheTIxProv
+	if(is.null(selregione)) return(NULL)
+	dati <- copy(allData_prv)
+	if(is.null(dati)) return(NULL)
+	setDT(dati)
+	setnames(dati, old=c('denominazione_regione', 'denominazione_provincia'), new=c("regione", "provincia"))
+	dati <-dati[regione %in% selregione]
+	setorder(dati, provincia, data)
+	dati[, casi_nuovi:= c(0,diff(totale_casi)),provincia]
+
+	p <- 	ggplot(dati) + my_ggtheme() +
+				geom_bar(aes(y = casi_nuovi, x = data, fill=provincia), stat="identity") +
+		 	scale_fill_manual(values=color_province) +
+			guides(fill=guide_legend(title="provincia")) +
+			theme(axis.text.x=element_text(angle=45, hjust=1)) +
+			ylab("Casi Totali")
+	p
+
+})
 
 
 
