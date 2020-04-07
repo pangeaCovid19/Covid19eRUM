@@ -56,6 +56,27 @@ d3hexcols20[12]<-'#f5d742'
   d3hexcols20[11]<-'#d4a928'
   d3hexcols20[17]<-'#bcd11b'
 
+colori<-c("#CED6A7", "#F4F49C", "#D162F1", "#5E4631", "#5F0D7C", "#2F7562", "#969881",
+"#E74C63", "#B2DCA8", "#16A02F", "#19A556", "#BDA78E", "#C0B9B1", "#F193D4",
+ "#ABD9E8", "#1AA76A", "#D0BCA5", "#F4CE99", "#8F9A15", "#2487B6", "#DF4596",
+ "#DA41B8", "#BC8EEF", "#73CEDC", "#8A254E", "#E691F0", "#E94E51", "#B02424",
+ "#2955BD", "#ACD081", "#2297B3", "#2766BB", "#B4C0BB", "#E3AD44", "#ABE2E8",
+ "#606F57", "#306F3B", "#1CAA7E", "#D3B25A", "#ABE7AF", "#E9E7E7", "#C3B770",
+ "#B3BB85", "#5030C7", "#BB2C49", "#9036CE", "#476930", "#7A34CC", "#626431",
+ "#C68F61", "#FD7D62", "#93C5B1", "#880D51", "#F295AE", "#A5F8DE", "#24B024",
+ "#EB6251", "#4B60DB", "#D83FC9", "#D0F59E", "#F4A92F", "#850D6B", "#3B2FC4",
+ "#4098D1", "#8456E6", "#D13DD6", "#1FAFA7", "#1DAC92", "#E44A74", "#159E1D",
+ "#334736", "#711173", "#593134", "#9A4C15", "#17A243", "#2676B8", "#141F1C",
+ "#7E0D81", "#36C6BB", "#430D78", "#A1543E", "#DD43A7", "#280D74", "#20A7B1",
+ "#A9E2C3", "#2CBB6F", "#2B44C0", "#A2F7B9", "#BB3AD3", "#6532C9", "#A538D1",
+ "#D95E08", "#2D33C2", "#8F5D0F", "#A3C09B", "#EE7853", "#0F0D71", "#A5381C",
+ "#5BA51C", "#83C9C6", "#CBA4A8", "#F3A697", "#CF7634", "#ADF6A0", "#0C216D",
+"#E24885", "#B9AA5D")
+
+colori[13]<-'#f5d742'
+colori[17]<-'#e06936'
+
+color_province<-colori
 
 
 my_ggtheme <- function() {
@@ -101,29 +122,29 @@ provinceList <- sort(unique(allData_prv$denominazione_provincia))
 
 color_regioni<-d3hexcols20
 names(color_regioni)<-regioniList
-
-a<-lapply(regioniList,function(x){
-    province<-sort(unique(allData_prv[allData_prv$denominazione_regione==x,]$denominazione_provincia))
-    pal<-d3hexcols20[1:length(province)]
-    names(pal)<-province
-    return(pal)})
-color_prov<-unlist(a)
-color_province<-c( "#FFFF00", "#1CE6FF", "#FF34FF", "#FF4A46", "#008941", "#006FA6", "#A30059",
-        "#FFDBE5", "#7A4900", "#0000A6", "#63FFAC", "#B79762", "#004D43", "#8FB0FF", "#997D87",
-        "#5A0007", "#809693", "#FEFFE6", "#1B4400", "#4FC601", "#3B5DFF", "#4A3B53", "#FF2F80",
-        "#61615A", "#BA0900", "#6B7900", "#00C2A0", "#FFAA92", "#FF90C9", "#B903AA", "#D16100",
-        "#DDEFFF", "#000035", "#7B4F4B", "#A1C299", "#300018", "#0AA6D8", "#013349", "#00846F",
-        "#372101", "#FFB500", "#C2FFED", "#A079BF", "#CC0744", "#C0B9B2", "#C2FF99", "#001E09",
-        "#00489C", "#6F0062", "#0CBD66", "#EEC3FF", "#456D75", "#B77B68", "#7A87A1", "#788D66",
-        "#885578", "#FAD09F", "#FF8A9A", "#D157A0", "#BEC459", "#456648", "#0086ED", "#886F4C",
-        "#34362D", "#B4A8BD", "#00A6AA", "#452C2C", "#636375", "#A3C8C9", "#FF913F", "#938A81",
-        "#575329", "#00FECF", "#B05B6F", "#8CD0FF", "#3B9700", "#04F757", "#C8A1A1", "#1E6E00",
-        "#7900D7", "#A77500", "#6367A9", "#A05837", "#6B002C", "#772600", "#D790FF", "#9B9700",
-        "#549E79", "#FFF69F", "#201625", "#72418F", "#BC23FF", "#99ADC0", "#3A2465", "#922329",
-        "#5B4534", "#FDE8DC", "#404E55", "#0089A3", "#CB7E98", "#A4E804", "#324E72", "#6A3A4C",
-        "#83AB58", "#001C1E", "#D1F7CE", "#004B28", "#C8D0F6", "#A3A489", "#806C66", "#222800",
-        "#BF5650", "#E83000", "#66796D", "#DA007C", "#FF1A59", "#8ADBB4", "#1E0200", "#5B4E51",
-        "#C895C5", "#320033", "#FF6832", "#66E1D3", "#CFCDAC", "#D0AC94", "#7ED379", "#012C58")[1:length(provinceList)]
+#
+# a<-lapply(regioniList,function(x){
+#     province<-sort(unique(allData_prv[allData_prv$denominazione_regione==x,]$denominazione_provincia))
+#     pal<-d3hexcols20[1:length(province)]
+#     names(pal)<-province
+#     return(pal)})
+# color_prov<-unlist(a)
+# color_province<-c( "#FFFF00", "#1CE6FF", "#FF34FF", "#FF4A46", "#008941", "#006FA6", "#A30059",
+#         "#FFDBE5", "#7A4900", "#0000A6", "#63FFAC", "#B79762", "#004D43", "#8FB0FF", "#997D87",
+#         "#5A0007", "#809693", "#FEFFE6", "#1B4400", "#4FC601", "#3B5DFF", "#4A3B53", "#FF2F80",
+#         "#61615A", "#BA0900", "#6B7900", "#00C2A0", "#FFAA92", "#FF90C9", "#B903AA", "#D16100",
+#         "#DDEFFF", "#000035", "#7B4F4B", "#A1C299", "#300018", "#0AA6D8", "#013349", "#00846F",
+#         "#372101", "#FFB500", "#C2FFED", "#A079BF", "#CC0744", "#C0B9B2", "#C2FF99", "#001E09",
+#         "#00489C", "#6F0062", "#0CBD66", "#EEC3FF", "#456D75", "#B77B68", "#7A87A1", "#788D66",
+#         "#885578", "#FAD09F", "#FF8A9A", "#D157A0", "#BEC459", "#456648", "#0086ED", "#886F4C",
+#         "#34362D", "#B4A8BD", "#00A6AA", "#452C2C", "#636375", "#A3C8C9", "#FF913F", "#938A81",
+#         "#575329", "#00FECF", "#B05B6F", "#8CD0FF", "#3B9700", "#04F757", "#C8A1A1", "#1E6E00",
+#         "#7900D7", "#A77500", "#6367A9", "#A05837", "#6B002C", "#772600", "#D790FF", "#9B9700",
+#         "#549E79", "#FFF69F", "#201625", "#72418F", "#BC23FF", "#99ADC0", "#3A2465", "#922329",
+#         "#5B4534", "#FDE8DC", "#404E55", "#0089A3", "#CB7E98", "#A4E804", "#324E72", "#6A3A4C",
+#         "#83AB58", "#001C1E", "#D1F7CE", "#004B28", "#C8D0F6", "#A3A489", "#806C66", "#222800",
+#         "#BF5650", "#E83000", "#66796D", "#DA007C", "#FF1A59", "#8ADBB4", "#1E0200", "#5B4E51",
+#         "#C895C5", "#320033", "#FF6832", "#66E1D3", "#CFCDAC", "#D0AC94", "#7ED379", "#012C58")[1:length(provinceList)]
 names(color_province)	 <- provinceList
 
 allData_reg <- readRDS(paste0(dir_reg, regRDS))
