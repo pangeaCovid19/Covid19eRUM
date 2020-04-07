@@ -105,19 +105,6 @@ tiTab <- tabItem(tabName = "tiPlots",
 											),
 											addSpinner(plotlyOutput("terapiaIntStoricoTot"), spin = "fading-circle", color = "#cc0000")
 										),br(),
-#										fluidRow(style="padding:20px;background-color:#ffffff",
-#											fluidRow(style="padding:20px;background-color:#ffffff",
-#												column( 6, h3("Numero di casi i terapia intensiva per provincia")),
-#												column(1),
-#												column(2,
-#													pickerInput(inputId = "varSelTIprov", label = "Seleziona variabile", choices = c("terapia intensiva","pazienti ospedalizzati"),selected="terapia intensiva",options = list(size=10,`actions-box` = TRUE, `selected-text-format` = "count >20"), multiple = FALSE)))
-#												),
-#												column(3,
-#													pickerInput(inputId = "regionSelSerieStoricheTIxProv", label = "Seleziona regioni", choices = regioniList,selected="Lombardia", options = pickerOptions(size=10,actionsBox = T ,selectedTextFormat = "count >20",deselectAllText='Deseleziona tutto',selectAllText='Seleziona tutto'), multiple = TRUE)
-#												)
-#											),
-#											addSpinner(plotlyOutput("terapiaIntStoricoReg"), spin = "fading-circle", color = "#cc0000")
-#										),
 
 							br()),br(),
               fluidRow(
@@ -194,8 +181,24 @@ regTab <- tabItem(tabName = "regPlots",
 									uiOutput('inputRegioniCasiVsNuovicasi'),
 									fluidRow(style="overflow-x:scroll;padding:20px;",addSpinner(plotlyOutput('lineRegioniCasiVsNuovicasi'), spin = "fading-circle", color = "#add437")),
 									spiegaGraficoCasiVsCasiNuovi
-							)
+							),
 							##################################################
+							##################################################
+							#  NUOVI CASI
+							fluidRow(style="padding:30px;background-color:#ffffff",
+								h3("Andamenti giornalieri"),
+								fluidRow(style="padding:20px;background-color:#ffffff",
+									column( 6, h3("Numero casi giornalieri")),
+									column(1),
+									column(2,
+										pickerInput(inputId = "varSelSerieStoricheReg", label = "Seleziona variabile", choices = c("nuovi casi","decessi"),selected="terapia intensiva",options = list(size=10,`actions-box` = TRUE, `selected-text-format` = "count >20"), multiple = FALSE)
+									),
+									column(3,
+										pickerInput(inputId = "regionSelSerieStorichexReg", label = "Seleziona regioni", choices = regioniList,selected=regioniList, options = pickerOptions(size=10,actionsBox = T ,selectedTextFormat = "count >20",deselectAllText='Deseleziona tutto',selectAllText='Seleziona tutto'), multiple = TRUE)
+									)
+								),
+								addSpinner(plotlyOutput('nuoviPositiviStoricoReg'), spin = "fading-circle", color = "#add437")
+							),
 							##################################################
 						)
 						,br(),
@@ -255,10 +258,21 @@ prvTab <- tabItem(tabName = "prvPlots",
 									uiOutput('inputProvinceCasiVsNuovicasi'),
 										fluidRow(style="overflow-x:scroll;",align='center',addSpinner(plotlyOutput('lineProvinceCasiVsNuovicasi'), spin = "fading-circle", color = "#add437")),
 									spiegaGraficoCasiVsCasiNuovi
-							)
+							),
 							##################################################
-
-							,br(),
+							#  NUOVI CASI
+							fluidRow(style="padding:30px;background-color:#ffffff",
+								fluidRow(style="padding:20px;background-color:#ffffff",
+									column( 6, h3("Numero casi giornalieri")),
+									column(1),
+									column(3,
+										pickerInput(inputId = "regionSelSerieStorichexProv", label = "Seleziona regioni", choices = regioniList,selected="Lombardia", options = pickerOptions(size=10,actionsBox = T ,selectedTextFormat = "count >20",deselectAllText='Deseleziona tutto',selectAllText='Seleziona tutto'), multiple = TRUE)
+									)
+								),
+								addSpinner(plotlyOutput('nuoviPositiviStoricoProv'), spin = "fading-circle", color = "#add437")
+							),
+							##################################################
+							br(),
 							fluidRow(style="padding:20px;background-color:#ffffff",
 								column(width=12, h3("Tabella con casi confermati"),DTOutput(outputId="tabProvince"), spiegaTabella
 								)

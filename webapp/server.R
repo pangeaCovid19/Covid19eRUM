@@ -210,10 +210,6 @@ output$puntiRegioni <- renderPlotly({
 	assiGraph <- input$confrontoTipoGratico
 	giorno <- input$confrontoGiorno
 
-	assign("xVar", xVar, envir=.GlobalEnv)
-	assign("yVar", yVar, envir=.GlobalEnv)
-	assign("assiGraph", assiGraph, envir=.GlobalEnv)
-
 	#	allDataReg <- copy(allData_reg)
 
 	if(is.null(xVar)) return(NULL)
@@ -501,10 +497,6 @@ output$lineProvinceConfronto <- renderPlotly({
 
   setnames(allDataPrv, old=c('denominazione_provincia',var2plot), new=c('provincia', 'VAR2PLOT'))
 
-	assign('allDataPrv',allDataPrv,envir=.GlobalEnv)
-	assign('selprov',selprov,envir=.GlobalEnv)
-	assign('lagProvince',lagProvince,envir=.GlobalEnv)
-
 	dataPrv <- allDataPrv[allDataPrv$provincia %in% selprov, ]
 	setDT(dataPrv)
 	for(i in 1:length(selprov)){
@@ -765,11 +757,15 @@ output$lineProvinceCasiVsNuovicasi <- renderPlotly({
 	var2plotNew <- gsub("_", " ", var2plot)
 	ndays <- 7
 
+
+
 	if(verbose) cat("\t dataMaxxi:", dataMaxxi)
 	if(verbose) print(str(dataMaxxi))
 	if (is.null(allDataPrv)) return(NULL)
 	if (is.null(var2plot)) return(NULL)
-	if (is.null(dataMaxxi)) dataMaxxi <- max(allDataPrv)
+	if (is.null(dataMaxxi)) {
+		dataMaxxi <- max(allDataPrv$data)
+	}
 
 	setDT(allDataPrv)
 	allDataPrv <- allDataPrv[ denominazione_provincia %in% prov2plot, ]
@@ -924,9 +920,6 @@ output$mapProvince <- renderLeaflet({
 	if(verbose) cat("\n renderLeaflet:mapProvince")
   myReg <- input$regionSel
   allDataPrv <- copy(reacval$dataTables_prv)
-
-	assign("myReg",myReg, envir=.GlobalEnv)
-	assign("outallDataPrv",allDataPrv, envir=.GlobalEnv)
 
   if (!is.null(allDataPrv) & !is.null(myReg)) {
     allDataPrv <- allDataPrv[allDataPrv$denominazione_regione == myReg,]
@@ -1247,7 +1240,6 @@ prevItaLongTerm <- reactive({
 
     prevDT <- get_predictions(modelliIta, tsIta, nahead=nahead, alldates=F)
     setnames(prevDT, old=c("outName"), new=c("variabilePrevista"))
-    assign("prevDT1",prevDT, envir=.GlobalEnv)
 
     setDF(prevDT)
 		#prevDT[prevDT$variabilePrevista == "totale_casi",]
@@ -1262,9 +1254,6 @@ output$fitCasesIta <- renderPlotly({
   varInput<-input$varSel2
   testoLegenda<-varInput
   if (varInput=="totale contagiati") varInput<-"totale_casi"
-
-  assign("prevItaDT1",prevItaDT, envir=.GlobalEnv)
-  assign("tsIta1",tsIta, envir=.GlobalEnv)
 
   if (!is.null(prevItaDT) & !is.null(tsIta)) {
   		setnames(prevItaDT, old=c('Attesi'), new=c('casi'))
@@ -1339,7 +1328,7 @@ creaDFossEprev<-reactive({
   tmp$UpperRange<-tmp$totale_casi
   tmp$LowerRange<-tmp$totale_casi
   tmp$tipo<-"osservazioni"
-  assign("tmp1",tmp, envir=.GlobalEnv)
+
   datamax<-max(tmp$data)
   df<-rbind(tmp,prevItaDT[which( prevItaDT$data>datamax),c("data", "totale_casi", "variabilePrevista", "UpperRange", "LowerRange", "tipo")])
   #assign("df1",df, envir=.GlobalEnv)
@@ -1366,9 +1355,6 @@ output$percDeltaTot <- renderPlotly({
   subdf$UpperRangePerc<-c(NA,diff(subdf$UpperRange))/c(NA,subdf$totale_casi[1:(nrow(subdf)-1)])*100
 
   subdf$LowerRangePerc<-c(NA,diff(subdf$LowerRange))/c(NA,subdf$totale_casi[1:(nrow(subdf)-1)])*100
-
-  assign("subdfprova",subdf, envir=.GlobalEnv)
-
 
   p <- ggplot() + my_ggtheme() +
           suppressWarnings(geom_bar(data=subdf, aes(x=data, y=deltaPerc,
@@ -1517,17 +1503,50 @@ output$terapiaIntStoricoTot<- renderPlotly({
 })
 
 
-output$terapiaIntStoricoReg<- renderPlotly({
-	if(verbose) cat("\n renderPlotly:terapiaIntStoricoTot")
-	selregione <- input$regionSelSerieStoricheTIxProv
+output$nuoviPositiviStoricoReg<- renderPlotly({
+	if(verbose) cat("\n renderPlotly:nuoviPositiviStoricoReg")
+	selregione <- input$regionSelSerieStorichexReg
+	tipoplot <- input$varSelSerieStoricheReg
 	if(is.null(selregione)) return(NULL)
+	if(is.null(tipoplot)) return(NULL)
+
+	dati <- copy(allData_reg)
+
+	if(is.null(dati)) return(NULL)
+	setDT(dati)
+	setnames(dati, old=c('denominazione_regione'), new=c("regione"))
+	dati <-dati[regione %in% selregione]
+
+
+	setorder(dati, regione, data)
+	if(tipoplot=="nuovi casi") {
+		dati[, casi_nuovi:= c(0,diff(totale_casi)),regione]
+	} else dati[, casi_nuovi:= c(0,diff(deceduti)),regione]
+
+	p <- 	ggplot(dati) + my_ggtheme() +
+				geom_bar(aes(y = casi_nuovi, x = data, fill=regione), stat="identity") +
+			scale_fill_manual(values=color_regioni) +
+			guides(fill=guide_legend(title="regione")) +
+			theme(axis.text.x=element_text(angle=45, hjust=1)) +
+			ylab("")
+	p
+
+})
+
+
+output$nuoviPositiviStoricoProv<- renderPlotly({
+	if(verbose) cat("\n renderPlotly:nuoviPositiviStoricoProv")
+	selregione <- input$regionSelSerieStorichexProv
+	if(is.null(selregione)) return(NULL)
+
 	dati <- copy(allData_prv)
 	if(is.null(dati)) return(NULL)
 	setDT(dati)
 	setnames(dati, old=c('denominazione_regione', 'denominazione_provincia'), new=c("regione", "provincia"))
 	dati <-dati[regione %in% selregione]
+
 	setorder(dati, provincia, data)
-	dati[, casi_nuovi:= c(0,diff(totale_casi)),provincia]
+		dati[, casi_nuovi:= c(0,diff(totale_casi)),provincia]
 
 	p <- 	ggplot(dati) + my_ggtheme() +
 				geom_bar(aes(y = casi_nuovi, x = data, fill=provincia), stat="identity") +
@@ -1610,20 +1629,15 @@ prevRegionTI <- reactive({
 
 	modelliRegTint=isolate(reacval$modelliTIReg)
 	modelliRegTintExp=isolate(reacval$modelliTIRegExp)
-	assign("modelliRegTintor",modelliRegTint,envir=.GlobalEnv)
-	assign("allDataReg",allDataReg,envir=.GlobalEnv)
-	assign("modelliRegTintExp",modelliRegTintExp,envir=.GlobalEnv)
 
 	coeff <- unlist(lapply(modelliTIReg, function(x) {y<-x$coefficients; y['dataind']}))
 	if(any(coeff<0)){
 		indNeg <-which(coeff<0)
 		modelliRegTint[indNeg] <- modelliRegTintExp[indNeg]
 	}
-	assign("modelliRegTint",modelliRegTint,envir=.GlobalEnv)
 
 	if (!is.null(allDataReg)) {
 		tsReg <- getTimeSeriesReact()
-		assign("tsReg",tsReg,envir=.GlobalEnv)
     tsReg["Italia"] <- NULL
 		if(saveRDSout) saveRDS(file="prevRegionList.RDS",list(tsReg, modelliRegTint, allDataReg))
 
@@ -1656,10 +1670,6 @@ output$terapiaIntPlotPercPrevNEW<- renderPlotly({
 
 	oggi <- isolate(reacval$dateRange_reg)[2]
 
-	assign("prevDTti",prevDTti,envir=.GlobalEnv)
-	assign("allDataReg",allDataReg,envir=.GlobalEnv)
-	assign("tint",tint,envir=.GlobalEnv)
-	assign("oggi",oggi,envir=.GlobalEnv)
 	if(is.null(allDataReg)) return(NULL)
 	if(is.null(prevDTti)) return(NULL)
 	if(is.null(tint)) return(NULL)
