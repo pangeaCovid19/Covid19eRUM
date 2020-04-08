@@ -186,10 +186,12 @@ regTab <- tabItem(tabName = "regPlots",
 							##################################################
 							#  NUOVI CASI
 							fluidRow(style="padding:30px;background-color:#ffffff",
-								h3("Andamenti giornalieri"),
 								fluidRow(style="padding:20px;background-color:#ffffff",
-									column( 6, h3("Numero casi giornalieri")),
+									column(4, h3("Numero casi giornalieri")),
 									column(1),
+									column(2,
+										pickerInput(inputId = "tipoPlotSerieStoricheReg", label = "Tipo Grafico", choices = c("regionale","totale"),selected="regionale",options = list(size=10,`actions-box` = TRUE, `selected-text-format` = "count >20"), multiple = FALSE)
+									),
 									column(2,
 										pickerInput(inputId = "varSelSerieStoricheReg", label = "Seleziona variabile", choices = c("nuovi casi","decessi"),selected="terapia intensiva",options = list(size=10,`actions-box` = TRUE, `selected-text-format` = "count >20"), multiple = FALSE)
 									),
@@ -263,8 +265,11 @@ prvTab <- tabItem(tabName = "prvPlots",
 							#  NUOVI CASI
 							fluidRow(style="padding:30px;background-color:#ffffff",
 								fluidRow(style="padding:20px;background-color:#ffffff",
-									column( 6, h3("Numero casi giornalieri")),
+									column(4, h3("Numero casi giornalieri")),
 									column(1),
+									column(2,
+										pickerInput(inputId = "tipoPlotSerieStorichePrev", label = "Tipo Grafico", choices = c("provinciale","totale"),selected="provinciale",options = list(size=10,`actions-box` = TRUE, `selected-text-format` = "count >20"), multiple = FALSE)
+									),
 									column(3,
 										pickerInput(inputId = "regionSelSerieStorichexProv", label = "Seleziona regioni", choices = regioniList,selected="Lombardia", options = pickerOptions(size=10,actionsBox = T ,selectedTextFormat = "count >20",deselectAllText='Deseleziona tutto',selectAllText='Seleziona tutto'), multiple = TRUE)
 									)

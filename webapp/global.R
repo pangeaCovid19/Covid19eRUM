@@ -8,8 +8,6 @@ library(zoo)
 source("funzionifit.R")
 options(bitmapType="cairo")
 
-
-
 animazione <- FALSE
 scalaSingolaProvincia <-FALSE
 

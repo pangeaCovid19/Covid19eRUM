@@ -660,7 +660,7 @@ output$inputRegioniCasiVsNuovicasi <- renderUI ({
 		column(width=4,
 			sliderInput("dataRegioniCasiVsNuoviCasi", "Giorno:",
 			min = min(dataRange) +ndays+ 1, max = max(dataRange),
-			value = max(dataRange), animate = animationOptions(interval = 1000), timeFormat="%b %d")
+			value = max(dataRange), animate = animationOptions(interval = 500), timeFormat="%b %d")
 		),
 	)
 })
@@ -686,7 +686,6 @@ output$lineRegioniCasiVsNuovicasi <- renderPlotly({
 		cat("2")
 	setDT(allDataReg)
 	allDataReg <- allDataReg[ denominazione_regione %in% regioni2plot, ]
-	allDataReg <- allDataReg[ data <= dataMax, ]
 	setorder(allDataReg, denominazione_regione, data)
 
 	setnames(allDataReg, old=c(var2plot), new=c( 'VAR2PLOT'))
@@ -694,10 +693,11 @@ output$lineRegioniCasiVsNuovicasi <- renderPlotly({
 	allDataReg[, casi_roll:=c(rep(NA,ndays-1), rollsum(casi_nuovi, k=ndays)),denominazione_regione]
 	setorder(allDataReg, -data)
 
-		cat("3")
 	allDataReg <- allDataReg[ !is.na(casi_roll) , .(data, denominazione_regione, casi_roll, VAR2PLOT)]
+	xra <- range(allDataReg$VAR2PLOT)
+	yra <- range(allDataReg$casi_roll)
+	allDataReg <- allDataReg[ data <= dataMax, ]
 
-		cat("4")
 	p <- ggplot(allDataReg[ !is.na(casi_roll)]) + my_ggtheme() +
 					geom_point( aes(x=VAR2PLOT, y=casi_roll, color=denominazione_regione)) +
 					geom_line(group=1, # group=1 serve per aggirare un bug di ggplotly con tooltip = c("text")
@@ -708,6 +708,7 @@ output$lineRegioniCasiVsNuovicasi <- renderPlotly({
 				theme(legend.title=element_blank())+#theme(axis.text.x=element_text(angle=45, hjust=1)) +
 				guides(fill=guide_legend(title="regione")) +
 				xlab("Totali")+ylab(paste0("ultimi ",ndays," giorni"))+
+				coord_cartesian(xlim =xra, ylim = yra)+
 				scale_y_log10() + scale_x_log10()
         plot<-ggplotly(p)
             if(reacval$mobile){
@@ -741,7 +742,7 @@ output$inputProvinceCasiVsNuovicasi <- renderUI ({
 		column(width=4,
 			sliderInput("dataProvinceCasiVsNuoviCasi", "Giorno:",
 			min = min(dataRange) +ndays+ 1, max = max(dataRange),
-			value = max(dataRange), animate = animationOptions(interval = 1000), timeFormat="%b %d")
+			value = max(dataRange), animate = animationOptions(interval = 500), timeFormat="%b %d")
 		),
 	)
 })
@@ -757,8 +758,6 @@ output$lineProvinceCasiVsNuovicasi <- renderPlotly({
 	var2plotNew <- gsub("_", " ", var2plot)
 	ndays <- 7
 
-
-
 	if(verbose) cat("\t dataMaxxi:", dataMaxxi)
 	if(verbose) print(str(dataMaxxi))
 	if (is.null(allDataPrv)) return(NULL)
@@ -769,7 +768,8 @@ output$lineProvinceCasiVsNuovicasi <- renderPlotly({
 
 	setDT(allDataPrv)
 	allDataPrv <- allDataPrv[ denominazione_provincia %in% prov2plot, ]
-	allDataPrv <- allDataPrv[ data <= dataMaxxi, ]
+
+
 	setorder(allDataPrv, denominazione_provincia, data)
 
 	setnames(allDataPrv, old=c(var2plot), new=c( 'VAR2PLOT'))
@@ -777,10 +777,12 @@ output$lineProvinceCasiVsNuovicasi <- renderPlotly({
 	allDataPrv[, casi_roll:=c(rep(NA,ndays-1), rollsum(casi_nuovi, k=ndays)),denominazione_provincia]
 	setorder(allDataPrv, -data)
 
-		cat("3")
 	allDataPrv <- allDataPrv[ !is.na(casi_roll) , .(data, denominazione_provincia, casi_roll, VAR2PLOT)]
 
-		cat("4")
+	xra <- range(allDataPrv$VAR2PLOT)
+	yra <- range(allDataPrv$casi_roll)
+	allDataPrv <- allDataPrv[ data <= dataMaxxi, ]
+
 	p <- ggplot(allDataPrv[ !is.na(casi_roll)]) + my_ggtheme() +
 					geom_point( aes(x=VAR2PLOT, y=casi_roll, color=denominazione_provincia)) +
 					geom_line(group=1, # group=1 serve per aggirare un bug di ggplotly con tooltip = c("text")
@@ -790,6 +792,7 @@ output$lineProvinceCasiVsNuovicasi <- renderPlotly({
 				scale_color_manual(values=color_province) +
 				theme(legend.title=element_blank())+#theme(axis.text.x=element_text(angle=45, hjust=1)) +
 				guides(fill=guide_legend(title="province")) +
+				coord_cartesian(xlim =xra, ylim = yra)+
 				xlab("Totali")+ylab(paste0("ultimi ",ndays," giorni"))+
 				scale_y_log10() + scale_x_log10()
 
@@ -800,8 +803,6 @@ output$lineProvinceCasiVsNuovicasi <- renderPlotly({
                     layout(legend=list(font=list(size=12)),dragmode=F,autosize = T,heigth=3000,width = 600)
             }
         plot
-
-
 })
 #-----------------------------------------------------
 
@@ -1506,8 +1507,10 @@ output$terapiaIntStoricoTot<- renderPlotly({
 output$nuoviPositiviStoricoReg<- renderPlotly({
 	if(verbose) cat("\n renderPlotly:nuoviPositiviStoricoReg")
 	selregione <- input$regionSelSerieStorichexReg
-	tipoplot <- input$varSelSerieStoricheReg
+	varplot 	<- input$varSelSerieStoricheReg
+	tipoplot 	<- input$tipoPlotSerieStoricheReg
 	if(is.null(selregione)) return(NULL)
+	if(is.null(varplot)) return(NULL)
 	if(is.null(tipoplot)) return(NULL)
 
 	dati <- copy(allData_reg)
@@ -1519,16 +1522,23 @@ output$nuoviPositiviStoricoReg<- renderPlotly({
 
 
 	setorder(dati, regione, data)
-	if(tipoplot=="nuovi casi") {
+	if(varplot=="nuovi casi") {
 		dati[, casi_nuovi:= c(0,diff(totale_casi)),regione]
 	} else dati[, casi_nuovi:= c(0,diff(deceduti)),regione]
 
+	if(tipoplot=="totale") {
+		dati <- dati[, .(casi_nuovi=sum(casi_nuovi, na.rm=T)),data]
+		dati <- dati[, regione:="Totale regioni selezionate"]
+	}
+
 	p <- 	ggplot(dati) + my_ggtheme() +
-				geom_bar(aes(y = casi_nuovi, x = data, fill=regione), stat="identity") +
-			scale_fill_manual(values=color_regioni) +
+			geom_bar(aes(y = casi_nuovi, x = data, fill=regione), stat="identity") +
 			guides(fill=guide_legend(title="regione")) +
 			theme(axis.text.x=element_text(angle=45, hjust=1)) +
 			ylab("")
+
+
+			if(tipoplot!="totale") p <- p + scale_fill_manual(values=color_regioni)
 	p
 
 })
@@ -1537,7 +1547,9 @@ output$nuoviPositiviStoricoReg<- renderPlotly({
 output$nuoviPositiviStoricoProv<- renderPlotly({
 	if(verbose) cat("\n renderPlotly:nuoviPositiviStoricoProv")
 	selregione <- input$regionSelSerieStorichexProv
+	tipoplot <- input$tipoPlotSerieStorichePrev
 	if(is.null(selregione)) return(NULL)
+	if(is.null(tipoplot)) return(NULL)
 
 	dati <- copy(allData_prv)
 	if(is.null(dati)) return(NULL)
@@ -1546,14 +1558,20 @@ output$nuoviPositiviStoricoProv<- renderPlotly({
 	dati <-dati[regione %in% selregione]
 
 	setorder(dati, provincia, data)
-		dati[, casi_nuovi:= c(0,diff(totale_casi)),provincia]
+	dati[, casi_nuovi:= c(0,diff(totale_casi)),provincia]
+
+	if(tipoplot=="totale") {
+		dati <- dati[, .(casi_nuovi=sum(casi_nuovi, na.rm=T)),data]
+		dati <- dati[, provincia:="Totale province selezionate"]
+	}
 
 	p <- 	ggplot(dati) + my_ggtheme() +
 				geom_bar(aes(y = casi_nuovi, x = data, fill=provincia), stat="identity") +
-		 	scale_fill_manual(values=color_province) +
 			guides(fill=guide_legend(title="provincia")) +
 			theme(axis.text.x=element_text(angle=45, hjust=1)) +
 			ylab("Casi Totali")
+
+	if(tipoplot!="totale")	p <- p + scale_fill_manual(values=color_province)
 	p
 
 })
