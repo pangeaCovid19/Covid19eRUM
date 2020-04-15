@@ -162,7 +162,7 @@ risultatiFit <- HTML("<div style='padding-top:10px;'></div>")
 
 
 
-spiegaFitMedioTermine<- HTML("<div style='padding-top:10px;'>In questo grafico viene mostrato il numero di cati totali (deceduti) con una previsione che si estende fino a 10 giorni: in blu la serie storica, in arancione i valori previsti per i prossimi giorni. Continuando a mantenere il distanziamento sociale come in atto da qualche settimana prevediamo che il numero di contagi totale non superi i 150 mila.</div>")
+spiegaFitMedioTermine<- HTML("<div style='padding-top:10px;'>In questo grafico viene mostrato il numero di cati totali (deceduti) con una previsione che si estende fino a 10 giorni: in blu la serie storica, in arancione i valori previsti per i prossimi giorni.</div>")
 
 
 spiegaVariazionePercentuale<- HTML("<div style='padding-top:10px;'>In questo grafico viene mostrato l'aumento percentuale dei casi totali rispetto al giorno precedente. Se l'aumento fosse esponenziale questo valore sarebbe costante in media, nel caso di andamento esponenziale quadratico avremmo una retta discendente. La diminuzione della variazione percentuale di casi totali indica che il rate di espansione del virus sta diminuendo. Questo potrebbe essere dovuto al raggiungimento di un numero di contagi così alto da rendere meno veloce un ulteriore propagazione del virus oppure essere il risultato delle misure di contenimento. Siamo convinti che questa diminutione sia il risultato del contenimento.</div>")
@@ -211,7 +211,7 @@ e disabilitare (o riabilitare) singoli territori interagendo con la legenda del 
 
 
 spiegaTabellaCompare <- HTML("<div style='padding-top:10px;'>In questa tabella vengono confrontate le previsioni ed i valori osservati del numero di casi totali, dei decessi, del numero di ospedalizzati e del numero di ricoverati in terapia intensiva.
-<br>Sono stati confrontati i due modelli, l'esponeziale quadratico e l'esponenziale puro. La forte discordanza tra previsioni e valori osservati nel modello esponenziale indica che siamo usciti da quel regime di crescita: le misure preventive adottate dal governo iniziano ad avere effetto!</div>")
+<br>Sono stati confrontati i due modelli, l'esponeziale quadratico e l'esponenziale puro. La forte discordanza tra previsioni e valori osservati nel modello esponenziale indica che siamo usciti da quel regime di crescita.</div>")
 
 
 # Descrizione Terapia Intensiva
