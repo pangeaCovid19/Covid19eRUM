@@ -487,6 +487,8 @@ output$lineProvinceConfronto <- renderPlotly({
 	)
 	if (is.null(lagProvince)) return(NULL)
 
+		if(length(selprov)!=length(lagProvince)) return (NULL)
+
 	names(lagProvince) <- selprov
 
 	var2plot <- "totale_casi"
@@ -579,7 +581,11 @@ output$lineRegioniConfronto <- renderPlotly({
 	if(verbose) cat("\n renderPlotly:lineRegioniConfronto")
   allDataReg <- copy(reacval$dataTables_reg)
 
+
+
 	regioni <- input$regionSelSerieStoriche
+
+	if(verbose) cat("\t -> regioni:", regioni)
 	if (is.null(regioni)) return(NULL)
 	if(verbose) cat("\n \t regioni:", regioni)
 
@@ -592,6 +598,8 @@ output$lineRegioniConfronto <- renderPlotly({
  		})
 	)
 	if (is.null(lagRegioni)) return(NULL)
+
+	if(length(regioni)!=length(lagRegioni)) return (NULL)
 
 	names(lagRegioni) <- regioni
 
@@ -1362,26 +1370,20 @@ output$percDeltaTot <- renderPlotly({
           fill=tipo,
           text = paste('Data:', strftime(data, format="%d-%m-%Y"),
           '<br>Variazione: ', paste(round(deltaPerc,1),'%'))), stat="identity", width = 0.8))+
-   				# suppressWarnings(geom_bar(data=tsIta, aes(x=data, y=deltaPerc, #fill=tipo,
-          # text = paste('Data:', strftime(data, format="%d-%m-%Y"),
-          # '<br>Variazione: ', paste(round(deltaPerc,2),'%'))), stat="identity", width = 0.8, fill="steelblue"))+
-          # suppressWarnings(geom_bar(data=prevItaDT[which(prevItaDT$data>datamax & prevItaDT$variabilePrevista=="totale_casi"),], aes(x=data, y=deltaPerc, #fill=tipo,
-          # text = paste('Data:', strftime(data, format="%d-%m-%Y"),
-          # '<br>Variazione prevista: ', paste0(round(deltaPerc,2),'%'))), stat="identity", width = 0.8, fill="orange"))+
-          geom_crossbar(data=subdf[which(subdf$tipo=="previsioni"),],
-            aes(x=data,
-              y=deltaPerc,
-              ymin=LowerRangePerc, ymax=UpperRangePerc,
-            text = paste('Data:', strftime(data, format="%d-%m-%Y"),
-          '<br>Variabile: ', varInput,
-          '<br>Variazione prevista: ', paste0(round(deltaPerc,1),'%'),
-          '<br>Intervallo previsione:', paste0('[', round(LowerRangePerc,1), '%, ', round(UpperRangePerc,1),'%]')
-        )),width=0.7,
-            colour="red",
-            alpha=0.4,
-            size=0.3,
-            position=position_dodge(.9)
-          )+
+#   			geom_crossbar(data=subdf[which(subdf$tipo=="previsioni"),],
+#            aes(x=data,
+#              y=deltaPerc,
+#              ymin=LowerRangePerc, ymax=UpperRangePerc,
+#            text = paste('Data:', strftime(data, format="%d-%m-%Y"),
+#          '<br>Variabile: ', varInput,
+#          '<br>Variazione prevista: ', paste0(round(deltaPerc,1),'%'),
+#          '<br>Intervallo previsione:', paste0('[', round(LowerRangePerc,1), '%, ', round(UpperRangePerc,1),'%]')
+#        )),width=0.7,
+#            colour="red",
+#            alpha=0.4,
+#            size=0.3,
+#            position=position_dodge(.9)
+ #         )+
           scale_fill_manual(values=d3hexcols)+
           #scale_x_date(date_breaks="2 day",date_labels="%b %d")+
           theme(axis.text.x=element_text(angle=45,hjust=1)
@@ -1543,19 +1545,35 @@ output$nuoviPositiviStoricoReg<- renderPlotly({
 
 })
 
+output$uiProvSelSerieStoricheProv <- renderUI({
+	if(verbose) cat("\n renderPlotly:uiProvSelSerieStoricheProv")
+	selregione <- input$regionSelSerieStorichexProv
+	if(is.null(selregione)) return(NULL)
+
+	prov <- unique(allData_prv[allData_prv$denominazione_regione %in% selregione, "denominazione_provincia"])
+	prov <- sort(prov)
+
+	pickerInput(inputId = "provSelSerieStoricheProv", label = "Seleziona province", choices = prov,selected=prov, options = pickerOptions(size=10,actionsBox = T ,selectedTextFormat = "count >20",deselectAllText='Deseleziona tutto',selectAllText='Seleziona tutto'), multiple = TRUE)
+
+})
+
 
 output$nuoviPositiviStoricoProv<- renderPlotly({
 	if(verbose) cat("\n renderPlotly:nuoviPositiviStoricoProv")
-	selregione <- input$regionSelSerieStorichexProv
+#	selregione <- input$regionSelSerieStorichexProv
+	selprov <- input$provSelSerieStoricheProv
 	tipoplot <- input$tipoPlotSerieStorichePrev
-	if(is.null(selregione)) return(NULL)
+#	if(is.null(selregione)) return(NULL)
 	if(is.null(tipoplot)) return(NULL)
+	if(is.null(selprov)) return(NULL)
 
 	dati <- copy(allData_prv)
 	if(is.null(dati)) return(NULL)
 	setDT(dati)
 	setnames(dati, old=c('denominazione_regione', 'denominazione_provincia'), new=c("regione", "provincia"))
-	dati <-dati[regione %in% selregione]
+
+#	dati <-dati[regione %in% selregione]
+	dati <-dati[provincia %in% selprov]
 
 	setorder(dati, provincia, data)
 	dati[, casi_nuovi:= c(0,diff(totale_casi)),provincia]
@@ -1938,12 +1956,14 @@ output$tabCompare <- renderDT({
 	if(verbose) cat("\n renderDT:tabCompare")
   out <- prevItaCompare()
 
+	var2Keep <- c("deceduti", "totale_casi")
+	out <- out[(out$Variabile%in%var2Keep),]
 
   if (!is.null(out)) {
 		out <- out[order(out$Variabile),]
     datatable(out,extensions = c('Scroller'),
       selection = list(target = NULL),
-      options= c(list(dom = 't',scroller=T,scrollX="300",scrollY="300",paging = T, searching = F, info=F, ordering=F, order=list(list(2, 'desc'))), DT_lang_opt),
+      options= c(list(dom = 't',scroller=T,scrollX="300",scrollY="200",paging = T, searching = F, info=F, ordering=F, order=list(list(2, 'desc'))), DT_lang_opt),
       rownames=F)
   }
 })
@@ -1954,14 +1974,12 @@ output$tab_desktop<-renderUI({
   fluidRow(style="padding-left:30px;padding-right:30px;border-style: solid;border-color:#009933;",#" border-color :#009933;",
     h1("Previsioni"),
     fluidRow(
-      column(12,h4("In questa pagina proponiamo il confronto tra i dati registrati, sia regionali che nazionali e due modelli di crescita. Il primo modello (esponenziale) descrive una diffusione incontrollata, mentre il secondo (esponenziale quadratico) tenta di tenere conto dell'effetto di misure contenitive. Per maggiori dettagli, controlla la sezione Matematica della diffusione"))
+      column(12,h4("In questa pagina proponiamo il confronto tra i dati osservati e due modelli di crescita: il modello esponenziale descrive una diffusione in cui il tasso di crescita è costante, questo accade quando l'epidemia si diffonde senza controllo; il modello esponenziale quadratico tiene in conto di una diminuzione del tasso di crescita con l'avanzare del tempo. Questa diminuzione può essere dovuta a misure contenitive o all'esaurimento della popolazione contagiabile."))
 
     ),
        br(),
       fluidRow(style="padding:30px;background-color:#ffffff",
       fluidRow(
-
-
         column(4,
           prettyRadioButtons('regionLinLogFit',"Tipo Grafico",choices = c("Lineare", "Logaritmico"), selected = "Lineare",status = "success",shape = 'round',inline = T,animation = 'jelly',icon = icon('check'))
           #selectizeInput("regionLinLogFit", label="Tipo Grafico", choices=c("Lineare", "Logaritmico"), selected = "Lineare")
@@ -1990,17 +2008,13 @@ output$tab_desktop<-renderUI({
             pickerInput(inputId = "varSel", label = "Seleziona variabile", choices = c("deceduti","totale contagiati"),selected="totale contagiati",options = list(size=10,`actions-box` = TRUE, `selected-text-format` = "count >20"), multiple = FALSE))),
         fluidRow(style="padding:10px;background-color:#ffffff",addSpinner(plotlyOutput(outputId="percDeltaTot"), spin = "fading-circle", color = "#009933"),spiegaVariazionePercentuale),
       br(),br(),
-
-      br(),br(),
-      fluidRow(style="background-color:#ffffff",
-
-        column(10,offset=1,align="center", h3("Previsione del numero di casi a medio termine con modello esponenziale quadratico")),
-        fluidRow(style="padding-left:50px;",
-          pickerInput(inputId = "varSel2", label = "Seleziona variabile", choices = c("deceduti","totale contagiati"),selected="totale contagiati",options = list(size=10,`actions-box` = TRUE, `selected-text-format` = "count >20"), multiple = FALSE))),
-        fluidRow(style="padding:10px;background-color:#ffffff",addSpinner(plotlyOutput(outputId="fitCasesIta"), spin = "fading-circle", color = "#009933"), spiegaFitMedioTermine)
-
-
-      ,br(),
+  #    br(),br(),
+  #    fluidRow(style="background-color:#ffffff",
+  #      column(10,offset=1,align="center", h3("Previsione del numero di casi a medio termine con modello esponenziale quadratico")),
+  #      fluidRow(style="padding-left:50px;",
+  #        pickerInput(inputId = "varSel2", label = "Seleziona variabile", choices = c("deceduti","totale contagiati"),selected="totale contagiati",options = list(size=10,`actions-box` = TRUE, `selected-text-format` = "count >20"), multiple = FALSE))),
+   #     fluidRow(style="padding:10px;background-color:#ffffff",addSpinner(plotlyOutput(outputId="fitCasesIta"), spin = "fading-circle", color = "#009933"), spiegaFitMedioTermine)
+   #   ,br(),
       fluidRow(style="padding:30px;background-color:#ffffff",
           column(width=4,
             selectizeInput("tipoCompare", label="Tipo Comparazione", choices=c("Totale", "Incremento Giornaliero"), selected = "Lineare")
@@ -2021,7 +2035,7 @@ output$tab_mobile<-renderUI({
   fluidRow(style="padding-left:30px;padding-right:30px;border-style: solid;border-color:#009933;",#" border-color :#009933;",
   	h1("Previsioni"),
   	fluidRow(
-  		column(12,h4("In questa pagina proponiamo il confronto tra i dati registrati, sia regionali che nazionali e due modelli di crescita. Il primo modello (esponenziale) descrive una diffusione incontrollata, mentre il secondo (esponenziale quadratico) tenta di tenere conto dell'effetto di misure contenitive. Per maggiori dettagli, controlla la sezione Matematica della diffusione"))
+  		column(12,h4("In questa pagina proponiamo il confronto tra i dati osservati e due modelli di crescita: il modello esponenziale descrive una diffusione in cui il tasso di crescita è costante, questo accade quando l'epidemia si diffonde senza controllo; il modello esponenziale quadratico tiene in conto di una diminuzione del tasso di crescita con l'avanzare del tempo. Questa diminuzione può essere dovuta a misure contenitive o all'esaurimento della popolazione contagiabile."))
 
   	),
   		 br(),

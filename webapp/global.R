@@ -210,8 +210,8 @@ di CoVid19. <br>Ciascuna area territoriale
 e disabilitare (o riabilitare) singoli territori interagendo con la legenda del grafico.</div>")
 
 
-spiegaTabellaCompare <- HTML("<div style='padding-top:10px;'>In questa tabella vengono confrontate le previsioni ed i valori osservati del numero di casi totali, dei decessi, del numero di ospedalizzati e del numero di ricoverati in terapia intensiva.
-<br>Sono stati confrontati i due modelli, l'esponeziale quadratico e l'esponenziale puro. La forte discordanza tra previsioni e valori osservati nel modello esponenziale indica che siamo usciti da quel regime di crescita.</div>")
+spiegaTabellaCompare <- HTML("<div style='padding-top:10px;'>In questa tabella vengono confrontate le previsioni per i due modelli implementati ed i valori osservati del numero di casi totali, dei decessi, del numero di ospedalizzati e del numero di ricoverati in terapia intensiva.
+<br>Tornando indietro nel tempo è possibile vedere come le previsioni fatte con il modello esponenziale di distacchino sempre di più dai valori veri, sovrastimando sia i casi totali che i decessi. Il modello esponenziale quadratico riesce a prevedere meglio l'andamento dell'epidemia ma negli ultimi giorni è evidente come questo modello sottostimi costantemente l'incremento dei casi: siamo usciti anche dal regime quadratico, per modellizzare il fenomeno in questo momento andrebbero considerati  fattori che non sono identificabili a partire dai soli dati pubblicati ogni giorno dalla protezione civile.</div>")
 
 
 # Descrizione Terapia Intensiva
@@ -224,6 +224,12 @@ spiegaTerIntAttuale <- HTML("<div style='padding-top:10px;'>In questo grafico ve
 
 
 #########################
+
+
+spiegaGraficoCasiGiornalieriRegioni <- HTML("<div style='padding-top:10px;'> In questo grafico è stato riportato il numero di nuovi casi giornalieri divisi per regione.</div>")
+
+
+spiegaGraficoCasiGiornalieriProvincia <- HTML("<div style='padding-top:10px;'> In questo grafico è stato riportato il numero di nuovi casi giornalieri divisi per provincia.</div>")
 
 
 spiegaGraficoCasiVsCasiNuovi <- HTML("<div style='padding-top:10px;'> In questo grafico viene rappresentato il numero dei nuovi casi negli ultimi 7 giorni in funzione del numero di casi totali. Sappiamo che il trend di crescita del numero di contagiati non può cresce in modo esponenziale molto a lungo, ma come facciamo ad accorgerci del momento in cui il trend sta cambiando? Questo grafico ci aiuta a visualizzare quel momento: la crescira esponenziale è caratterizzata da un numero di contagi giornalieri proporzionali al numero di contagi totali. Tale andamento è rappresentato da una retta in questo grafico. Nel momento in cui la crescita smetterà di essere esponenziale inizieremo a vedere la curva piegarsi verso il basso.</div>")
