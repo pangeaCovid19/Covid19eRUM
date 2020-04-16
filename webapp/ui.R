@@ -73,7 +73,7 @@ tiTab <- tabItem(tabName = "tiPlots",
 							fluidRow(style="padding-left:30px;padding-right:30px;border-style: solid;border-color:#cc0000;",#style="background-color :#cc0000;",
 							h1("Terapia Intensiva"),
 
-									h4("I dati relativi al numero di posti letto in terapia intensiva per regione sono aggiornati al 2018 e non vengono riaggiornati in base agli sforzi che il sistema sanitario sta portando avanti in questi giorni. Non ha scopo allarmistico ma solo di mostrare quali siano le criticità che il nostro paese sta affrontando a causa del CoVid19 "),
+									h4("I dati relativi al numero di posti letto in terapia intensiva per regione sono aggiornati al 2018 e non vengono riaggiornati in base agli sforzi che il sistema sanitario ha sostenuto dall'inizio dell'emergenza."),
 									 br(),
 									 fluidRow(style="padding:20px;background-color:#ffffff",
 										 fluidRow(style="padding:20px;background-color:#ffffff",
