@@ -1979,25 +1979,29 @@ output$tab_desktop<-renderUI({
     ),
        br(),
       fluidRow(style="padding:30px;background-color:#ffffff",
-      fluidRow(
-        column(4,
-          prettyRadioButtons('regionLinLogFit',"Tipo Grafico",choices = c("Lineare", "Logaritmico"), selected = "Lineare",status = "success",shape = 'round',inline = T,animation = 'jelly',icon = icon('check'))
-          #selectizeInput("regionLinLogFit", label="Tipo Grafico", choices=c("Lineare", "Logaritmico"), selected = "Lineare")
-          ),
-        column(3,
-          prettyRadioButtons('modelloFit',"Tipologia Modello",choices = c("Esp. quadratico", "Esponenziale" ), selected="Esp. quadratico",status = "success",shape = 'round',inline = T,animation = 'jelly',icon = icon('check'))
-          #radioButtons("modelloFit", label="Tipologia Modello", choices=c("Esp. quadratico", "Esponenziale" ), selected="Esp. quadratico")
-          )),br(),
+	      fluidRow(
+	        column(4,
+	          prettyRadioButtons('regionLinLogFit',"Tipo Grafico",choices = c("Lineare", "Logaritmico"), selected = "Lineare",status = "success",shape = 'round',inline = T,animation = 'jelly',icon = icon('check'))
+	          #selectizeInput("regionLinLogFit", label="Tipo Grafico", choices=c("Lineare", "Logaritmico"), selected = "Lineare")
+	          ),
+	        column(3,
+	          prettyRadioButtons('modelloFit',"Tipologia Modello",choices = c("Esp. quadratico", "Esponenziale" ), selected="Esp. quadratico",status = "success",shape = 'round',inline = T,animation = 'jelly',icon = icon('check'))
+	          #radioButtons("modelloFit", label="Tipologia Modello", choices=c("Esp. quadratico", "Esponenziale" ), selected="Esp. quadratico")
+	          )
+				),
+ 			 fluidRow(style="padding:30px;background-color:#ffffff",
+           fluidRow(align="center",h3("Andamenti globali in Italia con previsione a 3 giorni")),
+           addSpinner(plotlyOutput(outputId="fitIta"), spin = "fading-circle", color = "#009933"),
+ 					spiegaFitTot
+ 			 ),
 
         fluidRow(align="center",h3("Andamento casi positivi per regione con previsione a 3 giorni")),
-        fluidRow(style='padding-left:30px',pickerInput(inputId = "regionSelFit", label = "Seleziona regioni", choices = regioniList,selected=regioni2fit, options = pickerOptions(size=10,actionsBox = T ,selectedTextFormat = "count >20",deselectAllText='Deseleziona tutto',selectAllText='Seleziona tutto'), multiple = TRUE)),
-         addSpinner(plotlyOutput(outputId="fitRegion"), spin = "fading-circle", color = "#009933"), spiegaFitPos
-        ),
-        fluidRow(style="padding:30px;background-color:#ffffff",
-          fluidRow(align="center",h3("Andamenti globali in Italia con previsione a 3 giorni")),
-          addSpinner(plotlyOutput(outputId="fitIta"), spin = "fading-circle", color = "#009933"), spiegaFitTot
-
-      ),
+        fluidRow(style='padding-left:30px',
+					pickerInput(inputId = "regionSelFit", label = "Seleziona regioni", choices = regioniList,selected=regioni2fit, options = pickerOptions(size=10,actionsBox = T ,selectedTextFormat = "count >20",deselectAllText='Deseleziona tutto',selectAllText='Seleziona tutto'), multiple = TRUE)
+				),
+       	addSpinner(plotlyOutput(outputId="fitRegion"), spin = "fading-circle", color = "#009933"),
+			 	spiegaFitPos
+			 ),
 
       br(),br(),
 
@@ -2053,14 +2057,24 @@ output$tab_mobile<-renderUI({
           #radioButtons("modelloFit", label="Tipologia Modello", choices=c("Esp. quadratico", "Esponenziale" ), selected="Esp. quadratico")
           ))),
 
-        fluidRow(style="background-color:#ffffff",column(10,offset=1,align="center",h4("Andamento casi positivi per regione con previsione a 3 giorni"))),
-        fluidRow(style="padding-left:30px;",pickerInput(inputId = "regionSelFit", label = "Seleziona regioni", choices = regioniList,selected=regioni2fit, options = pickerOptions(size=10,actionsBox = T ,selectedTextFormat = "count >20",deselectAllText='Deseleziona tutto',selectAllText='Seleziona tutto',mobile=T), multiple = TRUE)),
-         fluidRow(style="padding:10px;background-color:#ffffff",addSpinner(plotlyOutput(outputId="fitRegion"), spin = "fading-circle", color = "#009933")), #spiegaFitPos
-        ),
+        fluidRow(style="background-color:#ffffff",column(10,offset=1,align="center",
 
-        fluidRow(style="background-color:#ffffff",column(10,offset=1,align="center",h4("Andamenti globali in Italia con previsione a 3 giorni"))),
-         fluidRow(style="padding:10px;background-color:#ffffff",addSpinner(plotlyOutput(outputId="fitIta"), spin = "fading-circle", color = "#009933")),
-         fluidRow( style="padding:20px;background-color:#ffffff;",spiegaFitTotePos),
+				fluidRow(style="background-color:#ffffff",column(10,offset=1,align="center",h4("Andamenti globali in Italia con previsione a 3 giorni"))),
+				 fluidRow(style="padding:10px;background-color:#ffffff",addSpinner(plotlyOutput(outputId="fitIta"), spin = "fading-circle", color = "#009933")),
+				 fluidRow( style="padding:20px;background-color:#ffffff;",spiegaFitTotePos),
+
+				h4("Andamento casi positivi per regione con previsione a 3 giorni"))),
+
+        fluidRow(style="padding-left:30px;",
+				pickerInput(inputId = "regionSelFit", label = "Seleziona regioni", choices = regioniList,selected=regioni2fit, options = pickerOptions(size=10,actionsBox = T ,selectedTextFormat = "count >20",deselectAllText='Deseleziona tutto',selectAllText='Seleziona tutto',mobile=T), multiple = TRUE)),
+
+
+
+
+         fluidRow(style="padding:10px;background-color:#ffffff",
+				 addSpinner(plotlyOutput(outputId="fitRegion"), spin = "fading-circle", color = "#009933")
+			 ), #spiegaFitPos
+        ),
 
          br(),br(),
          fluidRow(style="background-color:#ffffff",
