@@ -690,6 +690,7 @@ output$lineRegioniCasiVsNuovicasi <- renderPlotly({
 	if (is.null(allDataReg)) return(NULL)
 	if (is.null(var2plot)) return(NULL)
 	if (is.null(dataMax)) dataMax <- max(allDataReg)
+	if (is.null(regioni2plot)) return(NULL)
 
 		cat("2")
 	setDT(allDataReg)
@@ -701,10 +702,12 @@ output$lineRegioniCasiVsNuovicasi <- renderPlotly({
 	allDataReg[, casi_roll:=c(rep(NA,ndays-1), rollsum(casi_nuovi, k=ndays)),denominazione_regione]
 	setorder(allDataReg, -data)
 
-	allDataReg <- allDataReg[ !is.na(casi_roll) , .(data, denominazione_regione, casi_roll, VAR2PLOT)]
+	allDataReg <- allDataReg[ !is.na(casi_roll) & casi_roll>0 , .(data, denominazione_regione, casi_roll, VAR2PLOT)]
 	xra <- range(allDataReg$VAR2PLOT)
 	yra <- range(allDataReg$casi_roll)
 	allDataReg <- allDataReg[ data <= dataMax, ]
+
+	validate(need(nrow(allDataReg)>0,paste0("Nessun dato corrispondente alla selezione")))
 
 	p <- ggplot(allDataReg[ !is.na(casi_roll)]) + my_ggtheme() +
 					geom_point( aes(x=VAR2PLOT, y=casi_roll, color=denominazione_regione)) +
@@ -763,6 +766,7 @@ output$lineProvinceCasiVsNuovicasi <- renderPlotly({
 	var2plot 			<- "totale_casi"
 
 	if(is.null(var2plot)) return(NULL)
+	if(is.null(prov2plot)) return(NULL)
 	var2plotNew <- gsub("_", " ", var2plot)
 	ndays <- 7
 
@@ -785,11 +789,14 @@ output$lineProvinceCasiVsNuovicasi <- renderPlotly({
 	allDataPrv[, casi_roll:=c(rep(NA,ndays-1), rollsum(casi_nuovi, k=ndays)),denominazione_provincia]
 	setorder(allDataPrv, -data)
 
-	allDataPrv <- allDataPrv[ !is.na(casi_roll) , .(data, denominazione_provincia, casi_roll, VAR2PLOT)]
+	allDataPrv <- allDataPrv[ !is.na(casi_roll)  & casi_roll>0, .(data, denominazione_provincia, casi_roll, VAR2PLOT)]
+
 
 	xra <- range(allDataPrv$VAR2PLOT)
 	yra <- range(allDataPrv$casi_roll)
 	allDataPrv <- allDataPrv[ data <= dataMaxxi, ]
+
+	validate(need(nrow(allDataPrv)>0,paste0("Nessun dato corrispondente alla selezione")))
 
 	p <- ggplot(allDataPrv[ !is.na(casi_roll)]) + my_ggtheme() +
 					geom_point( aes(x=VAR2PLOT, y=casi_roll, color=denominazione_provincia)) +
