@@ -17,7 +17,10 @@ chisiamotab<-tabItem(tabName="chisiamo",
 										#	h1("Quanto veloce si diffonde il Coronavirus in Italia "),
 
 											fluidRow(style="padding:30px;background-color:#ffffff;",
-											HTML(readChar("../docs/chisiamo.html",file.info("../docs/chisiamo.html")$size)))))
+											HTML(readChar("../docs/chisiamo.html",file.info("../docs/chisiamo.html")$size)),
+											fluidRow(style='padding:30',align='center',br(),br(),
+											 uiOutput('video')
+											 ))))
 
 diariotab<-tabItem(tabName="diario",
 

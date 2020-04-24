@@ -2257,7 +2257,14 @@ output$storico_report<-renderUI({
 
     })
 
+output$video<-renderUI({
+  if(reacval$mobile){
+    HTML('<iframe width="100%" height="100%" src="https://www.youtube.com/embed/EAaU1aLlcsU" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>')
+  }else{
+    HTML('<iframe  width="560" height="315"  src="https://www.youtube.com/embed/EAaU1aLlcsU" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>')
+  }
 
+  })
 
   #
 
