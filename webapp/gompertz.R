@@ -122,5 +122,7 @@ predictNextDaysGompertz<-function(dati,modello,nahead=3, all=FALSE, varfactor=2)
 		sigma[-seq_len(nrow(dati))]<-sigmavereprevisioni
 	}
 	predizioni2<-cbind(Attesi = predizioni, LowerRange = predizioni-sigma, UpperRange = predizioni+sigma)
+	newdata$data<-newdata$x+attr(modello,"mindata")-1
+	newdata$x<-NULL
 	cbind(newdata,predizioni2)
 }
