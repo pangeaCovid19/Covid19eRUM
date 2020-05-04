@@ -6,13 +6,14 @@ library(data.table)
 library(DT)
 library(zoo)
 source("funzionifit.R")
+source("gompertz.R")
 options(bitmapType="cairo")
 
 animazione <- FALSE
 scalaSingolaProvincia <-FALSE
 
 verbose <- TRUE
-assignout <- FALSE
+assignout <- TRUE
 saveRDSout <- FALSE
 
 regioni2fit <- c('Lombardia', 'Emilia Romagna', 'Veneto')
@@ -128,6 +129,9 @@ mtimeReg 	<-file.info(paste0(dir_reg,regRDS))$mtime
 
 modelliReg <- readRDS("www/modelliReg.RDS")
 modelliIta <-readRDS("www/modelliIta.RDS")
+
+modelliRegGomp <- readRDS("www/modelliRegGomp.RDS")
+modelliItaGomp <-readRDS("www/modelliItaGomp.RDS")
 
 if(file.exists("www/modelliRegExp.RDS"))
 	modelliRegExp <- readRDS("www/modelliRegExp.RDS")

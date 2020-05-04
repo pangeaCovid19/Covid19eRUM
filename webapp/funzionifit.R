@@ -1,4 +1,5 @@
 require(data.table)
+source("gompertz.R")
 #Ritorna le time series per regione e globale
 #dati: oggetto ritornato da get_covid19_data
 getTimeSeries<-function(dati) {
@@ -166,28 +167,31 @@ predictNextDays<-function(dati,modello,nahead=3, all=FALSE) {
 	} else if (ismodelloDelta(modello)) {
 		newdata<-data.frame(data = max(dati$data)+c(0,seq_len(nahead)))
 	} else newdata<-data.frame(data = max(dati$data)+seq_len(nahead))
-	if (ismodelloQuadratico(modello)) {
-		newdata$dataind<-as.numeric(newdata$data-attr(modello,"mindata"))+1
-		newdata$data2<-newdata$dataind^2
-	}
-	predizioni<-round(exp(predict(modello,newdata,interval="confidence",level=1-pnorm(-1)*2)))
-	colnames(predizioni)<-c("Attesi","LowerRange","UpperRange")
-	if (ismodelloDelta(modello)) {
-		last<-dati[[attr(modello,"var2fit")]][dati$data==max(dati$data)]
-		if (length(last)==0) last<-0
-		predizioni<-apply(predizioni,2,cumsum)
-		offset<-predizioni[newdata$data==max(dati$data),"Attesi"]-last
-		predizioni<-predizioni-offset
-		if (!all) {
-			newdata<-newdata[-1,,drop=FALSE]
-			predizioni<-predizioni[-1,,drop=FALSE]
+
+	if (class(modello)=="lm"){
+		if (ismodelloQuadratico(modello)) {
+			newdata$dataind<-as.numeric(newdata$data-attr(modello,"mindata"))+1
+			newdata$data2<-newdata$dataind^2
 		}
+
+		predizioni<-round(exp(predict(modello,newdata,interval="confidence",level=1-pnorm(-1)*2)))
+		colnames(predizioni)<-c("Attesi","LowerRange","UpperRange")
+		if (ismodelloDelta(modello)) {
+			last<-dati[[attr(modello,"var2fit")]][dati$data==max(dati$data)]
+			if (length(last)==0) last<-0
+			predizioni<-apply(predizioni,2,cumsum)
+			offset<-predizioni[newdata$data==max(dati$data),"Attesi"]-last
+			predizioni<-predizioni-offset
+			if (!all) {
+				newdata<-newdata[-1,,drop=FALSE]
+				predizioni<-predizioni[-1,,drop=FALSE]
+			}
+		}
+		return(cbind(newdata,predizioni))
+	} else if (class(modello)=="nls"){
+		return(predictNextDaysGompertz(dati,modello,nahead=nahead, all=all, varfactor=2))
 	}
-	newdata<-cbind(newdata,predizioni)
-	return(newdata)
 }
-
-
 
 
 get_predictions <- function(modelli, datiTS, nahead, alldates=FALSE) {
@@ -200,5 +204,3 @@ get_predictions <- function(modelli, datiTS, nahead, alldates=FALSE) {
 		setDF(previsioniDT)
   previsioniDT
 }
-
-

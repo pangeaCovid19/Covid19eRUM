@@ -2,6 +2,7 @@ require(digest)
 require(httr)
 require(rmarkdown)
 source("funzionifit.R")
+source("gompertz.R")
 writeLog<-function(message, log) {
 	cat(sprintf("%s - %s\n",format(Sys.time()),message),file=log,append=TRUE)
 }
@@ -118,21 +119,23 @@ while (i==0) {
 	tsReg <- getTimeSeries(due)
 	modelliIta <- list()
 	modelliItaExp <- list()
+	modelliItaGomp <- list()
 	for(i in  1:length(campiPrevisioni)){
 		modelliIta[[i]]<-loglinmodel4(tsReg$Italia, var=campiPrevisioni[i], rangepesi=c(0,1), quadratico=TRUE)
 		modelliItaExp[[i]]<-loglinmodel4(tsReg$Italia, var=campiPrevisioni[i], rangepesi=c(0,1), quadratico=FALSE)
+		modelliItaGomp[[i]] <- try(gompertzModel(tsReg$Italia, var=campiPrevisioni[i], lastw=5, P=102.6891))
 
 	}
 	names(modelliIta) <- campiPrevisioni
 	names(modelliItaExp) <- campiPrevisioni
+	names(modelliItaGomp) <- campiPrevisioni
 
 	modelliReg <-lapply( tsReg[which(names(tsReg)!='Italia')], loglinmodel4, quadratico=TRUE)
 	modelliRegExp <-lapply( tsReg[which(names(tsReg)!='Italia')], loglinmodel4, quadratico=FALSE)
-
-#FIXME cancellare modelli TI
-	#modelliTIReg <-lapply( tsReg[which(names(tsReg)!='Italia')], loglinmodel4, var='terapia_intensiva', quadratico=TRUE)
-	#modelliTIRegExp <-lapply( tsReg[which(names(tsReg)!='Italia')], loglinmodel4, var='terapia_intensiva', quadratico=FALSE)
-
+	modelliRegGomp <-lapply( tsReg[which(names(tsReg)!='Italia')], function(x){
+			try(gompertzModel(x, var="totale_casi", lastw=5, P=102.6891))
+		}
+	)
 
 	writeLog("Scrivendo i dati",logdemone)
 	saveRDS(due,"www/dati-regioni/dataRegioni.RDS")
@@ -143,9 +146,8 @@ while (i==0) {
 	saveRDS(modelliIta,"www/modelliIta.RDS")
 	saveRDS(modelliRegExp,"www/modelliRegExp.RDS")
 	saveRDS(modelliItaExp,"www/modelliItaExp.RDS")
-	#FIXME cancellare modelli TI
-	#saveRDS(modelliTIReg,"www/modelliTIReg.RDS")
-	#saveRDS(modelliTIRegExp,"www/modelliTIRegExp.RDS")
+	saveRDS(modelliRegGomp,"www/modelliRegGomp.RDS")
+	saveRDS(modelliItaGomp,"www/modelliItaGomp.RDS")
 
 	# salvo lo storico dei modelli
 	if(!dir.exists("www/pastModels/")) dir.create("www/pastModels/")
@@ -154,34 +156,54 @@ while (i==0) {
 	saveRDS(modelliIta,paste0("www/pastModels/modelliIta_", dataMax,".RDS"))
 	saveRDS(modelliRegExp,paste0("www/pastModels/modelliRegExp_", dataMax,".RDS"))
 	saveRDS(modelliItaExp,paste0("www/pastModels/modelliItaExp_", dataMax,".RDS"))
+	saveRDS(modelliRegGomp,paste0("www/pastModels/modelliRegGomp_", dataMax,".RDS"))
+	saveRDS(modelliItaGomp,paste0("www/pastModels/modelliItaGomp_", dataMax,".RDS"))
 
 }
 
-if ( FALSE) {
+if ( TRUE) {
+	cat("\n ricalcolo modelli del passato:")
 	date <- seq(as.Date('2020-03-08'), dataMax, by=1)
 	modelswitch<-as.Date("2020-03-28")
+	dataGomp <- as.Date("2020-04-12")
+
 	longIta <- lapply(date, function(x){
+		cat("->", strftime(x))
 		modelliIta <- list()
 		modelliItaExp <- list()
+		modelliItaGomp <- list()
 		delta<-x>=modelswitch
 		for(i in  1:length(campiPrevisioni)){
 			modelliIta[[i]]<-loglinmodel4(tsReg$Italia, var=campiPrevisioni[i], rangepesi=c(0,1), quadratico=TRUE, dataMax=x,delta=delta)
 			modelliItaExp[[i]]<-loglinmodel4(tsReg$Italia, var=campiPrevisioni[i], rangepesi=c(0,1), quadratico=FALSE, dataMax=x)
+			if(x >= dataGomp){
+				modelliItaGomp[[i]] <- try(gompertzModel(tsReg$Italia, var=campiPrevisioni[i], lastw=5, P=102.6891, dataMax=x))
+			}
 		}
 		names(modelliIta) <- campiPrevisioni
 		names(modelliItaExp) <- campiPrevisioni
+		if(x >= dataGomp) names(modelliItaGomp) <- campiPrevisioni
 
 		modelliReg <-lapply( tsReg[which(names(tsReg)!='Italia')], loglinmodel4, quadratico=TRUE, dataMax=x, delta=delta)
 		modelliRegExp <-lapply( tsReg[which(names(tsReg)!='Italia')], loglinmodel4, quadratico=FALSE, dataMax=x)
-
+		if(x >= dataGomp){
+			modelliRegGomp <-lapply( tsReg[which(names(tsReg)!='Italia')], function(x){
+					try(gompertzModel(x, var="totale_casi", lastw=5, P=102.6891, dataMax=x))
+				}
+			)
+		}
 		saveRDS(modelliReg,paste0("www/pastModels/modelliReg_", x,".RDS"))
 		saveRDS(modelliIta,paste0("www/pastModels/modelliIta_", x,".RDS"))
 		saveRDS(modelliRegExp,paste0("www/pastModels/modelliRegExp_", x,".RDS"))
 		saveRDS(modelliItaExp,paste0("www/pastModels/modelliItaExp_", x,".RDS"))
+		if(x >= dataGomp){
+			saveRDS(modelliRegGomp,paste0("www/pastModels/modelliRegGomp_", x,".RDS"))
+			saveRDS(modelliItaGomp,paste0("www/pastModels/modelliItaGomp_", x,".RDS"))
+		}
 	})
 }
 
-if(TRUE) {
+if(FALSE) {
 	rmarkdown::render("articolo.Rmd",output_file="www/tabReport.html")
 	if(!dir.exists("www/pastDiary/")) dir.create("www/pastDiary/")
 	rmarkdown::render("articolo.Rmd",output_file=paste0("www/pastDiary/tabReport_", dataMax,".html"))

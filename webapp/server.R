@@ -27,6 +27,8 @@ shinyServer(function(input, output, session) {
 						modelliReg=modelliReg,
 						modelliItaExp=modelliItaExp,
 						modelliRegExp=modelliRegExp,
+						modelliItaGomp=modelliItaGomp,
+						modelliRegGomp=modelliRegGomp,
             mobile=F
 					)
 
@@ -1020,12 +1022,19 @@ prevRegion <- reactive({
 	if(is.null(tipoModello)) return(NULL)
 	if(tipoModello=="Esp. quadratico"){
 		modelliReg=isolate(reacval$modelliReg)
+	} else if(tipoModello=="Gompertz") {
+		modelliReg=isolate(reacval$modelliRegGomp)
 	} else modelliReg <- isolate(reacval$modelliRegExp)
 
+	if(assignout) assign("modelliRegOut", modelliReg, envir=.GlobalEnv)
+	if(assignout) assign("nahead", nahead, envir=.GlobalEnv)
 
 	if (!is.null(allDataReg)) {
 		tsReg <- getTimeSeriesReact()
     tsReg["Italia"] <- NULL
+
+		if(assignout) assign("tsReg", tsReg, envir=.GlobalEnv)
+
 		if(saveRDSout) saveRDS(file="prevRegionList.RDS",list(tsReg, modelliReg, allDataReg))
 
 		prevDT <- get_predictions(modelliReg, tsReg, nahead=nahead, alldates=TRUE)
@@ -1120,7 +1129,7 @@ output$fitRegion <- renderPlotly({
   }
 })
 
-
+#FIXME stoqui
 prevIta <- reactive({
 	if(verbose) cat("\n reactive:prevIta")
 	allDataReg <- copy(reacval$dataTables_reg)
@@ -1131,7 +1140,13 @@ prevIta <- reactive({
 	if(is.null(tipoModello)) return(NULL)
 	if(tipoModello=="Esp. quadratico"){
 		modelliIta=isolate(reacval$modelliIta)
+	} else if(tipoModello=="Gompertz") {
+		modelliIta=isolate(reacval$modelliItaGomp)
 	} else modelliIta <- isolate(reacval$modelliItaExp)
+
+	if(assignout) assign("modelItaOut", modelliIta, envir=.GlobalEnv)
+	if(assignout) assign("tsIta", tsIta, envir=.GlobalEnv)
+	if(assignout) assign("nahead", nahead, envir=.GlobalEnv)
 
 	if (!is.null(allDataReg)) {
 		tsIta <- getTimeSeriesReact()["Italia"]
@@ -1881,11 +1896,9 @@ output$tab_desktop<-renderUI({
 	      fluidRow(
 	        column(4,
 	          prettyRadioButtons('regionLinLogFit',"Tipo Grafico",choices = c("Lineare", "Logaritmico"), selected = "Lineare",status = "success",shape = 'round',inline = T,animation = 'jelly',icon = icon('check'))
-	          #selectizeInput("regionLinLogFit", label="Tipo Grafico", choices=c("Lineare", "Logaritmico"), selected = "Lineare")
 	          ),
 	        column(3,
-	          prettyRadioButtons('modelloFit',"Tipologia Modello",choices = c("Esp. quadratico", "Esponenziale" ), selected="Esp. quadratico",status = "success",shape = 'round',inline = T,animation = 'jelly',icon = icon('check'))
-	          #radioButtons("modelloFit", label="Tipologia Modello", choices=c("Esp. quadratico", "Esponenziale" ), selected="Esp. quadratico")
+	          prettyRadioButtons('modelloFit',"Tipologia Modello",choices = c("Gompertz", "Esp. quadratico", "Esponenziale" ), selected="Gompertz",status = "success",shape = 'round',inline = T,animation = 'jelly',icon = icon('check'))
 	          )
 				),
  			 fluidRow(style="padding:30px;background-color:#ffffff",
@@ -1949,11 +1962,9 @@ output$tab_mobile<-renderUI({
         fluidRow(style="padding-left:30px;",
         column(4,
           prettyRadioButtons('regionLinLogFit',"Tipo Grafico",choices = c("Lineare", "Logaritmico"), selected = "Lineare",status = "success",shape = 'round',inline = T,animation = 'jelly',icon = icon('check'))
-          #selectizeInput("regionLinLogFit", label="Tipo Grafico", choices=c("Lineare", "Logaritmico"), selected = "Lineare")
           ),
         column(4,
           prettyRadioButtons('modelloFit',"Tipologia Modello",choices = c("Esp. quadratico", "Esponenziale" ), selected="Esp. quadratico",status = "success",shape = 'round',inline = T,animation = 'jelly',icon = icon('check'))
-          #radioButtons("modelloFit", label="Tipologia Modello", choices=c("Esp. quadratico", "Esponenziale" ), selected="Esp. quadratico")
           ))),
 
         fluidRow(style="background-color:#ffffff",column(10,offset=1,align="center",
