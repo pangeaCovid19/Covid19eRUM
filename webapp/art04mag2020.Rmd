@@ -1,0 +1,51 @@
+---
+title: La Fase 2 della diffusione <br><small> e quella dei nostri modelli</small>
+author: |
+   | <span class="titolo2">Nicola Farina</span>
+   | <small>Pangea Formazione, Direttore</small>
+date: <small>4 maggio 2020</small>
+output: 
+   html_document:
+      css: style.css
+---
+```{r ,results='hide', echo=FALSE}
+source("scriptEditorialeMaggio.R")
+```
+Circa quaranta giorni fa [abbiamo descritto](https://www.pangeadds.eu/demos/CoVid19/Report21marzo2020.html) il nostro modello, abbiamo parlato diffusamente della cautela con la quale considerare le nostre *previsioni* (ricordate il corsivo?) e le abbiamo confrontate con i dati reali. Nel frattempo la [nostra applicazione](https://www.pangeadds.eu/demos/CoVid19/) si è arricchita con funzionalità di confronto regionale, uno storico delle previsioni giornaliere, grafici con andamenti degli ospedalizzati e dei ricoverati in terapia intensiva divisi per regione (consiglio una visita nella sezione Terapia Intensiva, se non altro per ricevere una lieve buona notizia in questa tragedia, ossia osservare un andamento costantemente in calo) e, finalmente, un nuovo modello.
+ 
+In questi giorni per la verità qualcosa si era già mosso sotto i riflettori. Il primo modello che abbiamo lanciato infatti aveva come *target* le grandezze *cumulate*, ossia cercava di stimare il numero complessivo di deceduti e casi totali da inizio epidemia. Come abbiamo descritto nell'editoriale precedente, questo modello soffriva di un andamento asintotico patologico. Abbiamo corretto cambiando il target. Dal 30 marzo, il modello, con la stessa forma funzionale, cerca di prevedere il dato *giornaliero* dei prossimi giorni. 
+
+Per un po' le cose non sono andate malaccio. Fino all'8 aprile previsioni e dato reale erano in un qualche accordo (ricordo che potete sempre monitorare questo raffronto nei [diari](https://www.pangeadds.eu/demos/CoVid19/pastDiary/tabReport_2020-05-03.html)  giornalieri accessibili dalla sezione "Diario"), dopodiché invece il semplice modello costruito non è stato più in grado di riprodurre il dato reale. 
+
+Dopo l'uscita chiara dalla fase esponenziale, il cammino dell'epidemia ha mostrato una flessione che inizialmente sembrava poter essere catturata dal modello che avevamo proposto. In realtà a lungo il dato reale è stato consistentemente inferiore alla previsioni esponenziali, ma anche decisamente superiore all'esponente quadratico. Quest'ultimo modello non aveva più quello scopo di fornire un *benchmark* con il quale era stato concepito. 
+
+Arrivati a questo punto però, l'epidemia è abbastanza matura perché se ne possano in qualche modo stimare le grandezze asintotiche, ossia quelle di maggiore interesse: quanti saranno gli infetti e i deceduti alla fine? Fra quanti giorni il virus smetterà di circolare? Ricordiamo sempre che le *estrapolazioni* di un modello, in una situazione come questa, dove i comportamenti stanno per cambiare drasticamente (dal 4 maggio sono previsti spostamenti di 4 miliioni di lavoratori in più e maggiori contatti dovuti alla possibilità di incontrare i *congiunti*) servono più a monitorare che non a prevedere realmente.
+
+Il vecchio modello non era altro che un'approssimazione della [funzione di Gompertz](https://it.wikipedia.org/wiki/Legge_di_Gompertz) che prevede un ritmo esponenziale, ma con un esponente che a sua volta rallenta esponenzialmente. Abbiamo sostituito l'approssimazione con il modello completo. Come potete vedere dall'applicazione, questo andamento ricalca molto più fedelmente la diffusione del precedente.
+
+Il lettore potrebbe chiedersi semplicemente perché tale modello non sia stato adottato da subito, se è tanto migliore. La risposta è che, per poter essere di qualche utilità,  ha bisogno di dati che riguardano un'ampia copertura dell'epidemia. Se si è troppo vicini all'inizio, la funzione di Gompertz può estrapolare andamenti molto differenti tra loro. La figura mostra il perché. Supponiamo di essere all'inizio e i dati disponibili sono i puntini. Tutte e tre le curve sono di tipo Gompertz e tutte e tre riproducono i primi dati. Come vedete però, estrapolano verso andamenti totalmenti diversi (l'andamento intermedio è all'incirca quello seguito dalla diffusione attualmente).
+
+ 
+```{r, echo=FALSE}
+plot(curva2,ty="l",lwd=2,col="red", xlab="Giorni dall'inizio epidemia", ylab="Deceduti",cex.lab=1.4)
+lines(curva1,lwd=2,col="green")
+lines(curva3,lwd=2,col="yellow")
+points(italia$deceduti[1:29])
+```
+
+&Egrave; abbastanza intuibile il perché di questo. L'andamento di Gompertz ad un certo punto si *piega* (cambia concavità) e si allontana da una crescita esponenziale. Tuttavia, durante la prima fase risulta difficile sapere *quando* tale piega avverrà.
+
+Oltre a riprodurre i dati passati meglio dei modelli precedenti (come potete vedere dalle figure mostrate nell'applicazione), sono disponibili anche previsioni migliori. Riportiamo qui il confronto tra dato previsto e consuntivato per deceduti e casi totali. Per ottenere la previsione al giorno dopo abbiamo addestrato il modello con i dati fino al giorno precedente. 
+
+```{r,echo=FALSE, results="show"}
+knitr::kable(tabella, caption = "Confronto previsioni - dato reale per i deceduti e i casi totali")
+```
+
+Uno dei parametri del modello (di cui troverete una descrizione nella sezione Matematica della Diffusione, appositamente aggiornata) è il valore *asintotico*, ossia il numero dei deceduti o dei casi totali che si registreranno alla fine dell'epidemia. Come avevamo già espresso nel precedente editoriale, i modelli che produciamo devono fornirci un **benchmark** per poter valutare se la nostra corsa verso la fine dell'emergenza stia accelerando o frenando. Poiché il modello viene aggiornato quotidianamente, esso giorno per giorno fornirà un valore asintotico leggermente diverso. Mostreremo questi valori nell'applicazione. Essi ci aiuteranno a capire se i rilassamenti della Fase 2 stiano avendo effetti sulla diffusione o no. Più specificatamente:
+
+- se il valore asintotico rimane costante nel tempo, la diffusione procede allo stesso ritmo della Fase 1;
+- se invece aumenta consistentemente, vuol dire che, probabilmente, la diffusione sta subendo una spinta e il traguardo finale si allontana;
+- si può anche verificare il caso di un abbassamento tendenziale del valore asintotico, segno che le cose procedono *ancora meglio* di quanto fatto finora. 
+
+Ci aspettiamo che effetti dei cambi di regime ci possano essere fra una settimana all'incirca sulla curva dei casi totali e più in là per i deceduti. L'andamento che stiamo seguendo è assai fragile e può cambiare a seconda dei comportamenti e delle condizioni esterne (si spera ad esempio che il caldo dia una mano nel contenere la diffusione). Noi pensiamo che monitorare ciò che è successo finora e confrontarlo con ciò che sta per succedere, utilizzando strumenti matematici solidi sia la sola strada per poter valutare una situazione e, in ultima analisi, prendere decisioni razionali.
+<br><br><br><br>
