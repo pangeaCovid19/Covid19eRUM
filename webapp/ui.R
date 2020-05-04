@@ -92,12 +92,6 @@ tiTab <- tabItem(tabName = "tiPlots",
 										 addSpinner(plotlyOutput("terapiaIntStoricoTot"), spin = "fading-circle", color = "#cc0000")
 									 ),br(),
 
-#										fluidRow(style="padding:20px;background-color:#ffffff",
-#											h3("Previsione del numero di letti occupati da pazienti con Covid19 e disponibilità per regione (posti letto aggiornati al 2018)"),
-#											plotlyOutput("terapiaIntPlotPercPrev"),
-#											plotlyOutput("terapiaIntPlotPercPrevNEW"), calcolo terapia intensiva su numero di terapie intensive per farlo partire ricaricare il demone
-#											spiegaTerIntPrevisione
-#										),br(),
 	                	fluidRow(style="padding:20px;background-color:#ffffff",
 											h3( "Percentuale in terapia intensiva occupati da pazienti con CoVid19 (posti letto aggiornati al 2018)"),
 											addSpinner(plotlyOutput("terapiaIntPlotPercNow"), spin = "fading-circle", color = "#cc0000"),

@@ -22,9 +22,11 @@ readData<-function(file, popolazione) {
 	paEmilia <- grep('Emilia', tmp$denominazione_regione, ignore.case=T)
 	tmp$denominazione_regione[paEmilia] <- "Emilia Romagna"
 	if ("codice_provincia" %in% names(tmp)) {
+		#province
 		res<-merge(tmp, popolazione[,c("codice_provincia", "pop")], by="codice_provincia",all.x=TRUE)
 		return(res)
 	} else {
+		#regioni
 		if("totale_positivi" %in% names(tmp))setnames(tmp, old=c("totale_positivi"), new=c("totale_attualmente_positivi") )
 		if("variazione_totale_positivi" %in% names(tmp))setnames(tmp, old=c("variazione_totale_positivi"), new=c("nuovi_attualmente_positivi" ) )
 
@@ -36,6 +38,17 @@ readData<-function(file, popolazione) {
 		toSum		<- names(tmp)[which(!(names(tmp) %in% toAggBy))]
 		tmp2 <- aggregate(tmp[, toSum], by=tmp[, toAggBy], sum)
 		res<-merge(tmp2,popolazione,by="denominazione_regione",all.x=TRUE)
+		#correzioni aprile
+		aprLomNew <- 282
+		aprLomInd <- which(res$denominazione_regione=="Lombardia" & month(res$data)==4)
+		aprLomTot <- sum(res$deceduti[aprLomInd])
+		res$deceduti[aprLomInd] <- round(res$deceduti[aprLomInd]*(1+282/aprLomTot))
+		aprLazNew <- 33
+		aprLazInd <- which(res$denominazione_regione=="Lazio" & month(res$data)==4)
+		aprLazTot <- sum(res$deceduti[aprLazInd])
+		round(sum(res$deceduti[aprLazInd]*(aprLazNew/aprLazTot)))
+		res$deceduti[aprLazInd] <- round(res$deceduti[aprLazInd]*(1+282/aprLazTot))
+
 		return(res)
 	}
 }
@@ -116,8 +129,9 @@ while (i==0) {
 	modelliReg <-lapply( tsReg[which(names(tsReg)!='Italia')], loglinmodel4, quadratico=TRUE)
 	modelliRegExp <-lapply( tsReg[which(names(tsReg)!='Italia')], loglinmodel4, quadratico=FALSE)
 
-	modelliTIReg <-lapply( tsReg[which(names(tsReg)!='Italia')], loglinmodel4, var='terapia_intensiva', quadratico=TRUE)
-	modelliTIRegExp <-lapply( tsReg[which(names(tsReg)!='Italia')], loglinmodel4, var='terapia_intensiva', quadratico=FALSE)
+#FIXME cancellare modelli TI
+	#modelliTIReg <-lapply( tsReg[which(names(tsReg)!='Italia')], loglinmodel4, var='terapia_intensiva', quadratico=TRUE)
+	#modelliTIRegExp <-lapply( tsReg[which(names(tsReg)!='Italia')], loglinmodel4, var='terapia_intensiva', quadratico=FALSE)
 
 
 	writeLog("Scrivendo i dati",logdemone)
@@ -129,8 +143,9 @@ while (i==0) {
 	saveRDS(modelliIta,"www/modelliIta.RDS")
 	saveRDS(modelliRegExp,"www/modelliRegExp.RDS")
 	saveRDS(modelliItaExp,"www/modelliItaExp.RDS")
-	saveRDS(modelliTIReg,"www/modelliTIReg.RDS")
-	saveRDS(modelliTIRegExp,"www/modelliTIRegExp.RDS")
+	#FIXME cancellare modelli TI
+	#saveRDS(modelliTIReg,"www/modelliTIReg.RDS")
+	#saveRDS(modelliTIRegExp,"www/modelliTIRegExp.RDS")
 
 	# salvo lo storico dei modelli
 	if(!dir.exists("www/pastModels/")) dir.create("www/pastModels/")
