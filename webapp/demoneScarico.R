@@ -44,13 +44,13 @@ readData<-function(file, popolazione) {
 		aprLomInd <- which(res$denominazione_regione=="Lombardia" & month(res$data)==4)
 		aprLomTot <- sum(res$deceduti[aprLomInd])
 		res$deceduti[aprLomInd] <- round(res$deceduti[aprLomInd]*(1+282/aprLomTot))
-		res$deceduti[res$denominazione_regione=="Lombardia" & res$data=="2020-05-02"] <- 47
+		res$deceduti[res$denominazione_regione=="Lombardia" & res$data=="2020-05-02"] <- res$deceduti[res$denominazione_regione=="Lombardia" & res$data=="2020-05-02"] - aprLomNew
 		aprLazNew <- 33
 		aprLazInd <- which(res$denominazione_regione=="Lazio" & month(res$data)==4)
 		aprLazTot <- sum(res$deceduti[aprLazInd])
 		round(sum(res$deceduti[aprLazInd]*(aprLazNew/aprLazTot)))
 		res$deceduti[aprLazInd] <- round(res$deceduti[aprLazInd]*(1+282/aprLazTot))
-		res$deceduti[res$denominazione_regione=="Lazio" & res$data=="2020-05-01"] <- 8
+		res$deceduti[res$denominazione_regione=="Lazio" & res$data=="2020-05-01"] <- res$deceduti[res$denominazione_regione=="Lazio" & res$data=="2020-05-01"] - aprLazNew
 
 		return(res)
 	}
