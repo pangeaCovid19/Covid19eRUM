@@ -163,7 +163,7 @@ while (i==0) {
 
 }
 
-if ( TRUE) {
+if ( FALSE) {
 	cat("\n ricalcolo modelli del passato:")
 	date <- seq(as.Date('2020-03-08'), dataMax, by=1)
 	modelswitch<-as.Date("2020-03-28")
