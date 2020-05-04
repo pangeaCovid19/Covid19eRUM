@@ -1145,12 +1145,13 @@ prevIta <- reactive({
 	} else modelliIta <- isolate(reacval$modelliItaExp)
 
 	if(assignout) assign("modelItaOut", modelliIta, envir=.GlobalEnv)
-	if(assignout) assign("tsIta", tsIta, envir=.GlobalEnv)
 	if(assignout) assign("nahead", nahead, envir=.GlobalEnv)
 
 	if (!is.null(allDataReg)) {
 		tsIta <- getTimeSeriesReact()["Italia"]
 		if(saveRDSout) saveRDS(file="prevItaList.RDS",list(tsIta, modelliIta, allDataReg))
+
+		if(assignout) assign("tsIta", tsIta, envir=.GlobalEnv)
 
     prevDT <- get_predictions(modelliIta, tsIta, nahead=nahead, alldates=TRUE)
     setnames(prevDT, old=c("outName"), new=c("variabilePrevista"))
@@ -1781,12 +1782,15 @@ prevItaCompare <- reactive({
 
 	pathModIta    <-paste0("www/pastModels/modelliIta_", dataMod, ".RDS")
 	pathModItaExp <-paste0("www/pastModels/modelliItaExp_", dataMod, ".RDS")
+	pathModItaGomp <-paste0("www/pastModels/modelliItaGomp_", dataMod, ".RDS")
 
 	modelliItaPast <- readRDS(pathModIta)
 	modelliItaExpPast  <- readRDS(pathModItaExp)
+	modelliItaGompPast  <- readRDS(pathModItaGomp)
 
 	if(verbose) cat("\n\t pathModIta ", pathModIta)
 	if(verbose) cat("\n\t pathModItaExp ", pathModItaExp)
+	if(verbose) cat("\n\t pathModItaGomp ", pathModItaGomp)
 
 	if(tipoVariazione=='Totale'){
 
@@ -1796,11 +1800,14 @@ prevItaCompare <- reactive({
 
 	  prevDT <- get_predictions(modelliItaPast, tsIta, nahead=1, alldates=FALSE)
 		prevDTexp <- get_predictions(modelliItaExpPast, tsIta, nahead=1, alldates=FALSE)
+		prevDTgomp <- get_predictions(modelliItaGompPast, tsIta, nahead=1, alldates=FALSE)
 		prevDT$Modello 		<- "Esp. quadratico"
 		prevDTexp$Modello <- "Esponenziale"
+		prevDTgomp$Modello <- "Gompertz"
 
 		prevDT$Osservato 		<- unlist(vero)
 		prevDTexp$Osservato  <- unlist(vero)
+		prevDTgomp$Osservato  <- unlist(vero)
 
 		prevDT$'Valore atteso +- incertezza standard' 		<- paste0(format(prevDT$LowerRange, big.mark="'"), ' - ', format(prevDT$UpperRange, big.mark="'"))
 		prevDTexp$'Valore atteso +- incertezza standard'  <- paste0(format(prevDTexp$LowerRange, big.mark="'"), ' - ', format(prevDTexp$UpperRange, big.mark="'"))
