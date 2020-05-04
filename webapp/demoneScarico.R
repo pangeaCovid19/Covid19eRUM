@@ -210,4 +210,5 @@ if(TRUE) {
 	if(!dir.exists("www/pastDiary/")) dir.create("www/pastDiary/")
 	rmarkdown::render("articolo.Rmd",output_file=paste0("www/pastDiary/tabReport_", dataMax,".html"))
 	rmarkdown::render("art21mar2020.Rmd",output_file=paste0("www/Report21marzo2020.html"))
+	rmarkdown::render("art04mag2020.Rmd",output_file=paste0("www/Report04maggio2020.html"))
 }
