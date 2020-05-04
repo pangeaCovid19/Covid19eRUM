@@ -44,11 +44,13 @@ readData<-function(file, popolazione) {
 		aprLomInd <- which(res$denominazione_regione=="Lombardia" & month(res$data)==4)
 		aprLomTot <- sum(res$deceduti[aprLomInd])
 		res$deceduti[aprLomInd] <- round(res$deceduti[aprLomInd]*(1+282/aprLomTot))
+		res$deceduti[res$denominazione_regione=="Lombardia" & res$data=="2020-05-02"] <- 47
 		aprLazNew <- 33
 		aprLazInd <- which(res$denominazione_regione=="Lazio" & month(res$data)==4)
 		aprLazTot <- sum(res$deceduti[aprLazInd])
 		round(sum(res$deceduti[aprLazInd]*(aprLazNew/aprLazTot)))
 		res$deceduti[aprLazInd] <- round(res$deceduti[aprLazInd]*(1+282/aprLazTot))
+		res$deceduti[res$denominazione_regione=="Lazio" & res$data=="2020-05-01"] <- 8
 
 		return(res)
 	}
@@ -161,7 +163,7 @@ while (i==0) {
 
 }
 
-if ( TRUE) {
+if ( FALSE) {
 	cat("\n ricalcolo modelli del passato:")
 	date <- seq(as.Date('2020-03-08'), dataMax, by=1)
 	modelswitch<-as.Date("2020-03-28")
@@ -203,7 +205,7 @@ if ( TRUE) {
 	})
 }
 
-if(FALSE) {
+if(TRUE) {
 	rmarkdown::render("articolo.Rmd",output_file="www/tabReport.html")
 	if(!dir.exists("www/pastDiary/")) dir.create("www/pastDiary/")
 	rmarkdown::render("articolo.Rmd",output_file=paste0("www/pastDiary/tabReport_", dataMax,".html"))
