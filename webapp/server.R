@@ -1784,13 +1784,15 @@ prevItaCompare <- reactive({
 	pathModItaExp <-paste0("www/pastModels/modelliItaExp_", dataMod, ".RDS")
 	pathModItaGomp <-paste0("www/pastModels/modelliItaGomp_", dataMod, ".RDS")
 
+
+	err <-0
 	modelliItaPast <- readRDS(pathModIta)
 	modelliItaExpPast  <- readRDS(pathModItaExp)
-	modelliItaGompPast  <- readRDS(pathModItaGomp)
-
-	if(verbose) cat("\n\t pathModIta ", pathModIta)
-	if(verbose) cat("\n\t pathModItaExp ", pathModItaExp)
-	if(verbose) cat("\n\t pathModItaGomp ", pathModItaGomp)
+	modelliItaGompPast  <- try(readRDS(pathModItaGomp))
+	if(class(modelliItaGompPast)=="try-error"){
+		modelliItaGompPast <- modelliItaPast
+		err <- 1
+	}
 
 	if(tipoVariazione=='Totale'){
 
@@ -1800,7 +1802,11 @@ prevItaCompare <- reactive({
 
 	  prevDT <- get_predictions(modelliItaPast, tsIta, nahead=1, alldates=FALSE)
 		prevDTexp <- get_predictions(modelliItaExpPast, tsIta, nahead=1, alldates=FALSE)
-		prevDTgomp <- get_predictions(modelliItaGompPast, tsIta, nahead=1, alldates=FALSE)
+		prevDTgomp <- try(get_predictions(modelliItaGompPast, tsIta, nahead=1, alldates=FALSE))
+		if(class(prevDTgomp)=="try-error"){
+			prevDTgomp <- prevDT
+			err <- 2
+		}
 		prevDT$Modello 		<- "Esp. quadratico"
 		prevDTexp$Modello <- "Esponenziale"
 		prevDTgomp$Modello <- "Gompertz"
@@ -1809,17 +1815,30 @@ prevItaCompare <- reactive({
 		prevDTexp$Osservato  <- unlist(vero)
 		prevDTgomp$Osservato  <- unlist(vero)
 
+		if(err>0){
+			prevDTgomp$LowerRange	<- NA
+			prevDTgomp$UpperRange	<- NA
+			prevDTgomp$Attesi	<- NA
+		}
+
 		prevDT$'Valore atteso +- incertezza standard' 		<- paste0(format(prevDT$LowerRange, big.mark="'"), ' - ', format(prevDT$UpperRange, big.mark="'"))
 		prevDTexp$'Valore atteso +- incertezza standard'  <- paste0(format(prevDTexp$LowerRange, big.mark="'"), ' - ', format(prevDTexp$UpperRange, big.mark="'"))
+		prevDTgomp$'Valore atteso +- incertezza standard'  <- paste0(
+			format(round(prevDTgomp$LowerRange), big.mark="'"), ' - ',
+			format(round(prevDTgomp$UpperRange), big.mark="'")
+		)
 
 		setnames(prevDT, old=c('LowerRange', 'UpperRange', 'outName', 'Attesi'), new=c('Minimo', 'Massimo', 'Variabile', 'Valore atteso'))
 		setnames(prevDTexp, old=c('LowerRange', 'UpperRange', 'outName', 'Attesi'), new=c('Minimo', 'Massimo', 'Variabile', 'Valore atteso'))
+		setnames(prevDTgomp, old=c('LowerRange', 'UpperRange', 'outName', 'Attesi'), new=c('Minimo', 'Massimo', 'Variabile', 'Valore atteso'))
 
-		out <-rbind(prevDT[, c('data', 'Modello', 'Variabile', 'Osservato', 'Valore atteso +- incertezza standard', 'Valore atteso')],
-					prevDTexp[, c('data', 'Modello', 'Variabile', 'Osservato', 'Valore atteso +- incertezza standard', 'Valore atteso')])
+		out <-rbind(
+			prevDT[, c('data', 'Modello', 'Variabile', 'Osservato', 'Valore atteso +- incertezza standard', 'Valore atteso')],
+			prevDTexp[, c('data', 'Modello', 'Variabile', 'Osservato', 'Valore atteso +- incertezza standard', 'Valore atteso')],
+			prevDTgomp[, c('data', 'Modello', 'Variabile', 'Osservato', 'Valore atteso +- incertezza standard', 'Valore atteso')])
 
 		out$Variazione <- paste0 (round((out$Osservato-out$'Valore atteso')/out$Osservato*100, 2), " %")
-		out$'Valore atteso' 		<- format(out$'Valore atteso', big.mark="'")
+		out$'Valore atteso' 		<- format(round(out$'Valore atteso'), big.mark="'")
 		out$Osservato 		<- format(out$Osservato, big.mark="'")
 
 		out
@@ -1832,39 +1851,65 @@ prevItaCompare <- reactive({
 
 		tsIta$Italia <- tsIta$Italia[ tsIta$Italia$data<=dataMod, ]
 
-	  prevDT <- get_predictions(modelliIta, tsIta, nahead=1, alldates=FALSE)
-		prevDTexp <- get_predictions(modelliItaExp, tsIta, nahead=1, alldates=FALSE)
+	  prevDT <- get_predictions(modelliItaPast, tsIta, nahead=1, alldates=FALSE)
+		prevDTexp <- get_predictions(modelliItaExpPast, tsIta, nahead=1, alldates=FALSE)
+		prevDTgomp <- get_predictions(modelliItaGompPast, tsIta, nahead=1, alldates=FALSE)
+		if(class(prevDTgomp)=="try-error"){
+			prevDTgomp <- prevDT
+			err <- 2
+		}
+
 		prevDT$Modello 		<- "Esp. quadratico"
 		prevDTexp$Modello <- "Esponenziale"
+		prevDTgomp$Modello <- "Gompertz"
 
 		prevDT$Osservato 		<- unlist(DVero)
 		prevDTexp$Osservato  <- unlist(DVero)
+		prevDTgomp$Osservato  <- unlist(DVero)
 
 		prevDT$VarPrev 			<- prevDT$Attesi - veroMod
 		prevDTexp$VarPrev  	<- prevDTexp$Attesi - veroMod
+		prevDTgomp$VarPrev  	<- prevDTgomp$Attesi - veroMod
 
 		prevDT$VarMin 			<- prevDT$LowerRange - veroMod
 		prevDTexp$VarMin  	<- prevDTexp$LowerRange - veroMod
+		prevDTgomp$VarMin  	<- prevDTgomp$LowerRange - veroMod
 
 		prevDT$VarMax    <- prevDT$UpperRange - veroMod
 		prevDTexp$VarMax <- prevDTexp$UpperRange - veroMod
+		prevDTgomp$VarMax <- prevDTgomp$UpperRange - veroMod
 
 		prevDT$Variazione    <- prevDT$VarPrev - DVero
 		prevDTexp$Variazione <- prevDTexp$VarPrev - DVero
+		prevDTgomp$Variazione <- prevDTgomp$VarPrev - DVero
+
+		if(err<0){
+			prevDTgomp$VarMin	<- NA
+			prevDTgomp$VarMax	<- NA
+			prevDTgomp$VarPrev	<- NA
+		}
 
 		prevDT$'Valore atteso +- incertezza standard' 		<- paste0(format(prevDT$VarMin, big.mark="'"), ' - ', format(prevDT$VarMax, big.mark="'"))
 		prevDTexp$'Valore atteso +- incertezza standard'  <- paste0(format(prevDTexp$VarMin, big.mark="'"), ' - ', format(prevDTexp$VarMax, big.mark="'"))
+		prevDTgomp$'Valore atteso +- incertezza standard'  <- paste0(
+			format(round(prevDTgomp$VarMin), big.mark="'"), ' - ',
+			format(round(prevDTgomp$VarMax), big.mark="'")
+		)
 
 		setnames(prevDT, old=c('VarMin', 'VarMax', 'outName', 'VarPrev'), new=c('Minimo', 'Massimo', 'Variabile', 'Valore atteso'))
 		setnames(prevDTexp, old=c('VarMin', 'VarMax', 'outName', 'VarPrev'), new=c('Minimo', 'Massimo', 'Variabile', 'Valore atteso'))
+		setnames(prevDTgomp, old=c('VarMin', 'VarMax', 'outName', 'VarPrev'), new=c('Minimo', 'Massimo', 'Variabile', 'Valore atteso'))
 
-		outPerc <-rbind(prevDT[, c('data', 'Modello', 'Variabile', 'Osservato', 'Valore atteso', 'Valore atteso +- incertezza standard')],
-					prevDTexp[, c('data', 'Modello', 'Variabile',  'Osservato', 'Valore atteso', 'Valore atteso +- incertezza standard')])
+		outPerc <-rbind(
+			prevDT[, c('data', 'Modello', 'Variabile', 'Osservato', 'Valore atteso', 'Valore atteso +- incertezza standard')],
+			prevDTexp[, c('data', 'Modello', 'Variabile',  'Osservato', 'Valore atteso', 'Valore atteso +- incertezza standard')],
+			prevDTgomp[, c('data', 'Modello', 'Variabile',  'Osservato', 'Valore atteso', 'Valore atteso +- incertezza standard')]
+		)
 
 		outPerc$Variazione <- paste0 (round((outPerc$Osservato-outPerc$'Valore atteso')/outPerc$Osservato*100, 2), " %")
 
-		outPerc$'Valore atteso' 		<- format(outPerc$'Valore atteso', big.mark="'")
-		outPerc$Osservato 		<- format(outPerc$Osservato, big.mark="'")
+		outPerc$'Valore atteso' 		<- format(round(outPerc$'Valore atteso'), big.mark="'")
+		outPerc$Osservato 		<- format(round(outPerc$Osservato), big.mark="'")
 
 		outPerc
 	}
@@ -1884,7 +1929,7 @@ output$tabCompare <- renderDT({
 		out <- out[order(out$Variabile),]
     datatable(out,extensions = c('Scroller'),
       selection = list(target = NULL),
-      options= c(list(dom = 't',scroller=T,scrollX="300",scrollY="200",paging = T, searching = F, info=F, ordering=F, order=list(list(2, 'desc'))), DT_lang_opt),
+      options= c(list(dom = 't',scroller=T,scrollX="300",scrollY="250",paging = T, searching = F, info=F, ordering=F, order=list(list(2, 'desc'))), DT_lang_opt),
       rownames=F)
   }
 })
@@ -1971,7 +2016,7 @@ output$tab_mobile<-renderUI({
           prettyRadioButtons('regionLinLogFit',"Tipo Grafico",choices = c("Lineare", "Logaritmico"), selected = "Lineare",status = "success",shape = 'round',inline = T,animation = 'jelly',icon = icon('check'))
           ),
         column(4,
-          prettyRadioButtons('modelloFit',"Tipologia Modello",choices = c("Esp. quadratico", "Esponenziale" ), selected="Esp. quadratico",status = "success",shape = 'round',inline = T,animation = 'jelly',icon = icon('check'))
+          prettyRadioButtons('modelloFit',"Tipologia Modello",choices = c("Gompertz", "Esp. quadratico", "Esponenziale" ), selected="Gompertz",status = "success",shape = 'round',inline = T,animation = 'jelly',icon = icon('check'))
           ))),
 
         fluidRow(style="background-color:#ffffff",column(10,offset=1,align="center",
@@ -1984,8 +2029,6 @@ output$tab_mobile<-renderUI({
 
         fluidRow(style="padding-left:30px;",
 				pickerInput(inputId = "regionSelFit", label = "Seleziona regioni", choices = regioniList,selected=regioni2fit, options = pickerOptions(size=10,actionsBox = T ,selectedTextFormat = "count >20",deselectAllText='Deseleziona tutto',selectAllText='Seleziona tutto',mobile=T), multiple = TRUE)),
-
-
 
 
          fluidRow(style="padding:10px;background-color:#ffffff",
