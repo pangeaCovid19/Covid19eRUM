@@ -21,12 +21,12 @@ Qualitativamente, quello che ci aspettiamo se andassimo a monitorare il numero d
 <li>Un'ultima fase in cui il virus ha ormai contagiato quasi tutti coloro che potevano essere contagiati. L'espansione del virus arriva ad un <i>valore di plateau.</i></li>
 </ul>
 
-Il comportamento descritto sopra corrisponde all'andamento di una <a href="https://it.wikipedia.org/wiki/Equazione_logistica">funzione logistica</a>. Essa &egrave; la soluzione di un'equazione differenziale, detta di <i>equazione di Verhulst</i> che descrive i comportamenti del virus o di altri fenomeni di diffusione. Ad esempio, la diffusione di un nuovo prodotto si comporta analogamente.
+Il comportamento descritto sopra corrisponde all'andamento di una <a href="https://it.wikipedia.org/wiki/Equazione_logistica">funzione logistica</a>. Essa &egrave; la soluzione di un'equazione differenziale, detta di <i>equazione di Verhulst</i> che descrive i comportamenti del virus o di altri fenomeni di diffusione. Ad esempio, la diffusione di un nuovo prodotto si comporta analogamente. Un'altra funzioni con questa propriet&agrave; &egrave; quella di <a href="https://it.wikipedia.org/wiki/Legge_di_Gompertz">Gompertz</a>. 
 </p>
 <p>
 Anche il Coronavirus seguir&agrave; ineluttabilmente questo percorso? S&igrave; e no; vediamo perch&egrave;.
 <ul>
-<li>L'equazione logistica presuppone che il rate di trasmissione (il <a href="https://www.iss.it/primo-piano/-/asset_publisher/o4oGR9qmvUz9/content/id/5268851">famoso parametro R0</a>) sia costante nel tempo. Esso dipende da quante interazioni i soggetti hanno. Se la popolazione cambia comportamenti, diminuendo quindi i contatti, tale parametro si abbassa.</li>
+<li>L'equazione logistica presuppone che il rate di trasmissione (il <a href="https://www.iss.it/primo-piano/-/asset_publisher/o4oGR9qmvUz9/content/id/5268851">famoso parametro R</a>) sia costante nel tempo. Esso dipende da quante interazioni i soggetti hanno. Se la popolazione cambia comportamenti, diminuendo quindi i contatti, tale parametro si abbassa.</li>
 <li>Il valore di <i>plateau</i> non &egrave; noto. Non sappiamo che percentuale della popolazione potrebbe rimanere contagiata.</li>
 <li>Nonostante i due punti precedenti, &egrave; ragionevole pensare che tale valore di plateau sia ancora molto lontano. Virus anche meno contagiosi del CoVid19, come le normali influenze stagionali, possono arrivare a infettare milioni di soggetti solo in Italia. Con i numeri di contagio attuali ci aspettiamo un andamento esponenziale in assenza di misure.</i></li>
 </ul>
@@ -44,7 +44,7 @@ Altro problema legato a tecniche di machine learning &egrave; legato all'<a href
 </p>
 <h2>Modelli implementati</h2>
 <p>
-Per questi motivi, abbiamo scelto di implementare due modelli che abbiano le seguenti propriet&agrave;.
+Per questi motivi, abbiamo scelto di implementare dei modelli che abbiano le seguenti propriet&agrave;.
 <ul>
 <li>Capacit&agrave; di ricostruire i dati passati.</li>
 <li>Semplicit&agrave;. Il modello deve essere dotato di pochi parametri interpretabili.</li>
@@ -58,6 +58,8 @@ Il secondo modello &egrave; una semplice generalizzazione del modello esponenzia
 <img src="https://latex.codecogs.com/gif.latex?log(N) = a+bt+ct^2" border="0"/>
 <br>
 dove N &egrave; il numero di persone contagiate e t &egrave; il tempo. Tale andamento prevede che il rate esponenziale di crescita possa diminuire (o aumentare) linearmente nel tempo. Inoltre, tale modello &egrave; anche un'approssimazione dell'andamento logistico in prossimit&agrave; del regime non esponenziale. Il parametro c mi dice quanto la crescita esponenziale sta rallentando. Mi dice, nel nostro caso, quanto bene le cose stanno andando. Un valore di zero indica un andamento esponenziale puro (le cose vanno male). Un valore negativo rappresenta un rallentamento, mentre uno positivo addirittura un'accelerazione nell'espansione. Ad oggi (16 marzo 2020), questo secondo modello &egrave; in grado di descrivere i dati osservati meglio del primo.
+<br>
+Dal 4 maggio, inizio della Fase 2, abbiamo implementato anche il su citato modello di Gompertz, che ci permette di avere subito il valore di plateau e si accorda meglio ai dati disponibili.
 </p>
 <p>
 Va osservato che le previsioni fatte da questi modelli sono  pi&ugrave; da intendersi come <a href="https://it.wikipedia.org/wiki/Estrapolazione">estrapolazioni</a>. In particolare, ci si deve aspettare che il secondo modello abbia imprecisioni sia nelle fasi iniziali dell'espansione,  in quanto potrebbe non essere in grado di prevedere l'interruzione dell'andamento esponenziale, sia in quelle successive, in quanto un andamento quadratico pu&ograve; risultare troppo veloce verso il raggiungimento del picco. Infine, nella fase successiva al raggiungimento del picco, si assiste ad una diminuzione dei nuovi contagi che è più lenta rispetto a quella che ci si aspetterebbe da un andamento esponenzioale quadratico: in questo regime ci aspettiamo che il modello utilizzato sottostimi il numero di nuovi casi.
@@ -66,12 +68,12 @@ Va osservato che le previsioni fatte da questi modelli sono  pi&ugrave; da inten
 
 <h3>Come confrontare le estrapolazioni con i dati reali</h3>
 
-L'applicazione permette di confrontare ci&ograve; che i due modelli prevedevano al giorno prima con il dato reale. A seconda dello scostamento previsione - dato reale, possiamo ricavare diverse considerazioni. Premettiamo che nessuna di esse pu&ograve; ritenersi conclusiva per via della non totale affidabilit&agrave; del dato, delle naturali oscillazioni statistiche, delle assunzioni dei modelli e cos&igrave; via.
+L'applicazione permette di confrontare ci&ograve; che i modelli prevedevano al giorno prima con il dato reale. A seconda dello scostamento previsione - dato reale, possiamo ricavare diverse considerazioni. Premettiamo che nessuna di esse pu&ograve; ritenersi conclusiva per via della non totale affidabilit&agrave; del dato, delle naturali oscillazioni statistiche, delle assunzioni dei modelli e cos&igrave; via.
 
 <ul>
 <li>Un accordo tra modello esponenziale e dato (o peggio ancora un dato superiore al modello esponenziale) &egrave; un segno negativo, indice che probabilmente le misure stanno tardando ad avere gli effetti sperati.</li>
-<li>Ogni dato al di sotto del secondo modello pu&ograve; essere interpretato come segnale positivo.</li>
-<li>Non &egrave; necessariamente un cattivo segnale se il secondo modello sottostima un dato. Infatti, il modello cerca di tenere conto del rallentamento contenitivo, ma potrebbe farlo in maniera troppo (o troppo poco) aggressiva.</li>
+<li>Se il modello di Gompertz consistentemente prevede lo stesso plateau, l'andamento della diffusione rimane sotto controllo.</li>
+<li>Viceversa un aumento del valore di plateau potrebbe voler dire che la diffusione sta riprendendo ad un ritmo più alto di quello attuale.</li>
 </ul>
 
 Se avete domande o richieste di approfondimenti, contattate <a href = "mailto: info.coronavirus@pangeaformazione.it">info.coronavirus@pangeaformazione.it</a>.
