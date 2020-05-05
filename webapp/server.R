@@ -1460,21 +1460,34 @@ getAsintotoGomp <- reactive({
 output$tabAsintoto <- renderDT({
 	if(verbose) cat("\n renderDT:tabAsintoto")
   asintoto <- getAsintotoGomp()
+	allDataReg <- copy(reacval$dataTables_reg)
 	if(is.null(asintoto)) return(NULL)
+	if(is.null(allDataReg)) return(NULL)
+
+	setDT(allDataReg)
+	totaliOra <- allDataReg[data %in% asintoto$data, .(totale_casiVeri=sum(totale_casi), decedutiVeri=sum(deceduti)), by=data]
 
 
-	asintoto$'Variazione Deceduti' <- paste0(round(c(NA,diff(asintoto$deceduti))/asintoto$deceduti*100, 2), "%")
-	asintoto$'Variazione Totale Casi' <- paste0(round(c(NA,diff(asintoto$totale_casi))/asintoto$totale_casi*100, 2), "%")
-
-	asintoto$deceduti <- format(round(asintoto$deceduti), big.mark="'")
-	asintoto$totale_casi <- format(round(asintoto$totale_casi), big.mark="'")
-
-	setnames(asintoto, old=c( 'totale_casi', 'deceduti'), new=c("Totale Casi", "Deceduti"))
-
-	setorder(asintoto, -data)
+	asintotout <- merge(asintoto, totaliOra, by='data')
+	asintotout[, percDec:=paste0(round(decedutiVeri/deceduti*100,1), "%")]
+	asintotout[, percTot:=paste0(round(totale_casiVeri/totale_casi*100,1), "%")]
 
 
- 	datatable(asintoto[, c('data', "Totale Casi", 'Variazione Totale Casi', "Deceduti", 'Variazione Deceduti' )],extensions = c('Scroller'),
+	asintotout$'Variazione Deceduti' <- paste0(round(c(NA,diff(asintotout$deceduti))/asintotout$deceduti*100, 2), "%")
+	asintotout$'Variazione Totale Casi' <- paste0(round(c(NA,diff(asintotout$totale_casi))/asintotout$totale_casi*100, 2), "%")
+
+
+
+	asintotout$deceduti <- format(round(asintotout$deceduti), big.mark="'")
+	asintotout$totale_casi <- format(round(asintotout$totale_casi), big.mark="'")
+
+	setnames(asintotout, old=c( 'totale_casi', 'deceduti', 'percTot', "percDec"), new=c("Totale Casi", "Deceduti"   , "% Casi osservati", "% Deceduti osservati"))
+
+	setorder(asintotout, -data)
+
+
+
+ 	datatable(asintotout[, c('data', "Totale Casi", 'Variazione Totale Casi',"% Casi osservati",  "Deceduti", 'Variazione Deceduti',"% Deceduti osservati" )],extensions = c('Scroller'),
       selection = list(target = NULL),
       options= c(list(dom = 't',scroller=T,scrollX="300",scrollY="300",paging = T, searching = F),
       rownames=F))
