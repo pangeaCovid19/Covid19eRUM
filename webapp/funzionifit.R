@@ -196,7 +196,7 @@ predictNextDays<-function(dati,modello,nahead=3, all=FALSE) {
 
 get_predictions <- function(modelli, datiTS, nahead, alldates=FALSE) {
   previsioni <- mapply(FUN=predictNextDays, datiTS, modelli, nahead=nahead, all=alldates, SIMPLIFY=F)
-  previsioniDT <- rbindlist(previsioni)
+  previsioniDT <- rbindlist(previsioni,fill=TRUE)
   if (alldates)
     previsioniDT[, outName:=rep(names(modelli), each=nrow(datiTS[[1]])+nahead)]
   else

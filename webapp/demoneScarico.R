@@ -126,6 +126,9 @@ while (i==0) {
 		modelliIta[[i]]<-loglinmodel4(tsReg$Italia, var=campiPrevisioni[i], rangepesi=c(0,1), quadratico=TRUE)
 		modelliItaExp[[i]]<-loglinmodel4(tsReg$Italia, var=campiPrevisioni[i], rangepesi=c(0,1), quadratico=FALSE)
 		modelliItaGomp[[i]] <- try(gompertzModel(tsReg$Italia, var=campiPrevisioni[i], lastw=5, P=102.6891))
+		if (inherits(modelliItaGomp[[i]],"try-error")) {
+			modelliItaGomp[[i]]<-modelliIta[[i]]
+		}
 
 	}
 	names(modelliIta) <- campiPrevisioni
@@ -135,7 +138,9 @@ while (i==0) {
 	modelliReg <-lapply( tsReg[which(names(tsReg)!='Italia')], loglinmodel4, quadratico=TRUE)
 	modelliRegExp <-lapply( tsReg[which(names(tsReg)!='Italia')], loglinmodel4, quadratico=FALSE)
 	modelliRegGomp <-lapply( tsReg[which(names(tsReg)!='Italia')], function(x){
-			try(gompertzModel(x, var="totale_casi", lastw=5, P=102.6891))
+			tmp<-try(gompertzModel(x, var="totale_casi", lastw=5, P=102.6891))
+			if (inherits(tmp,"try-error")) return(loglinmodel4(x,quadratico=TRUE))
+			tmp
 		}
 	)
 
@@ -167,7 +172,7 @@ if ( FALSE) {
 	cat("\n ricalcolo modelli del passato:")
 	date <- seq(as.Date('2020-03-08'), dataMax, by=1)
 	modelswitch<-as.Date("2020-03-28")
-	dataGomp <- as.Date("2020-04-12")
+	dataGomp <- as.Date("2020-03-08")
 
 	longIta <- lapply(date, function(x){
 		cat("->", strftime(x))
@@ -180,6 +185,9 @@ if ( FALSE) {
 			modelliItaExp[[i]]<-loglinmodel4(tsReg$Italia, var=campiPrevisioni[i], rangepesi=c(0,1), quadratico=FALSE, dataMax=x)
 			if(x >= dataGomp){
 				modelliItaGomp[[i]] <- try(gompertzModel(tsReg$Italia, var=campiPrevisioni[i], lastw=5, P=102.6891, dataMax=x))
+				if (inherits(modelliItaGomp[[i]],"try-error")) {
+					modelliItaGomp[[i]]<-modelliIta[[i]]
+				}
 			}
 		}
 		names(modelliIta) <- campiPrevisioni
