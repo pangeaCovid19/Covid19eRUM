@@ -102,7 +102,7 @@ gompertzModel<-function(dati, var="totale_casi", lastw=5, P=102.6891,dataMax=NUL
 
 
 
-predictNextDaysGompertz<-function(dati,modello,nahead=3, all=FALSE, varfactor=2) {
+predictNextDaysGompertz<-function(dati,modello,nahead=3, all=FALSE, varfactor=4) {
 	if(all){
 		newdata <- data.frame(x = as.numeric(c(dati$data, max(dati$data)+seq_len(nahead))-attr(modello,"mindata")+1))
 	} else {

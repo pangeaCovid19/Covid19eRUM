@@ -189,7 +189,7 @@ predictNextDays<-function(dati,modello,nahead=3, all=FALSE) {
 		}
 		return(cbind(newdata,predizioni))
 	} else if (class(modello)=="nls"){
-		return(predictNextDaysGompertz(dati,modello,nahead=nahead, all=all, varfactor=2))
+		return(predictNextDaysGompertz(dati,modello,nahead=nahead, all=all))
 	}
 }
 
