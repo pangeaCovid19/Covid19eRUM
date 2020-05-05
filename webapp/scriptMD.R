@@ -10,30 +10,53 @@ pvalue<-function(x,mean,sd) {
 #contagi deve avere due colonne: data e variabile di interesse
 confrontoModelloPrevisioni<-function(data, contagi, datastart=as.Date("2020-03-10")) {
 	datelist<-seq(datastart,to=data-1,by="day")
+	dategomp<-seq(as.Date("2020-04-12"),to=data-1,by="day")
 	variabile<-setdiff(names(contagi),"data")
 	modelliquad<-lapply(datelist, function(x) readRDS(sprintf("www/pastModels/modelliIta_%s.RDS",x)))
 	modelliexp<-lapply(datelist, function(x) readRDS(sprintf("www/pastModels/modelliItaExp_%s.RDS",x)))
+	modelligomp<-lapply(datelist, function(x) try(readRDS(sprintf("www/pastModels/modelliItaGomp_%s.RDS",x))))
+
 	contagi2<-contagi[[variabile]][match(datelist+1,contagi$data)]
 	supporto<-contagi[[variabile]][match(datelist,contagi$data)]
 	#contagi2<-contagi[data %in% datelist]
 	#setkey(contagi2,data)
-	funzione<-function(modexp, modquad, datoreale, currentdata, lastdatoreale, variabile) {
+	funzione<-function(modexp, modquad, modgomp,datoreale, currentdata, lastdatoreale, variabile) {
 		modexp<-modexp[[variabile]]
 		modquad<-modquad[[variabile]]
+		modgomp<-try(modgomp[[variabile]])
+
 		prevexp<-predict(modexp,data.frame(data=currentdata+1),interval="confidence",level=1-pnorm(-1)*2)
+
 		xxx<-setNames(data.frame(data=currentdata,altro=lastdatoreale),c("data",variabile))
 		prevquad<-predictNextDays(xxx,modquad,nahead=1)
+		if(!inherits(modgomp,"try-error")){
+			prevgomp<-predictNextDays(xxx,modgomp,nahead=1)
+			sdgomp<-prevgomp$UpperRange-prevgomp$Attesi
+			deltagomp<-abs(datoreale-prevgomp$Attesi)/sdgomp
+			pvgomp<-pvalue(datoreale,prevgomp$Attesi,sdgomp)
+		}else{
+
+			prevgomp<-data.frame(data=currentdata,Attesi=NA,UpperRange=NA,LowerRange=NA)
+			sdgomp<-NA
+			deltagomp<-NA
+			pvgomp<-NA
+		}
+		#prevgomp<-predictNextDays(xxx,modgomp,nahead=1)
+
 		sdexp<-prevexp[3]-prevexp[1]
 		delta<-abs(log(datoreale)-prevexp[1])/sdexp
 		pv<-pvalue(log(datoreale),prevexp[1],sdexp)
 		sdquad<-log(prevquad$UpperRange/prevquad$Attesi)
 		deltaquad<-abs(log(datoreale)-log(prevquad$Attesi))/sdquad
 		pvquad<-pvalue(log(datoreale),log(prevquad$Attesi),sdquad)
-		res<-data.frame(data = currentdata+1, variabile = format(datoreale), Esponenziale = round(exp(prevexp[1])), Delta_E = round(delta,1), `P-value_E` = round(pv,2) , Quadratico = format(prevquad$Attesi), Delta_q = round(deltaquad,1), `P-value_Q`= round(pvquad,2), stringsAsFactors=FALSE, check.names=FALSE)
+
+		res<-data.frame(data = currentdata+1, variabile = format(datoreale), Esponenziale = round(exp(prevexp[1])), Delta_E = round(delta,1), `P-value_E` = round(pv,2) , Quadratico = format(prevquad$Attesi), Delta_q = round(deltaquad,1), `P-value_Q`= round(pvquad,2),
+	  Gompertz = format(prevgomp$Attesi), Delta_g = round(deltagomp,1), `P-value_G`= round(pvgomp,2),
+		 stringsAsFactors=FALSE, check.names=FALSE)
 		names(res)[2]<-variabile
 		res
 	}
-	do.call(rbind,mapply(funzione, modelliexp, modelliquad, contagi2, datelist, supporto, MoreArgs=list(variabile=variabile),SIMPLIFY=FALSE))
+	do.call(rbind,mapply(funzione, modelliexp, modelliquad, modelligomp,contagi2, datelist, supporto, MoreArgs=list(variabile=variabile),SIMPLIFY=FALSE))
 }
 #modello<-readRDS(sprintf("www/pastModels/modelliIta_%s.RDS"))
 #modelloexp<-readRDS(sprintf("www/pastModels/modelliItaExp_%s.RDS"))
