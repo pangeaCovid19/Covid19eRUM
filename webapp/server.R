@@ -272,9 +272,6 @@ output$tabRegioni <- renderDT({
 		out <- regrdx[, c('denominazione_regione', 'tamponi', 'totale_casi','casiTampone', 'totale_ospedalizzati','terapia_intensiva','deceduti','dimessi_guariti','casi10k')]
 		names(out) <- c('regione', 'tamponi', 'casi', 'casi x tampone', 'ospedalizzati', 'Terapia intensiva','deceduti','guariti', 'casi su 10mila abit.')
  #   out$`casi su 10mila abit` <- round(out$totale_casi / out$pop * 10000, 3)
- #
-
-
 
     datatable(out,extensions = c('Scroller'),
       selection = list(target = NULL),
@@ -1129,7 +1126,6 @@ output$fitRegion <- renderPlotly({
   }
 })
 
-#FIXME stoqui
 prevIta <- reactive({
 	if(verbose) cat("\n reactive:prevIta")
 	allDataReg <- copy(reacval$dataTables_reg)
@@ -1427,6 +1423,101 @@ output$percDeltaTot <- renderPlotly({
        plot
   # }
 })
+
+#FIXME stoqui
+getAsintotoGomp <- reactive({
+	if(verbose) cat("\n reactive:getAsintotoGomp")
+
+	dirPastMod 	<- "www/pastModels/"
+	mindata			<- as.Date('2020-04-23')
+
+	oldMod <- list.files(dirPastMod)
+	oldItaGomp	<- oldMod[grep("ItaGomp", oldMod, ignore.case=T)]
+	date <- as.Date(substr(oldItaGomp, 16, 25))
+
+	ind2read <- which(date >= mindata)
+	pathItaGomp <- paste0(dirPastMod,oldItaGomp )[ind2read]
+	modItaGomp <- lapply(pathItaGomp, readRDS)
+	names(modItaGomp) <- date[ind2read]
+
+	outModel <- lapply(modItaGomp, function(x){
+		if(class(x$deceduti) == 'lm') {
+			dec <- NA
+		} else dec <- coefficients(x$deceduti)['a']
+
+		if(class(x$deceduti) == 'lm') {
+			tot <- NA
+		} else tot <- coefficients(x$totale_casi)['a']
+		data.frame(totale_casi=tot, deceduti=dec)
+	})
+
+	asintoto <- rbindlist(outModel)
+	asintoto$data <- as.Date(names(outModel))
+	asintoto
+})
+
+
+output$tabAsintoto <- renderDT({
+	if(verbose) cat("\n renderDT:tabAsintoto")
+  asintoto <- getAsintotoGomp()
+	if(is.null(asintoto)) return(NULL)
+
+
+	asintoto$'Variazione Deceduti' <- paste0(round(c(NA,diff(asintoto$deceduti))/asintoto$deceduti*100, 2), "%")
+	asintoto$'Variazione Totale Casi' <- paste0(round(c(NA,diff(asintoto$totale_casi))/asintoto$totale_casi*100, 2), "%")
+
+	asintoto$deceduti <- format(round(asintoto$deceduti), big.mark="'")
+	asintoto$totale_casi <- format(round(asintoto$totale_casi), big.mark="'")
+
+	setnames(asintoto, old=c( 'totale_casi', 'deceduti'), new=c("Totale Casi", "Deceduti"))
+
+	setorder(asintoto, -data)
+
+
+ 	datatable(asintoto[, c('data', "Totale Casi", 'Variazione Totale Casi', "Deceduti", 'Variazione Deceduti' )],extensions = c('Scroller'),
+      selection = list(target = NULL),
+      options= c(list(dom = 't',scroller=T,scrollX="300",scrollY="300",paging = T, searching = F),
+      rownames=F))
+
+		#asintoto[, c('data', "Totale Casi", 'Variazione Totale Casi', "Deceduti", 'Variazione Totale Casi' )]
+
+})
+
+output$plotAsintoto <- renderPlotly({
+	if(verbose) cat("\n renderPlotly:plotAsintoto")
+  asintoto <- getAsintotoGomp()
+
+	tab1 <- data.frame(data=asintoto$data, casi=asintoto$deceduti, var="deceduti", stringsAsFactors=F)
+	tab2 <- data.frame(data=asintoto$data, casi=asintoto$totale_casi, var="totale_casi", stringsAsFactors=F)
+
+	asi2plot <- rbind(tab2,tab1)
+
+	p <- ggplot() + my_ggtheme() +
+				suppressWarnings(
+					geom_line(data=asi2plot, linetype=1, group=1,
+						aes(x=data, y=casi, color=var,
+							text = paste('Data:', strftime(data, format="%d-%m-%Y"),
+							 '<br>Variabile: ', var,
+							 '<br>Casi (fit): ', round(casi)
+							 )
+						)
+					)
+				)+
+				suppressWarnings(
+					geom_point(data=asi2plot, shape=22,
+						aes(x=data, y=casi, color=var,
+							text = paste('Data:', strftime(data, format="%d-%m-%Y"),
+							 '<br>Variabile: ', var,
+							 '<br>Casi (fit): ', round(casi)
+							 )
+						)
+					)
+				)
+
+	p
+
+})
+
 
 # output$percDeltaTot <- renderPlotly({
 #   if(verbose) cat("\n renderPlotly:percDeltaTot")
@@ -1756,7 +1847,7 @@ output$dateCompare <- renderUI({
 	files <- list.files("www/pastModels/")
 	dateTmp <- gsub("modelliIta_|modelliItaExp_|.RDS|modelliReg_|modelliRegExp_", "", files)
 	date <- as.Date(unique(dateTmp))
-	date <- sort(date[-which.max(date)])
+	date <- sort(date[-which.max(date)], decreasing=T)
 	selectizeInput("dataComparazione", label="Data Modello da comparare", choices=date, selected = max(date))
 
 })
@@ -1993,6 +2084,12 @@ output$tab_desktop<-renderUI({
           addSpinner(DTOutput("tabCompare"), spin = "fading-circle", color = "#009933"),spiegaTabellaCompare
 
 
+      ),br(),
+			fluidRow(style="padding:30px;background-color:#ffffff",
+				h3("Andamento dei valori asintotici (massimi raggiunti) ipotizzando un evoluzione di tipo Gompertz"),
+          addSpinner(DTOutput("tabAsintoto"), spin = "fading-circle", color = "#009933")
+				#	addSpinner(DTOutput("plotAsintoto"), spin = "fading-circle", color = "#009933"),
+
       ),br()
     )
 
@@ -2069,6 +2166,12 @@ output$tab_mobile<-renderUI({
           ),
           addSpinner(DTOutput("tabCompare"), spin = "fading-circle", color = "#009933"),spiegaTabellaCompare
 
+
+      ),br(),
+			fluidRow(style="padding:30px;background-color:#ffffff",
+					h3("Andamento dei valori asintotici (massimi raggiunti) ipotizzando un evoluzione di tipo Gompertz"),
+          addSpinner(DTOutput("tabAsintoto"), spin = "fading-circle", color = "#009933")
+				#	addSpinner(DTOutput("plotAsintoto"), spin = "fading-circle", color = "#009933"),
 
       ),br()
   	)

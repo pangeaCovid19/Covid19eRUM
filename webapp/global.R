@@ -222,6 +222,8 @@ spiegaTerIntAttuale <- HTML("<div style='padding-top:10px;'>In questo grafico ve
 
 #########################
 
+spiegaTabellaGompertz <- HTML("<div style='padding-top:10px;'> Nella tabella sono riportati i valori asintotici, ovvero i valori massimi raggiunti, utilizzanto un modello di tipo Gompertz aggiornato alla data indicata. Dal monitoraggio dell'andamento dell'asintoto è possibile capire come si stia modificando l'andamento della diffusione: un andamento crecente, indica che la diffusione sta aumentando di velocità. Tra la seconda e la quarta settimana della fase 2 ci aspettiamo una crescita dei valori asintotici che speriamo si stabilizzino intorno a valori poso superiori a quelli oggi previsti. </div>")
+
 
 spiegaGraficoCasiGiornalieriRegioni <- HTML("<div style='padding-top:10px;'> In questo grafico è stato riportato il numero di nuovi casi giornalieri divisi per regione.</div>")
 
