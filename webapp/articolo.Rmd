@@ -47,7 +47,7 @@ che si riduce al modello esponenziale quando $M = 0$. Se ripetiamo l'analisi eff
 $$
 N(t) = ae^{ce^{-Kt}},
 $$
-in cui il parametro $a$ rappresenta il valore asintotico, ovvero il numero dei deceduti o dei casi totali che si registreranno alla fine dell'epidemia. Con i dati registrati fino ad oggi otteniamo una stima del parametro $a$ per i casi totali pari a <span class="myclass">`r coefficients(modellogomp)[1]`</span>.
+in cui il parametro $a$ rappresenta il valore asintotico, ovvero il numero dei deceduti o dei casi totali che si registreranno alla fine dell'epidemia. Con i dati registrati fino ad oggi otteniamo una stima del parametro $a$ per i casi totali pari a <span class="myclass">`r format(round(unname(coefficients(modellogomp$totale_casi)[1])))`</span>.
 
 
 Tracciamo le previsioni dal 10 Marzo 2020 per il totale dei casi e per i deceduti. Per ogni data, sono riportati i valori registrati, quelli previsti dai due modelli addestrati con i dati fino al giorno prima e le deviazioni *dato reale - previsione* in termini di incertezza standard e P-value.
