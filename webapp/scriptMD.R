@@ -64,6 +64,7 @@ fdata<-format(data,"%d %b %Y")
 ldata<-data-1
 modello<-readRDS(sprintf("www/pastModels/modelliIta_%s.RDS",ldata))
 modelloexp<-readRDS(sprintf("www/pastModels/modelliItaExp_%s.RDS",ldata))
+modellogomp<-readRDS(sprintf("www/pastModels/modelliItaGomp_%s.RDS",ldata))
 
 
 fldata<-format(ldata,"%d %b %Y")

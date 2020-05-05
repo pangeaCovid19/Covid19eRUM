@@ -198,7 +198,9 @@ if ( FALSE) {
 		modelliRegExp <-lapply( tsReg[which(names(tsReg)!='Italia')], loglinmodel4, quadratico=FALSE, dataMax=x)
 		if(x >= dataGomp){
 			modelliRegGomp <-lapply( tsReg[which(names(tsReg)!='Italia')], function(x){
-					try(gompertzModel(x, var="totale_casi", lastw=5, P=102.6891, dataMax=x))
+					tmp<-try(gompertzModel(x, var="totale_casi", lastw=5, P=102.6891))
+					if (inherits(tmp,"try-error")) return(loglinmodel4(x,quadratico=TRUE))
+					tmp
 				}
 			)
 		}
