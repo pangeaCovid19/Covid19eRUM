@@ -32,7 +32,7 @@ diariotab<-tabItem(tabName="diario",
 
 											fluidRow(style="padding:30px;background-color:#ffffff;",
 											h2("Editoriale"),br(),
-											a("Editoriale del 04 Maggio 2020",href="Report04maggio2020.html",target="_blank",rel="noopener noreferrer"),br(),
+											#a("Editoriale del 04 Maggio 2020",href="Report04maggio2020.html",target="_blank",rel="noopener noreferrer"),br(),
 											a("Editoriale del 22 Marzo 2020",href="Report21marzo2020.html",target="_blank",rel="noopener noreferrer")),br(),
 											fluidRow(style="padding:30px;background-color:#ffffff;",
 											h2("Report"),br(),
