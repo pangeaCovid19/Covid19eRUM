@@ -1665,6 +1665,167 @@ output$nuoviPositiviStoricoReg<- renderPlotly({
 
 })
 
+
+
+
+output$nuoviPositiviStoricoRegPercentuale<- renderPlotly({
+	if(verbose) cat("\n renderPlotly:nuoviPositiviStoricoRegPercentuale")
+	selregione <- input$regionSelSerieStorichexRegPer
+	tipoplot 	 <- input$tipoPlotSerieStoricheRegPer
+	if(is.null(selregione)) return(NULL)
+	if(is.null(tipoplot)) return(NULL)
+
+	dati <- copy(allData_reg)
+
+	if(is.null(dati)) return(NULL)
+	setDT(dati)
+
+	setnames(dati, old=c('denominazione_regione'), new=c("regione"))
+
+	dati <-dati[regione %in% selregione]
+	setorder(dati, regione, data)
+
+ 	if(tipoplot=="globale"){
+		res <- dati[, .(totale_casi=sum(totale_casi)), by=data]
+		res[, tot := shift(totale_casi, type="lag")]
+		res[, new := c(NA,diff(totale_casi))]
+		res[, deltaPerc:=new / tot*100, by=data]
+		res[, deltaPercDiff:=c(NA,diff(deltaPerc))]
+
+		ndays <- 7
+		res[, deltaPerc_roll:=c(rep(NA,ndays-1), rollmean(deltaPerc, k=ndays)),]
+
+		res[, deltaPerc_rollDiff:=c(NA,diff(deltaPerc_roll))]
+	#	res <- res[, deltaPerc2:=c(1,diff(totale_casi)) / shift(totale_casi, type="lag"), by=data]
+	#
+		if(all((selregione %in% regioniList))){
+			res$regione <- "Italia"
+		} else res$regione <- paste(collapse="\n", selregione)
+		res <- res[!is.na(deltaPerc)]
+
+		p <- 	ggplot(res) + my_ggtheme() +
+				#geom_bar(aes(y = log(deltaPerc), x = data, fill=regione), stat="identity") +
+				geom_point(group=1, aes(y = log(deltaPerc), x = data, fill=regione), stat="identity") +
+				geom_line(group=1, aes(y = log(deltaPerc), x = data), stat="identity") +
+			#	guides(fill=guide_legend(title="regione")) +
+				theme(axis.text.x=element_text(angle=45, hjust=1)) +
+				#scale_y_log10()+
+				ylab("")
+				#if(tipoplot!="nazionale") p <- p + scale_fill_manual(values=color_regioni)
+		p
+	} else{
+
+		dati <-dati[regione %in% selregione]
+		setorder(dati, regione, data)
+		dati[, tot := shift(totale_casi, type="lag"), regione ]
+		dati[, new := c(NA,diff(totale_casi)), regione]
+		dati[, deltaPerc:=new / tot*100, by=.(data,regione)]
+
+		p <- 	ggplot(dati) + my_ggtheme() +
+				#geom_bar(aes(y = log(deltaPerc), x = data, fill=regione), stat="identity") +
+				geom_point(group=1, aes(y = log(deltaPerc), x = data, fill=regione), stat="identity") +
+				scale_color_manual(values=color_regioni) +
+				geom_line(group=1, aes(y = log(deltaPerc), x = data, color=regione), stat="identity") +
+				guides(fill=guide_legend(title="regione")) +
+				scale_color_manual(values=color_regioni) +
+				theme(axis.text.x=element_text(angle=45, hjust=1)) +
+				#scale_y_log10()+
+				ylab("")
+				#if(tipoplot!="nazionale") p <- p + scale_fill_manual(values=color_regioni)
+		p
+
+	}
+
+})
+
+output$inpProvincePositiviStoricoPrvPercentuale <- renderUI({
+	if(verbose) cat("\n renderUI:inpProvincePositiviStoricoPrvPercentuale")
+	selregione <- input$regionSelSerieStorichexRegPer
+	if(is.null(selregione)) return(NULL)
+
+	if(!exists('prvReg')){
+		prvReg <- unique(allData_prv[, c('denominazione_regione', 'denominazione_provincia')])
+		setDT(prvReg)
+	}
+
+	provSelList <- prvReg[denominazione_regione %in% selregione, denominazione_provincia]
+	pickerInput(inputId = "provSelSerieStorichexPrvPer", label = "Seleziona provincia", choices = provSelList, selected=provSelList, options = pickerOptions(size=10,actionsBox = T ,selectedTextFormat = "count >20",deselectAllText='Deseleziona tutto',selectAllText='Seleziona tutto'), multiple = TRUE)
+
+})
+
+output$nuoviPositiviStoricoPrvPercentuale<- renderPlotly({
+	if(verbose) cat("\n renderPlotly:nuoviPositiviStoricoPrvPercentuale")
+	selprov <- input$provSelSerieStorichexPrvPer
+	tipoplot 	 <- input$tipoPlotSerieStoricheRegPer
+	if(is.null(selprov)) return(NULL)
+	if(is.null(tipoplot)) return(NULL)
+	return(NULL)
+
+	dati <- copy(allData_prv)
+
+	if(is.null(dati)) return(NULL)
+	setDT(dati)
+
+	setnames(dati, old=c('denominazione_provincia'), new=c("provincia"))
+
+	dati <-dati[provincia %in% selprov]
+	setorder(dati, regione, data)
+
+ 	if(tipoplot=="globale"){
+		res <- dati[, .(totale_casi=sum(totale_casi)), by=data]
+		res[, tot := shift(totale_casi, type="lag")]
+		res[, new := c(NA,diff(totale_casi))]
+		res[, deltaPerc:=new / tot*100, by=data]
+		res[, deltaPercDiff:=c(NA,diff(deltaPerc))]
+
+		ndays <- 7
+		res[, deltaPerc_roll:=c(rep(NA,ndays-1), rollmean(deltaPerc, k=ndays)),]
+
+		res[, deltaPerc_rollDiff:=c(NA,diff(deltaPerc_roll))]
+	#	res <- res[, deltaPerc2:=c(1,diff(totale_casi)) / shift(totale_casi, type="lag"), by=data]
+	#
+		if(all((selprov %in% regioniList))){
+			res$provincia <- "Italia"
+		} else res$provincia <- paste(collapse="\n", selprov)
+		res <- res[!is.na(deltaPerc)]
+
+		p <- 	ggplot(res) + my_ggtheme() +
+				#geom_bar(aes(y = log(deltaPerc), x = data, fill=regione), stat="identity") +
+				geom_point(group=1, aes(y = log(deltaPerc), x = data, fill=regione), stat="identity") +
+				geom_line(group=1, aes(y = log(deltaPerc), x = data), stat="identity") +
+			#	guides(fill=guide_legend(title="regione")) +
+				theme(axis.text.x=element_text(angle=45, hjust=1)) +
+				#scale_y_log10()+
+				ylab("")
+				#if(tipoplot!="nazionale") p <- p + scale_fill_manual(values=color_regioni)
+		p
+	} else{
+
+		dati <-dati[regione %in% selregione]
+		setorder(dati, regione, data)
+		dati[, tot := shift(totale_casi, type="lag"), regione ]
+		dati[, new := c(NA,diff(totale_casi)), regione]
+		dati[, deltaPerc:=new / tot*100, by=.(data,regione)]
+
+		p <- 	ggplot(dati) + my_ggtheme() +
+				#geom_bar(aes(y = log(deltaPerc), x = data, fill=regione), stat="identity") +
+				geom_point(group=1, aes(y = log(deltaPerc), x = data, fill=regione), stat="identity") +
+				scale_color_manual(values=color_regioni) +
+				geom_line(group=1, aes(y = log(deltaPerc), x = data, color=regione), stat="identity") +
+				guides(fill=guide_legend(title="regione")) +
+				scale_color_manual(values=color_regioni) +
+				theme(axis.text.x=element_text(angle=45, hjust=1)) +
+				#scale_y_log10()+
+				ylab("")
+				#if(tipoplot!="nazionale") p <- p + scale_fill_manual(values=color_regioni)
+		p
+
+	}
+
+})
+
+
+
 output$uiProvSelSerieStoricheProv <- renderUI({
 	if(verbose) cat("\n renderPlotly:uiProvSelSerieStoricheProv")
 	selregione <- input$regionSelSerieStorichexProv

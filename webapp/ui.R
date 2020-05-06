@@ -181,6 +181,22 @@ regTab <- tabItem(tabName = "regPlots",
 									spiegaGraficoCasiVsCasiNuovi
 							),
 							##################################################
+							# Tasso crescila logaritmico Regionale
+							fluidRow(style="padding:30px;background-color:#ffffff",
+								fluidRow(style="padding:20px;background-color:#ffffff",
+									column(4, h3("Tasso di crescita giornaliero")),
+									column(1),
+									column(2,
+										pickerInput(inputId = "tipoPlotSerieStoricheRegPer", label = "Tipo Grafico", choices = c("regionale","globale"),selected="globale",options = list(size=10,`actions-box` = TRUE, `selected-text-format` = "count >20"), multiple = FALSE)
+									),
+									column(3,
+										pickerInput(inputId = "regionSelSerieStorichexRegPer", label = "Seleziona regioni", choices = regioniList,selected=regioniList, options = pickerOptions(size=10,actionsBox = T ,selectedTextFormat = "count >20",deselectAllText='Deseleziona tutto',selectAllText='Seleziona tutto'), multiple = TRUE)
+									)
+								),
+								addSpinner(plotlyOutput('nuoviPositiviStoricoRegPercentuale'), spin = "fading-circle", color = "#add437"),
+								spiegaGraficoNuoviPositiviStoricoRegPercentuale
+							),
+							##################################################
 							##################################################
 							#  NUOVI CASI
 							fluidRow(style="padding:30px;background-color:#ffffff",
@@ -260,6 +276,26 @@ prvTab <- tabItem(tabName = "prvPlots",
 										fluidRow(style="overflow-x:scroll;",align='center',addSpinner(plotlyOutput('lineProvinceCasiVsNuovicasi'), spin = "fading-circle", color = "#add437")),
 									spiegaGraficoCasiVsCasiNuovi
 							),
+							##################################################
+							# Tasso crescila logaritmico provinciale
+							fluidRow(style="padding:30px;background-color:#ffffff",
+								fluidRow(style="padding:20px;background-color:#ffffff",
+									column(3, h3("Tasso di crescita giornaliero")),
+									column(1),
+									column(2,
+										pickerInput(inputId = "tipoPlotSerieStorichePrvPer", label = "Tipo Grafico", choices = c("regionale","globale"),selected="globale",options = list(size=10,`actions-box` = TRUE, `selected-text-format` = "count >20"), multiple = FALSE)
+									),
+									column(3,
+										uiOutput('inpProvincePositiviStoricoPrvPercentuale')
+									),
+									column(3,
+										pickerInput(inputId = "regionSelSerieStorichexPrvPer", label = "Seleziona regione", choices = regioniList, selected=regioniList, options = pickerOptions(size=10,actionsBox = T ,selectedTextFormat = "count >20",deselectAllText='Deseleziona tutto',selectAllText='Seleziona tutto'), multiple = TRUE)
+									)
+								),
+								addSpinner(plotlyOutput('nuoviPositiviStoricoPrvPercentuale'), spin = "fading-circle", color = "#add437"),
+								spiegaGraficoNuoviPositiviStoricoPrvPercentuale
+							),
+							##################################################
 							##################################################
 							#  NUOVI CASI
 							fluidRow(style="padding:30px;background-color:#ffffff",

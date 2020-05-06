@@ -157,7 +157,8 @@ map_regioni <- readRDS(file=paste0(dir_data, "map_regioni.RDS"))
 risultatiFit <- HTML("<div style='padding-top:10px;'></div>")
 
 
-
+prvReg <- unique(allData_prv[, c('denominazione_regione', 'denominazione_provincia')])
+setDT(prvReg)
 
 spiegaFitMedioTermine<- HTML("<div style='padding-top:10px;'>In questo grafico viene mostrato il numero di cati totali (deceduti) con una previsione che si estende fino a 10 giorni: in blu la serie storica, in arancione i valori previsti per i prossimi giorni.</div>")
 
@@ -226,6 +227,12 @@ spiegaTabellaGompertz <- HTML("<div style='padding-top:10px;'> Nella tabella son
 
 
 spiegaGraficoCasiGiornalieriRegioni <- HTML("<div style='padding-top:10px;'> In questo grafico è stato riportato il numero di nuovi casi giornalieri divisi per regione.</div>")
+
+
+spiegaGraficoNuoviPositiviStoricoRegPercentuale <- HTML("<div style='padding-top:10px;'> In questo grafico è stato riportato l'andamento del rapporto tra nuovi casi e casi del giorno precedente in funzione del tempo. Questo parametro, direttamente proporzionale ad R0, ha un andamento esponenzialmente descrescente dall'inizio del lock down. Nel grafico, il cui asse y è logaritmico, ha un andamento lineare decrescente. Nella fase due ci aspettiamo una deviazione rispetto a questo andamento: il tasso di crescita pronbabilmente ricomincerà a salire tra la seconda e la terza settimana di Maggio.</div>")
+
+
+spiegaGraficoNuoviPositiviStoricoPrvPercentuale <- HTML("<div style='padding-top:10px;'> In questo grafico è stato riportato l'andamento del rapporto tra nuovi casi e casi del giorno precedente in funzione del tempo. Questo parametro, direttamente proporzionale ad R0, ha un andamento esponenzialmente descrescente dall'inizio del lock down. Nel grafico, il cui asse y è logaritmico, ha un andamento lineare decrescente. Nella fase due ci aspettiamo una deviazione rispetto a questo andamento: il tasso di crescita pronbabilmente ricomincerà a salire tra la seconda e la terza settimana di Maggio.</div>")
 
 
 spiegaGraficoCasiGiornalieriProvincia <- HTML("<div style='padding-top:10px;'> In questo grafico è stato riportato il numero di nuovi casi giornalieri divisi per provincia.</div>")
