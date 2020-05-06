@@ -3,6 +3,7 @@ require(httr)
 require(rmarkdown)
 source("funzionifit.R")
 source("gompertz.R")
+source("readTS.R")
 writeLog<-function(message, log) {
 	cat(sprintf("%s - %s\n",format(Sys.time()),message),file=log,append=TRUE)
 }
@@ -55,11 +56,26 @@ readData<-function(file, popolazione) {
 		return(res)
 	}
 }
+
+
+
+logdemone<-"logs/demone.log"
+writeLog("Aggiorno dati mondo\n",logdemone)
+checkAndInitializeFolder()
+pathfileD<-"worlddata/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv"
+pathfileCC<-"worlddata/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv"
+worldobject<-produceDataAndModels(pathfileCC,pathfileD)
+saveRDS(worldobject,"DataAndModelsWorld.RDS")
+rm(pathfileCC)
+rm(pathfileD)
+rm(worldobject)
+writeLog("Finito\n",logdemone)
+
+
 campiPrevisioni <- c("totale_casi", "deceduti", "totale_ospedalizzati", "terapia_intensiva")
 
 if (!dir.exists("logs")) dir.create("logs")
 hashpath<-"logs/hashes.log"
-logdemone<-"logs/demone.log"
 if (file.exists("logs/hashes.log")) {
 	hashes<-readRDS(hashpath)
 } else {

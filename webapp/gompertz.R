@@ -126,3 +126,16 @@ predictNextDaysGompertz<-function(dati,modello,nahead=3, all=FALSE, varfactor=4)
 	newdata$x<-NULL
 	cbind(newdata,predizioni2)
 }
+
+#trova la x in corrispondenza di un valore y di un modello gomperz dati i parametri a,b,c
+#se non si passano i parametri b e c, allora a deve essere un vettore lungo 3 in cui le componenti sono a,b e c.
+#
+inverseGompertz<-function(y,a,b,c) {
+	if (missing(b)) {
+		b<-a[2]
+		c<-a[3]
+		a<-a[1]
+	}
+	p<-y/a
+	unname(-1/c*log(-1/b*log(p)))
+}
