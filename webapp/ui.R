@@ -286,10 +286,10 @@ prvTab <- tabItem(tabName = "prvPlots",
 										pickerInput(inputId = "tipoPlotSerieStorichePrvPer", label = "Tipo Grafico", choices = c("regionale","globale"),selected="globale",options = list(size=10,`actions-box` = TRUE, `selected-text-format` = "count >20"), multiple = FALSE)
 									),
 									column(3,
-										uiOutput('inpProvincePositiviStoricoPrvPercentuale')
+										pickerInput(inputId = "regionSelSerieStorichexPrvPer", label = "Seleziona regione", choices = regioniList, selected=regioniList, options = pickerOptions(size=10,actionsBox = T ,selectedTextFormat = "count >20",deselectAllText='Deseleziona tutto',selectAllText='Seleziona tutto'), multiple = TRUE)
 									),
 									column(3,
-										pickerInput(inputId = "regionSelSerieStorichexPrvPer", label = "Seleziona regione", choices = regioniList, selected=regioniList, options = pickerOptions(size=10,actionsBox = T ,selectedTextFormat = "count >20",deselectAllText='Deseleziona tutto',selectAllText='Seleziona tutto'), multiple = TRUE)
+										uiOutput('inpProvincePositiviStoricoPrvPercentuale')
 									)
 								),
 								addSpinner(plotlyOutput('nuoviPositiviStoricoPrvPercentuale'), spin = "fading-circle", color = "#add437"),
