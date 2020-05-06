@@ -88,7 +88,9 @@ ldata<-data-1
 modello<-readRDS(sprintf("www/pastModels/modelliIta_%s.RDS",ldata))
 modelloexp<-readRDS(sprintf("www/pastModels/modelliItaExp_%s.RDS",ldata))
 modellogomp<-readRDS(sprintf("www/pastModels/modelliItaGomp_%s.RDS",ldata))
-
+modellogompOggi<-readRDS(sprintf("www/pastModels/modelliItaGomp_%s.RDS",data))
+asintotoTot<-format(round(unname(coefficients(modellogompOggi$totale_casi)[1])+attr(modellogompOggi$totale_casi,"offset")))
+asintotoDece<-format(round(unname(coefficients(modellogompOggi$deceduti)[1])+attr(modellogompOggi$deceduti,"offset")))
 
 fldata<-format(ldata,"%d %b %Y")
 ultimidati<-lastdaydata()

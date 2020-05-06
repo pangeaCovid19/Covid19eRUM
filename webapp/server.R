@@ -1443,11 +1443,11 @@ getAsintotoGomp <- reactive({
 	outModel <- lapply(modItaGomp, function(x){
 		if(class(x$deceduti) == 'lm') {
 			dec <- NA
-		} else dec <- coefficients(x$deceduti)['a']
+		} else dec <- coefficients(x$deceduti)['a'] + attr(x$deceduti,"offset")
 
 		if(class(x$deceduti) == 'lm') {
 			tot <- NA
-		} else tot <- coefficients(x$totale_casi)['a']
+		} else tot <- coefficients(x$totale_casi)['a'] + attr(x$totale_casi,"offset")
 		data.frame(totale_casi=tot, deceduti=dec)
 	})
 
