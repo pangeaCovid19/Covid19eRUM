@@ -1473,7 +1473,7 @@ output$tabAsintoto <- renderDT({
 	asintotout[, percTot:=paste0(round(totale_casiVeri/totale_casi*100,1), "%")]
 
 
-	asintotout$'Variazione Deceduti' <- paste0(round(c(NA,diff(asintotout$deceduti))/asintotout$deceduti*100, 2), "%")
+	asintotout$'Variazione Decessi' <- paste0(round(c(NA,diff(asintotout$deceduti))/asintotout$deceduti*100, 2), "%")
 	asintotout$'Variazione Totale Casi' <- paste0(round(c(NA,diff(asintotout$totale_casi))/asintotout$totale_casi*100, 2), "%")
 
 
@@ -1481,13 +1481,13 @@ output$tabAsintoto <- renderDT({
 	asintotout$deceduti <- format(round(asintotout$deceduti), big.mark="'")
 	asintotout$totale_casi <- format(round(asintotout$totale_casi), big.mark="'")
 
-	setnames(asintotout, old=c( 'totale_casi', 'deceduti', 'percTot', "percDec"), new=c("Totale Casi", "Deceduti"   , "% Casi osservati", "% Deceduti osservati"))
+	setnames(asintotout, old=c( 'totale_casi', 'deceduti', 'percTot', "percDec"), new=c("Totale Casi", "Decessi"   , "% Casi osservati", "% Deceduti osservati"))
 
 	setorder(asintotout, -data)
 
 
 
- 	datatable(asintotout[, c('data', "Totale Casi", 'Variazione Totale Casi',"% Casi osservati",  "Deceduti", 'Variazione Deceduti',"% Deceduti osservati" )],extensions = c('Scroller'),
+ 	datatable(asintotout[, c('data', "Totale Casi", 'Variazione Totale Casi',"% Casi osservati",  "Decessi", 'Variazione Decessi',"% Deceduti osservati" )],extensions = c('Scroller'),
       selection = list(target = NULL),
       options= c(list(dom = 't',scroller=T,scrollX="300",scrollY="300",paging = T, searching = F),
       rownames=F))
@@ -1705,8 +1705,8 @@ output$nuoviPositiviStoricoRegPercentuale<- renderPlotly({
 
 		p <- 	ggplot(res) + my_ggtheme() +
 				#geom_bar(aes(y = log(deltaPerc), x = data, fill=regione), stat="identity") +
-				geom_point(group=1, aes(y = log(deltaPerc), x = data, fill=regione), stat="identity") +
-				geom_line(group=1, aes(y = log(deltaPerc), x = data), stat="identity") +
+				geom_point(group=1, aes(y = log(deltaPerc), x = data, color=regione), stat="identity") +
+				geom_line(group=1, aes(y = log(deltaPerc), x = data, color=regione), stat="identity") +
 			#	guides(fill=guide_legend(title="regione")) +
 				theme(axis.text.x=element_text(angle=45, hjust=1)) +
 				#scale_y_log10()+
@@ -1723,7 +1723,7 @@ output$nuoviPositiviStoricoRegPercentuale<- renderPlotly({
 
 		p <- 	ggplot(dati) + my_ggtheme() +
 				#geom_bar(aes(y = log(deltaPerc), x = data, fill=regione), stat="identity") +
-				geom_point(group=1, aes(y = log(deltaPerc), x = data, fill=regione), stat="identity") +
+				geom_point(group=1, aes(y = log(deltaPerc), x = data, color=regione), stat="identity") +
 				scale_color_manual(values=color_regioni) +
 				geom_line(group=1, aes(y = log(deltaPerc), x = data, color=regione), stat="identity") +
 				guides(fill=guide_legend(title="regione")) +
@@ -1761,7 +1761,6 @@ output$nuoviPositiviStoricoPrvPercentuale<- renderPlotly({
 	if(is.null(selprov)) return(NULL)
 	if(is.null(tipoplot)) return(NULL)
 
-
 	dati <- copy(allData_prv)
 
 	if(is.null(dati)) return(NULL)
@@ -1792,8 +1791,8 @@ output$nuoviPositiviStoricoPrvPercentuale<- renderPlotly({
 
 		p <- 	ggplot(res) + my_ggtheme() +
 				#geom_bar(aes(y = log(deltaPerc), x = data, fill=provincia), stat="identity") +
-				geom_point(group=1, aes(y = log(deltaPerc), x = data, fill=provincia), stat="identity") +
-				geom_line(group=1, aes(y = log(deltaPerc), x = data), stat="identity") +
+				geom_point(group=1, aes(y = log(deltaPerc), x = data, color=provincia), stat="identity") +
+				geom_line(group=1, aes(y = log(deltaPerc), x = data, color=provincia), stat="identity") +
 			#	guides(fill=guide_legend(title="provincia")) +
 				theme(axis.text.x=element_text(angle=45, hjust=1)) +
 				#scale_y_log10()+
@@ -1810,7 +1809,7 @@ output$nuoviPositiviStoricoPrvPercentuale<- renderPlotly({
 
 		p <- 	ggplot(dati) + my_ggtheme() +
 				#geom_bar(aes(y = log(deltaPerc), x = data, fill=provincia), stat="identity") +
-				geom_point(group=1, aes(y = log(deltaPerc), x = data, fill=provincia), stat="identity") +
+				geom_point(group=1, aes(y = log(deltaPerc), x = data, color=provincia), stat="identity") +
 				scale_color_manual(values=color_regioni) +
 				geom_line(group=1, aes(y = log(deltaPerc), x = data, color=provincia), stat="identity") +
 				guides(fill=guide_legend(title="provincia")) +
@@ -2249,7 +2248,13 @@ output$tab_desktop<-renderUI({
   #        pickerInput(inputId = "varSel2", label = "Seleziona variabile", choices = c("deceduti","totale contagiati"),selected="totale contagiati",options = list(size=10,`actions-box` = TRUE, `selected-text-format` = "count >20"), multiple = FALSE))),
    #     fluidRow(style="padding:10px;background-color:#ffffff",addSpinner(plotlyOutput(outputId="fitCasesIta"), spin = "fading-circle", color = "#009933"), spiegaFitMedioTermine)
    #   ,br(),
-      fluidRow(style="padding:30px;background-color:#ffffff",
+		 fluidRow(style="padding:30px;background-color:#ffffff",
+			 h3("Andamento dei valori asintotici (massimi raggiunti) ipotizzando un evoluzione di tipo Gompertz"),
+				 addSpinner(DTOutput("tabAsintoto"), spin = "fading-circle", color = "#009933"),
+				 spiegaTabellaGompertz
+			 #	addSpinner(DTOutput("plotAsintoto"), spin = "fading-circle", color = "#009933"),
+
+		 ),fluidRow(style="padding:30px;background-color:#ffffff",
           column(width=4,
             selectizeInput("tipoCompare", label="Tipo Comparazione", choices=c("Totale", "Incremento Giornaliero"), selected = "Lineare")
           ),
@@ -2258,12 +2263,6 @@ output$tab_desktop<-renderUI({
           ),
           addSpinner(DTOutput("tabCompare"), spin = "fading-circle", color = "#009933"),spiegaTabellaCompare
 
-
-      ),br(),
-			fluidRow(style="padding:30px;background-color:#ffffff",
-				h3("Andamento dei valori asintotici (massimi raggiunti) ipotizzando un evoluzione di tipo Gompertz"),
-          addSpinner(DTOutput("tabAsintoto"), spin = "fading-circle", color = "#009933")
-				#	addSpinner(DTOutput("plotAsintoto"), spin = "fading-circle", color = "#009933"),
 
       ),br()
     )
@@ -2330,7 +2329,14 @@ output$tab_mobile<-renderUI({
       #  fluidRow(style="padding:10px;background-color:#ffffff",plotlyOutput(outputId="fitCasesIta",width="100%")
       #
   		# ),
-      br(),
+			br(),
+			fluidRow(style="padding:30px;background-color:#ffffff",
+					h3("Andamento dei valori asintotici (massimi raggiunti) ipotizzando un evoluzione di tipo Gompertz"),
+          addSpinner(DTOutput("tabAsintoto"), spin = "fading-circle", color = "#009933"),
+					spiegaTabellaGompertz
+				#	addSpinner(DTOutput("plotAsintoto"), spin = "fading-circle", color = "#009933"),
+
+      ),br(),
       fluidRow(style="padding:30px;background-color:#ffffff",
 
           column(width=4,
@@ -2341,12 +2347,6 @@ output$tab_mobile<-renderUI({
           ),
           addSpinner(DTOutput("tabCompare"), spin = "fading-circle", color = "#009933"),spiegaTabellaCompare
 
-
-      ),br(),
-			fluidRow(style="padding:30px;background-color:#ffffff",
-					h3("Andamento dei valori asintotici (massimi raggiunti) ipotizzando un evoluzione di tipo Gompertz"),
-          addSpinner(DTOutput("tabAsintoto"), spin = "fading-circle", color = "#009933")
-				#	addSpinner(DTOutput("plotAsintoto"), spin = "fading-circle", color = "#009933"),
 
       ),br()
   	)
