@@ -159,10 +159,11 @@ while (i==0) {
 			tmp
 		}
 	)
-
+	modelliProvince<-makeProvinceModels(uno)
 	writeLog("Scrivendo i dati",logdemone)
 	saveRDS(due,"www/dati-regioni/dataRegioni.RDS")
 	saveRDS(uno,"www/pcm_data/dataProvince.RDS")
+	saveRDS(modelliProvince,"www/pcm_data/ModelliProvince.RDS")
 	writeLog("Scrivendo i modelli",logdemone)
 
 	saveRDS(modelliReg,"www/modelliReg.RDS")

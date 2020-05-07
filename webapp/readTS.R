@@ -58,3 +58,25 @@ checkAndInitializeFolder<-function() {
 	}
 	invisible(TRUE)
 }
+
+extractAsintoti<-function(modellist) {
+	vapply(modellist, function(x) tryCatch(coefficients(x)[1]+attr(x,"offset"),error = function(e) NA_real_),1)
+}
+
+
+makeProvinceModels<-function(province, lastdays=10) {
+	data<-max(province$data)
+	listadate<-seq(data-lastdays+1,data,by="1 day")
+	p<-split(province[,c("totale_casi","data")],province$denominazione_provincia)
+	p2<-lapply(p,function(x) `rownames<-`(x[order(x$data),],NULL))
+	modelli<-lapply(p2,function(x) try(gompertzModel(x,P=1)))
+	ausilio<-vector("list",length(listadate)-1)
+	for (i in seq_along(listadate[-length(listadate)])) {
+		modtmp<-lapply(p2,function(x) try(gompertzModel(x,P=1, dataMax=listadate[i])))
+		ausilio[[i]]<-extractAsintoti(modtmp)
+	}
+	res<-do.call(cbind,ausilio)
+	colnames(res)<-as.character(listadate[-length(listadate)])
+	yep<-complete.cases(res) & !vapply(modelli,inherits,"try-error",FUN.VALUE=TRUE)
+	list(modelli = modelli[yep], asintoti = res[yep,])
+}
