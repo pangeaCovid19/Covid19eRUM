@@ -37,7 +37,7 @@ diariotab<-tabItem(tabName="diario",
 											fluidRow(style="padding:30px;background-color:#ffffff;",
 											h2("Report"),br(),
 											h4("Clicca sui link per i report aggiornati:"),
-											#a(uiOutput("data_report"),href="tabReport.html",target="_blank",rel="noopener noreferrer"),
+											a(uiOutput("data_report"),href="tabReport.html",target="_blank",rel="noopener noreferrer"),
 											uiOutput('storico_report')
 										  )
 											# ,br(),
