@@ -1714,14 +1714,14 @@ output$nuoviPositiviStoricoRegPercentuale<- renderPlotly({
 	#	res <- res[, deltaPerc2:=c(1,diff(totale_casi)) / shift(totale_casi, type="lag"), by=data]
 	#
 		if(all((selregione %in% regioniList))){
-			res$regione <- "Italia"
+			res$regione <- "Totale regioni selezionate"
 		} else res$regione <- paste(collapse="\n", selregione)
 		res <- res[!is.na(deltaPerc)]
 
 		p <- 	ggplot(res) + my_ggtheme() +
 				#geom_bar(aes(y = log(deltaPerc), x = data, fill=regione), stat="identity") +
-				geom_point(group=1, aes(y = log(deltaPerc), x = data, color=regione), stat="identity") +
-				geom_line(group=1, aes(y = log(deltaPerc), x = data, color=regione), stat="identity") +
+				geom_point(group=1, aes(y = log(deltaPerc), x = data, color=regione)) +
+				geom_line(group=1, aes(y = log(deltaPerc), x = data, color=regione)) +
 			#	guides(fill=guide_legend(title="regione")) +
 				theme(axis.text.x=element_text(angle=45, hjust=1)) +
 				#scale_y_log10()+
@@ -1795,6 +1795,7 @@ output$nuoviPositiviStoricoPrvPercentuale<- renderPlotly({
 	setorder(dati, provincia, data)
 
  	if(tipoplot=="globale"){
+
 		res <- dati[, .(totale_casi=sum(totale_casi)), by=data]
 		res[, tot := shift(totale_casi, type="lag")]
 		res[, new := c(NA,diff(totale_casi))]
@@ -1805,17 +1806,19 @@ output$nuoviPositiviStoricoPrvPercentuale<- renderPlotly({
 		res[, deltaPerc_roll:=c(rep(NA,ndays-1), rollmean(deltaPerc, k=ndays)),]
 
 		res[, deltaPerc_rollDiff:=c(NA,diff(deltaPerc_roll))]
+
 	#	res <- res[, deltaPerc2:=c(1,diff(totale_casi)) / shift(totale_casi, type="lag"), by=data]
 	#
 		if(all((selprov %in% provinceList))){
-			res$provincia <- "Italia"
+			res$provincia <- "Totale province selezionate"
 		} else res$provincia <- paste(collapse="\n", selprov)
 		res <- res[!is.na(deltaPerc)]
-
+    str(res)
 		p <- 	ggplot(res) + my_ggtheme() +
 				#geom_bar(aes(y = log(deltaPerc), x = data, fill=provincia), stat="identity") +
-				geom_point(group=1, aes(y = log(deltaPerc), x = data, color=provincia), stat="identity") +
-				geom_line(group=1, aes(y = log(deltaPerc), x = data, color=provincia), stat="identity") +
+				geom_point(group=1, aes(y = log(deltaPerc), x = data,color=provincia)) +
+				geom_line(group=1, aes(y = log(deltaPerc), x = data,color=provincia)) +
+
 			#	guides(fill=guide_legend(title="provincia")) +
 				theme(axis.text.x=element_text(angle=45, hjust=1)) +
 				#scale_y_log10()+
