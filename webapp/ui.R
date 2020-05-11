@@ -90,15 +90,15 @@ tiTab <- tabItem(tabName = "tiPlots",
 												 pickerInput(inputId = "regionSelSerieStoricheTI", label = "Seleziona regioni", choices = regioniList,selected=regioniList, options = pickerOptions(size=10,actionsBox = T ,selectedTextFormat = "count >20",deselectAllText='Deseleziona tutto',selectAllText='Seleziona tutto'), multiple = TRUE)
 											 )
 										 ),
-										 addSpinner(plotlyOutput("terapiaIntStoricoTot"), spin = "fading-circle", color = "#cc0000")
+										 fluidRow(style='padding:30px;overflow-x:scroll',addSpinner(plotlyOutput("terapiaIntStoricoTot"), spin = "fading-circle", color = "#cc0000"))
 									 ),br(),
 
-	                	fluidRow(style="padding:20px;background-color:#ffffff",
+	                	fluidRow(style="padding:10px;background-color:#ffffff",
 											h3( "Percentuale in terapia intensiva occupati da pazienti con CoVid19 (posti letto aggiornati al 2018)"),
 											addSpinner(plotlyOutput("terapiaIntPlotPercNow"), spin = "fading-circle", color = "#cc0000"),
 											spiegaTerIntPercentuale
 										),br(),
-										fluidRow(style="padding:20px;background-color:#ffffff",
+										fluidRow(style="padding:10px;background-color:#ffffff",
 											h3("Diponibilità di letti in terapia intensiva e numero di occupanti con CoVid19 (posti letto aggiornati al 2018)"),
 											addSpinner(plotlyOutput("terapiaIntPlotNow"), spin = "fading-circle", color = "#cc0000"),
 											spiegaTerIntAttuale
@@ -150,7 +150,7 @@ regTab <- tabItem(tabName = "regPlots",
 #							),
 #							fluidRow(style='padding:30px;',fluidRow(style='padding:20px;overflow-x:scroll;',addSpinner(plotlyOutput(outputId="puntiRegioni"), spin = "fading-circle", color = "#add437"))),
 							# confronto serie storiche
-							fluidRow(style="padding:20px;background-color:#ffffff",
+							fluidRow(style="padding:10px;background-color:#ffffff",
 								h3("Confronto tra serie storiche"),
 								fluidRow(style="padding:10px;",
 									column(width=3,
@@ -174,7 +174,7 @@ regTab <- tabItem(tabName = "regPlots",
 							##################################################
 							##################################################
 							# CASI VS NUOVI CASI
-							fluidRow(style="padding:30px;background-color:#ffffff",
+							fluidRow(style="padding:10px;background-color:#ffffff",
 								h3("Nuovi casi in funzione del numero totale di casi"),
 									uiOutput('inputRegioniCasiVsNuovicasi'),
 									fluidRow(style="overflow-x:scroll;padding:20px;",addSpinner(plotlyOutput('lineRegioniCasiVsNuovicasi'), spin = "fading-circle", color = "#add437")),
@@ -182,7 +182,7 @@ regTab <- tabItem(tabName = "regPlots",
 							),
 							##################################################
 							# Tasso crescila logaritmico Regionale
-							fluidRow(style="padding:30px;background-color:#ffffff",
+							fluidRow(style="padding:10px;background-color:#ffffff",
 								fluidRow(style="padding:20px;background-color:#ffffff",
 									column(4, h3("Tasso di crescita giornaliero")),
 									column(1),
@@ -193,13 +193,13 @@ regTab <- tabItem(tabName = "regPlots",
 										pickerInput(inputId = "regionSelSerieStorichexRegPer", label = "Seleziona regioni", choices = regioniList,selected=regioniList, options = pickerOptions(size=10,actionsBox = T ,selectedTextFormat = "count >20",deselectAllText='Deseleziona tutto',selectAllText='Seleziona tutto'), multiple = TRUE)
 									)
 								),
-								addSpinner(plotlyOutput('nuoviPositiviStoricoRegPercentuale'), spin = "fading-circle", color = "#add437"),
+								fluidRow(style='padding:10px;overflow-x:scroll',addSpinner(plotlyOutput('nuoviPositiviStoricoRegPercentuale'), spin = "fading-circle", color = "#add437")),
 								spiegaGraficoNuoviPositiviStoricoRegPercentuale
 							),
 							##################################################
 							##################################################
 							#  NUOVI CASI
-							fluidRow(style="padding:30px;background-color:#ffffff",
+							fluidRow(style="padding:10px;background-color:#ffffff",
 								fluidRow(style="padding:20px;background-color:#ffffff",
 									column(4, h3("Numero casi giornalieri")),
 									column(1),
@@ -209,11 +209,11 @@ regTab <- tabItem(tabName = "regPlots",
 									column(2,
 										pickerInput(inputId = "varSelSerieStoricheReg", label = "Seleziona variabile", choices = c("nuovi casi","decessi"),selected="terapia intensiva",options = list(size=10,`actions-box` = TRUE, `selected-text-format` = "count >20"), multiple = FALSE)
 									),
-									column(3,
+									column(2,
 										pickerInput(inputId = "regionSelSerieStorichexReg", label = "Seleziona regioni", choices = regioniList,selected=regioniList, options = pickerOptions(size=10,actionsBox = T ,selectedTextFormat = "count >20",deselectAllText='Deseleziona tutto',selectAllText='Seleziona tutto'), multiple = TRUE)
 									)
 								),
-								addSpinner(plotlyOutput('nuoviPositiviStoricoReg'), spin = "fading-circle", color = "#add437"),
+								fluidRow(style='padding:10px;overflow-x:scroll;',addSpinner(plotlyOutput('nuoviPositiviStoricoReg'), spin = "fading-circle", color = "#add437")),
 								spiegaGraficoCasiGiornalieriRegioni
 							),
 							##################################################
@@ -252,9 +252,9 @@ prvTab <- tabItem(tabName = "prvPlots",
 								fluidRow(style="overflow-x:scroll;",align='center',addSpinner(plotlyOutput(outputId="lineProvince"), spin = "fading-circle", color = "#add437")), spiegaLinePlot
 							),
 							# confronto serie storiche
-							fluidRow(style="padding:20px;background-color:#ffffff",
+							fluidRow(style="padding:30px;background-color:#ffffff",
 								h3("Confronto tra serie storiche"),
-								fluidRow(style="padding:10px;",
+								fluidRow(style="padding:20px;",
 									column(width=3,
 										pickerInput(inputId = "provSelSerieStoriche", label = "Seleziona province", choices = provinceList,selected=province2fit, options = pickerOptions(size=10,actionsBox = F,maxOptionsText=HTML('<font color=#ad0000>È possibile confrontare al più 6 province!</font>') ,selectedTextFormat = "count >20",maxOptions = 6), multiple = TRUE)#,
 										#selectizeInput("variabileCompareProvince", label="Variabile da confrontare", 	, choices=c("totale_casi", "deceduti"), selected = "Lazio", multiple=FALSE)
@@ -292,7 +292,7 @@ prvTab <- tabItem(tabName = "prvPlots",
 										uiOutput('inpProvincePositiviStoricoPrvPercentuale')
 									)
 								),
-								addSpinner(plotlyOutput('nuoviPositiviStoricoPrvPercentuale'), spin = "fading-circle", color = "#add437"),
+								fluidRow(style='padding:30px;overflow-x:scroll',addSpinner(plotlyOutput('nuoviPositiviStoricoPrvPercentuale'), spin = "fading-circle", color = "#add437")),
 								spiegaGraficoNuoviPositiviStoricoPrvPercentuale
 							),
 							##################################################
@@ -312,7 +312,7 @@ prvTab <- tabItem(tabName = "prvPlots",
 										uiOutput("uiProvSelSerieStoricheProv")
 									)
 								),
-								addSpinner(plotlyOutput('nuoviPositiviStoricoProv'), spin = "fading-circle", color = "#add437"),
+								fluidRow(style='padding:30px;overflow-x:scroll',addSpinner(plotlyOutput('nuoviPositiviStoricoProv'), spin = "fading-circle", color = "#add437")),
 								spiegaGraficoCasiGiornalieriProvincia
 							),
 							##################################################

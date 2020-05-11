@@ -170,7 +170,7 @@ output$lineRegioni <- renderPlotly({
 					guides(fill=guide_legend(title="regione")) +
           xlab("")+ylab(var2plotNew)
     if(reacval$mobile){
-      p<-p+scale_x_date(date_breaks="3 day",date_labels="%b %d")}
+      p<-p+scale_x_date(date_breaks="6 day",date_labels="%b %d")}
     else{
       p<-p+scale_x_date(date_breaks="2 day",date_labels="%b %d")+theme(legend.title=element_blank())
     }
@@ -510,7 +510,7 @@ output$lineProvinceConfronto <- renderPlotly({
 				guides(fill=guide_legend(title="provincia")) +
         xlab("")+ylab(var2plotNew)
   if(reacval$mobile){
-    p<-p+scale_x_date(date_breaks="3 day",date_labels="%b %d")}
+    p<-p+scale_x_date(date_breaks="6 day",date_labels="%b %d")}
   else{
     p<-p+scale_x_date(date_breaks="2 day",date_labels="%b %d")
   }
@@ -626,7 +626,7 @@ output$lineRegioniConfronto <- renderPlotly({
 				guides(fill=guide_legend(title="regione")) +
         xlab("")+ylab(var2plotNew)
   if(reacval$mobile){
-    p<-p+scale_x_date(date_breaks="3 day",date_labels="%b %d")}
+    p<-p+scale_x_date(date_breaks="6 day",date_labels="%b %d")}
   else{
     p<-p+scale_x_date(date_breaks="2 day",date_labels="%b %d")
   }
@@ -837,7 +837,7 @@ output$lineProvince <- renderPlotly({
           theme(axis.text.x=element_text(angle=45, hjust=1)) +
           labs(x="")
           if(reacval$mobile){
-            p<-p+scale_x_date(date_breaks="3 day",date_labels="%b %d")}
+            p<-p+scale_x_date(date_breaks="6 day",date_labels="%b %d")}
           else{
             p<-p+scale_x_date(date_breaks="2 day",date_labels="%b %d")+theme(legend.title=element_blank())
           }
@@ -1104,7 +1104,7 @@ output$fitRegion <- renderPlotly({
 			 theme(axis.text.x=element_text(angle=45,hjust=1)) +
        labs(x="")
     if(reacval$mobile){
-      p<-p+scale_x_date(date_breaks="3 day",date_labels="%b %d")}
+      p<-p+scale_x_date(date_breaks="6 day",date_labels="%b %d")}
     else{
       p<-p+scale_x_date(date_breaks="2 day",date_labels="%b %d") +theme(legend.title=element_blank())
     }
@@ -1228,7 +1228,7 @@ if(verbose) cat("\n renderPlotly:fitIta")
        theme(axis.text.x = element_text(angle=45,hjust=1)) +
        labs(x="", color = "variabile prevista")
        if(reacval$mobile){
-         p<-p+scale_x_date(date_breaks="3 day",date_labels="%b %d")}
+         p<-p+scale_x_date(date_breaks="6 day",date_labels="%b %d")}
        else{
          p<-p+scale_x_date(date_breaks="2 day",date_labels="%b %d")+theme(legend.title=element_blank())
        }
@@ -1306,7 +1306,7 @@ output$fitCasesIta <- renderPlotly({
 
 
             if(reacval$mobile){
-              p<-p+scale_x_date(date_breaks="3 day",date_labels="%b %d")}
+              p<-p+scale_x_date(date_breaks="6 day",date_labels="%b %d")}
             else{
               p<-p+scale_x_date(date_breaks="2 day",date_labels="%b %d")+theme(legend.title=element_blank())
             }
@@ -1404,7 +1404,7 @@ output$percDeltaTot <- renderPlotly({
           labs(x="", y="Variazione %")#+
           # guides(fill=guide_legend(title=testoLegenda))
           if(reacval$mobile){
-            p<-p+scale_x_date(date_breaks="3 day",date_labels="%b %d")}
+            p<-p+scale_x_date(date_breaks="6 day",date_labels="%b %d")}
           else{
             p<-p+scale_x_date(date_breaks="2 day",date_labels="%b %d")+theme(legend.title=element_blank())
           }
@@ -1621,7 +1621,13 @@ output$terapiaIntStoricoTot<- renderPlotly({
 			guides(fill=guide_legend(title="regione")) +
 			theme(axis.text.x=element_text(angle=45, hjust=1)) +
 			ylab("Casi Totali")
-	p
+      plot<-ggplotly(p)
+      if(reacval$mobile){
+
+        plot<-plot%>%layout(legend=list(orientation='h',x=-0,y=-0.39))%>%
+              layout(legend=list(font=list(size=12)),dragmode=F,autosize = T,heigth=3000,width = 600)
+      }
+	plot
 
 })
 
@@ -1661,7 +1667,16 @@ output$nuoviPositiviStoricoReg<- renderPlotly({
 
 
 			if(tipoplot!="totale") p <- p + scale_fill_manual(values=color_regioni)
-	p
+
+      plot<-ggplotly(p)
+
+          if(reacval$mobile){
+
+            plot<-plot%>%layout(legend=list(orientation='h',x=-0,y=-0.39))%>%
+                  layout(legend=list(font=list(size=12)),dragmode=F,autosize = T,heigth=3000,width = 600)
+          }
+          plot
+
 
 })
 
@@ -1735,6 +1750,14 @@ output$nuoviPositiviStoricoRegPercentuale<- renderPlotly({
 		p
 
 	}
+  plot<-ggplotly(p)
+
+      if(reacval$mobile){
+
+        plot<-plot%>%layout(legend=list(orientation='h',x=-0,y=-0.3))%>%
+              layout(legend=list(font=list(size=12)),dragmode=F,autosize = T,heigth=3000,width = 600)
+      }
+      plot
 
 })
 
@@ -1821,6 +1844,15 @@ output$nuoviPositiviStoricoPrvPercentuale<- renderPlotly({
 		p
 
 	}
+  plot<-ggplotly(p)
+
+      if(reacval$mobile){
+
+        plot<-plot%>%layout(legend=list(orientation='h',x=-0,y=-0.3))%>%
+              layout(legend=list(font=list(size=12)),dragmode=F,autosize = T,heigth=3000,width = 600)
+      }
+      plot
+
 
 })
 
@@ -1872,6 +1904,15 @@ output$nuoviPositiviStoricoProv<- renderPlotly({
 
 	if(tipoplot!="totale")	p <- p + scale_fill_manual(values=color_province)
 	p
+  plot<-ggplotly(p)
+
+      if(reacval$mobile){
+
+        plot<-plot%>%layout(legend=list(orientation='h',x=-0,y=-0.39))%>%
+              layout(legend=list(font=list(size=12)),dragmode=F,autosize = T,heigth=3000,width = 600)
+      }
+      plot
+
 
 })
 
@@ -2290,10 +2331,10 @@ output$tab_mobile<-renderUI({
           prettyRadioButtons('modelloFit',"Tipologia Modello",choices = c("Gompertz", "Esp. quadratico", "Esponenziale" ), selected="Gompertz",status = "success",shape = 'round',inline = T,animation = 'jelly',icon = icon('check'))
           ))),
 
-        fluidRow(style="background-color:#ffffff",column(10,offset=1,align="center",
+        fluidRow(style="background-color:#ffffff",column(10,offset=1,
 
 				fluidRow(style="background-color:#ffffff",column(10,offset=1,align="center",h4("Andamenti globali in Italia con previsione a 3 giorni"))),
-				 fluidRow(style="padding:10px;background-color:#ffffff",addSpinner(plotlyOutput(outputId="fitIta"), spin = "fading-circle", color = "#009933")),
+				 fluidRow(style="padding:10px;background-color:#ffffff;overflow-x:scroll",align='center',addSpinner(plotlyOutput(outputId="fitIta",width='450px'), spin = "fading-circle", color = "#009933")),
 				 fluidRow( style="padding:20px;background-color:#ffffff;",spiegaFitTotePos),
 
 				h4("Andamento casi positivi per regione con previsione a 3 giorni"))),
@@ -2302,8 +2343,8 @@ output$tab_mobile<-renderUI({
 				pickerInput(inputId = "regionSelFit", label = "Seleziona regioni", choices = regioniList,selected=regioni2fit, options = pickerOptions(size=10,actionsBox = T ,selectedTextFormat = "count >20",deselectAllText='Deseleziona tutto',selectAllText='Seleziona tutto',mobile=T), multiple = TRUE)),
 
 
-         fluidRow(style="padding:10px;background-color:#ffffff",
-				 addSpinner(plotlyOutput(outputId="fitRegion"), spin = "fading-circle", color = "#009933")
+         fluidRow(style="padding:10px;background-color:#ffffff;overflow-x:scroll",align='center',
+				 addSpinner(plotlyOutput(outputId="fitRegion",width='450px'), spin = "fading-circle", color = "#009933")
 			 ), #spiegaFitPos
         ),
 
@@ -2311,18 +2352,18 @@ output$tab_mobile<-renderUI({
          fluidRow(style="background-color:#ffffff",
 
              column(10,offset=1,align="center",h3("Variazione percentuale giorno per giorno")),
-             fluidRow(style="padding-left:50px;",
+             fluidRow(style="padding:30px;",
               pickerInput(inputId = "varSel", label = "Seleziona variabile", choices = c("deceduti","totale contagiati"),selected="totale contagiati",options = list(size=10,`actions-box` = TRUE, `selected-text-format` = "count >20"), multiple = FALSE))),
-           fluidRow(style="padding:10px;background-color:#ffffff",addSpinner(plotlyOutput(outputId="percDeltaTot"), spin = "fading-circle", color = "#009933"), spiegaVariazionePercentuale),
+          fluidRow(style="padding:30px;background-color:#ffffff;", fluidRow(style="padding:10px;overflow-x:scroll",align='center',addSpinner(plotlyOutput(outputId="percDeltaTot",width='450px'), spin = "fading-circle", color = "#009933")), spiegaVariazionePercentuale),
          br(),br(),
 
 
-         fluidRow(style="background-color:#ffffff",
+         fluidRow(style="padding:20px;background-color:#ffffff",
 
            column(10,offset=1,align="center", h3("Previsione del numero di casi a medio termine con modello esponenziale quadratico")),
-           fluidRow(style="padding-left:50px;",
+           fluidRow(style="padding:30px;",
             pickerInput(inputId = "varSel2", label = "Seleziona variabile", choices = c("deceduti","totale contagiati"),selected="totale contagiati",options = list(size=10,`actions-box` = TRUE, `selected-text-format` = "count >20"), multiple = FALSE))),
-           fluidRow(style="padding:10px;background-color:#ffffff",addSpinner(plotlyOutput(outputId="fitCasesIta"), spin = "fading-circle", color = "#009933"), spiegaFitMedioTermine),
+           fluidRow(style="padding:30px;background-color:#ffffff;",fluidRow(style="padding-right:50px;overflow-x:scroll",align='center',addSpinner(plotlyOutput(outputId="fitCasesIta",width='450px'), spin = "fading-circle", color = "#009933")), spiegaFitMedioTermine),
 
   		# br(),br(),
   		# fluidRow(style="padding:30px;background-color:#ffffff", h4("Previsione del numero di casi totali a medio termine con modello esponenziale quadratico")),
