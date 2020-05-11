@@ -1742,7 +1742,7 @@ output$nuoviPositiviStoricoRegPercentuale<- renderPlotly({
 
 		p <- 	ggplot(dati) + my_ggtheme() +
 				#geom_bar(aes(y = log(deltaPerc), x = data, fill=regione), stat="identity") +
-				geom_point(group=1, aes(y = log10(deltaPerc), x = data, color=regione,
+				geom_point(group=1, aes(y = log10 (deltaPerc), x = data, color=regione,
 				text = paste('data:', data,
 					'<br>Percentuale: ', paste0(round(deltaPerc,2), "%"),
 					'<br>Regione: ', regione)
@@ -1822,7 +1822,10 @@ output$nuoviPositiviStoricoPrvPercentuale<- renderPlotly({
 
 		p <- 	ggplot(res) + my_ggtheme() +
 				#geom_bar(aes(y = log(deltaPerc), x = data, fill=provincia), stat="identity") +
-				geom_point(group=1, aes(y = log10(deltaPerc), x = data, color=provincia), stat="identity") +
+				geom_point(group=1, aes(y = log10(deltaPerc), x = data, color=provincia,
+				text = paste('data:', data,
+					'<br>Percentuale: ', paste0(round(deltaPerc,2), "%"))
+				), stat="identity") +
 				geom_line(group=1, aes(y = log10(deltaPerc), x = data, color=provincia), stat="identity") +
 			#	guides(fill=guide_legend(title="provincia")) +
 				theme(axis.text.x=element_text(angle=45, hjust=1)) +
@@ -1840,7 +1843,10 @@ output$nuoviPositiviStoricoPrvPercentuale<- renderPlotly({
 
 		p <- 	ggplot(dati) + my_ggtheme() +
 				#geom_bar(aes(y = log(deltaPerc), x = data, fill=provincia), stat="identity") +
-				geom_point(group=1, aes(y = log10(deltaPerc), x = data, color=provincia), stat="identity") +
+				geom_point(group=1, aes(y = log10(deltaPerc), x = data, color=provincia,
+				text = paste('data:', data,
+					'<br>Percentuale: ', paste0(round(deltaPerc,2), "%"),
+					'<br>Provincia: ', provincia)), stat="identity") +
 				scale_color_manual(values=color_regioni) +
 				geom_line(group=1, aes(y = log10(deltaPerc), x = data, color=provincia), stat="identity") +
 				guides(fill=guide_legend(title="provincia")) +
@@ -1852,7 +1858,7 @@ output$nuoviPositiviStoricoPrvPercentuale<- renderPlotly({
 		p
 
 	}
-  plot<-ggplotly(p)
+  plot<-ggplotly(p, tooltip = c("text"))
 
       if(reacval$mobile){
 
