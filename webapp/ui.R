@@ -330,6 +330,40 @@ prvTab <- tabItem(tabName = "prvPlots",
             )
 
 
+worldtab <- tabItem(tabName = "world",
+					#uiOutput("spaces_mobile_ti"),
+							fluidRow(style="padding-left:30px;padding-right:30px;border-style: solid;border-color:#33ccff;",#style="background-color :#cc0000;",
+							h1("Nel mondo"),
+
+									h4("Spiegazione blablabla"),
+									 br(),
+									 fluidRow(style="padding:20px;background-color:#ffffff",
+										 fluidRow(style="padding:20px;background-color:#ffffff",
+											 column( 6, h3("Spazio per plot")),
+											 column(1),
+
+
+										 )
+										# fluidRow(style='padding:30px;overflow-x:scroll',addSpinner(plotlyOutput("terapiaIntStoricoTot"), spin = "fading-circle", color = "#cc0000"))
+									 ),br(),
+
+	                	fluidRow(style="padding:10px;background-color:#ffffff",
+											h3( "Titolo plot")
+											#addSpinner(plotlyOutput("terapiaIntPlotPercNow"), spin = "fading-circle", color = "#cc0000"),
+											#spiegaTerIntPercentuale
+										),br(),
+										fluidRow(style="padding:10px;background-color:#ffffff",
+											h3("Titolo plot")
+
+										),br(),
+
+							br()),br(),
+              fluidRow(
+                box(width=12,uiOutput("updateworld"),  fontiDati
+                )
+              )
+            )
+
 ######################################################
 #
 #   Main app
@@ -360,6 +394,9 @@ dashboardPage(title="CoVid-19 in Italia",
 			      sidebarMenu(id='prvCFG',
 			        menuItem2("Per Provincia", tabName = "prvPlots", icon = icon("far fa-chart-bar"))#("vials"))
 			      ),
+						# sidebarMenu(id='mondo',
+			      #   menuItem2("Nel mondo", tabName = "world", icon = icon("fas fa-globe-africa"))
+			      # ),
 			sidebarMenu(id='spiegazione',
 				menuItem2("Matematica della diffusione", tabName = "intro", icon = icon("fas fa-square-root-alt"))
 			),
@@ -393,6 +430,7 @@ dashboardPage(title="CoVid-19 in Italia",
 				tiTab,
         regTab,
         prvTab,
+			#	worldtab,
 		    introTab
 		    ,diariotab
 		    ,chisiamotab

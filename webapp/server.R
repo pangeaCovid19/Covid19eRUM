@@ -818,6 +818,7 @@ output$updatePrvUI <- renderUI({
   h3(paste("Dati aggiornati al giorno:", get_last_date()))
 })
 
+
 output$lineProvince <- renderPlotly({
 #  withProgress({
 
@@ -1714,7 +1715,7 @@ output$nuoviPositiviStoricoRegPercentuale<- renderPlotly({
 	#	res <- res[, deltaPerc2:=c(1,diff(totale_casi)) / shift(totale_casi, type="lag"), by=data]
 	#
 		if(all((selregione %in% regioniList))){
-			res$regione <- "Italia"
+			res$regione <- "Totale regioni selezionate"
 		} else res$regione <- paste(collapse="\n", selregione)
 
 		res <- res[!is.na(deltaPerc)]
@@ -1727,7 +1728,7 @@ output$nuoviPositiviStoricoRegPercentuale<- renderPlotly({
 				), stat="identity") +
 				geom_line(group=1, aes(y = log10(deltaPerc), x = data, color=regione), stat="identity") +
 			#	guides(fill=guide_legend(title="regione")) +
-				theme(axis.text.x=element_text(angle=45, hjust=1)) +
+				theme(axis.text.x=element_text(angle=45, hjust=1)) +scale_y_continuous(breaks=c(-0.3,0,0.7,1,1.7),labels=paste(c(0.5,1,5,10,50),"%"))+
 				#scale_y_log10()+
 				ylab("")
 				#if(tipoplot!="nazionale") p <- p + scale_fill_manual(values=color_regioni)
@@ -1816,7 +1817,7 @@ output$nuoviPositiviStoricoPrvPercentuale<- renderPlotly({
 	#	res <- res[, deltaPerc2:=c(1,diff(totale_casi)) / shift(totale_casi, type="lag"), by=data]
 	#
 		if(all((selprov %in% provinceList))){
-			res$provincia <- "Italia"
+			res$provincia <- "Totale province selezionate"
 		} else res$provincia <- paste(collapse="\n", selprov)
 		res <- res[!is.na(deltaPerc)]
 
@@ -1828,7 +1829,7 @@ output$nuoviPositiviStoricoPrvPercentuale<- renderPlotly({
 				), stat="identity") +
 				geom_line(group=1, aes(y = log10(deltaPerc), x = data, color=provincia), stat="identity") +
 			#	guides(fill=guide_legend(title="provincia")) +
-				theme(axis.text.x=element_text(angle=45, hjust=1)) +
+				theme(axis.text.x=element_text(angle=45, hjust=1)) +scale_y_continuous(breaks=c(-0.3,0,0.7,1,1.7),labels=paste(c(0.5,1,5,10,50),"%"))+
 				#scale_y_log10()+
 				ylab("")
 				#if(tipoplot!="nazionale") p <- p + scale_fill_manual(values=color_regioni)
@@ -2553,7 +2554,12 @@ output$video<-renderUI({
   })
 
   #
+#-------MONDO-------
 
+output$updateworld <- renderUI({
+	if(verbose) cat("\n renderUI:updateworld")
+  h3(paste("Dati aggiornati al giorno:", get_last_date()))
+})
 
 
 })
