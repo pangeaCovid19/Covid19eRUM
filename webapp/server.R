@@ -1718,7 +1718,7 @@ output$nuoviPositiviStoricoRegPercentuale<- renderPlotly({
 			res$regione <- "Totale regioni selezionate"
 		} else res$regione <- paste(collapse="\n", selregione)
 
-		res <- res[!is.na(deltaPerc)]
+		res <- res[!is.na(deltaPerc) & deltaPerc!=0]
 
 		p <- 	ggplot(res) + my_ggtheme() +
 				#geom_bar(aes(y = log(deltaPerc), x = data, fill=regione), stat="identity") +
@@ -1741,6 +1741,8 @@ output$nuoviPositiviStoricoRegPercentuale<- renderPlotly({
 		dati[, new := c(NA,diff(totale_casi)), regione]
 		dati[, deltaPerc:=new / tot*100, by=.(data,regione)]
 
+				dati <- dati[deltaPerc!=0,]
+
 		p <- 	ggplot(dati) + my_ggtheme() +
 				#geom_bar(aes(y = log(deltaPerc), x = data, fill=regione), stat="identity") +
 				geom_point(group=1, aes(y = log10 (deltaPerc), x = data, color=regione,
@@ -1753,6 +1755,7 @@ output$nuoviPositiviStoricoRegPercentuale<- renderPlotly({
 				guides(fill=guide_legend(title="regione")) +
 				scale_color_manual(values=color_regioni) +
 				theme(axis.text.x=element_text(angle=45, hjust=1)) +
+				scale_y_continuous(breaks=c(-1,-0.3,0,0.7,1,1.7, 2),labels=paste(c(0.1, 0.5,1,5,10,50, 100),"%"))+
 				#scale_y_log10()+
 				ylab("")
 				#if(tipoplot!="nazionale") p <- p + scale_fill_manual(values=color_regioni)
@@ -1819,7 +1822,7 @@ output$nuoviPositiviStoricoPrvPercentuale<- renderPlotly({
 		if(all((selprov %in% provinceList))){
 			res$provincia <- "Totale province selezionate"
 		} else res$provincia <- paste(collapse="\n", selprov)
-		res <- res[!is.na(deltaPerc)]
+		res <- res[!is.na(deltaPerc) & deltaPerc!=0]
 
 		p <- 	ggplot(res) + my_ggtheme() +
 				#geom_bar(aes(y = log(deltaPerc), x = data, fill=provincia), stat="identity") +
@@ -1842,6 +1845,8 @@ output$nuoviPositiviStoricoPrvPercentuale<- renderPlotly({
 		dati[, new := c(NA,diff(totale_casi)), provincia]
 		dati[, deltaPerc:=new / tot*100, by=.(data,provincia)]
 
+		dati <- dati[deltaPerc!=0,]
+
 		p <- 	ggplot(dati) + my_ggtheme() +
 				#geom_bar(aes(y = log(deltaPerc), x = data, fill=provincia), stat="identity") +
 				geom_point(group=1, aes(y = log10(deltaPerc), x = data, color=provincia,
@@ -1853,6 +1858,7 @@ output$nuoviPositiviStoricoPrvPercentuale<- renderPlotly({
 				guides(fill=guide_legend(title="provincia")) +
 				scale_color_manual(values=color_province) +
 				theme(axis.text.x=element_text(angle=45, hjust=1)) +
+				scale_y_continuous(breaks=c(-1,-0.3,0,0.7,1,1.7, 2),labels=paste(c(0.1, 0.5,1,5,10,50, 100),"%"))+
 				#scale_y_log10()+
 				ylab("")
 				#if(tipoplot!="nazionale") p <- p + scale_fill_manual(values=color_regioni)
