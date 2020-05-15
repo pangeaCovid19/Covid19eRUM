@@ -1714,7 +1714,7 @@ output$nuoviPositiviStoricoRegPercentuale<- renderPlotly({
 		res[, deltaPerc_rollDiff:=c(NA,diff(deltaPerc_roll))]
 	#	res <- res[, deltaPerc2:=c(1,diff(totale_casi)) / shift(totale_casi, type="lag"), by=data]
 	#
-		if(all((selregione %in% regioniList))){
+		if(all((regioniList %in% selregione))){
 			res$regione <- "Totale regioni selezionate"
 		} else res$regione <- paste(collapse="\n", selregione)
 
