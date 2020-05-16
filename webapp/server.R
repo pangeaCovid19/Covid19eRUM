@@ -260,6 +260,42 @@ output$puntiRegioni <- renderPlotly({
 
 })
 
+reactiveRegTabMonitor <- reactive({
+
+		if(verbose) cat("\n reactive:reactiveRegTab")
+	  #dati <- copy(reacval$dataTables_reg)
+	  ndays <- 7
+	  dati <- copy(allData_reg)
+		dataMax <- max(reacval$dateRange_reg)
+		if(is.null(dati)) return(NULL)
+		if(is.null(dataMax)) return(NULL)
+
+		setDT(dati)
+		setnames(dati, old=c('denominazione_regione'), new=c("regione"))
+		dati <- dati[between(data,dataMax-ndays-1,dataMax),]
+		dati[, tot := shift(totale_casi, type="lag"), regione ]
+		dati[, new := c(NA,diff(totale_casi)), regione]
+		dati[, deltaPerc:=round(new / tot*100,2), by=.(data,regione)]
+		dati[, perc_roll:=c(rep(NA,ndays-1), round(rollmean(deltaPerc, k=ndays),2)),]
+		dati[, tamponiPop:=round(casi_testati/pop*100,2),]
+		out <- dati[(data==dataMax), .(data, regione, new, totale_casi, deltaPerc, perc_roll, tamponi, casi_testati, tamponiPop)]
+		#out[, deltaPerc:=paste0(deltaPerc, "%")]
+		#out[, perc_roll:=paste0(perc_roll, "%")]
+		setnames(out, old=c('new', 'totale_casi', 'deltaPerc', 'perc_roll', 'tamponi', 'casi_testati', 'tamponiPop'),new=c('nuovi casi', 'totale casi', 'tasso crescita %', 'tasso crescita % (media sett)', 'tamponi totali', 'persone testate', 'persone testate %'))
+		out
+})
+
+output$tabRegioniMonitor <- renderDT({
+	if(verbose) cat("\n renderDT:tabRegioniMonitor")
+	tabreg <- reactiveRegTabMonitor()
+	if(is.null(tabreg)) return(NULL)
+
+	datatable(tabreg,extensions = c('Scroller'),
+		selection = list(target = NULL),
+		options= c(list(dom = 't',scroller=T,scrollX="300",scrollY="300",paging = T, searching = F, info=F, ordering=T, order=list(list(2, 'desc'))), DT_lang_opt),
+		rownames=F)
+
+})
 
 output$tabRegioni <- renderDT({
 	if(verbose) cat("\n renderDT:tabRegioni")
@@ -279,22 +315,6 @@ output$tabRegioni <- renderDT({
       rownames=F)
   }
 })
-
-#output$tabRegioniOLD <- renderDT({
-#	if(verbose) cat("\n renderDT:tabRegioni")
-# allDataReg <- copy(reacval$dataTables_reg_flt)
-#  if (!is.null(allDataReg)) {
-#    allDataReg <- allDataReg[allDataReg$data==max(allDataReg$data),]
-#    allDataReg$pop <- NULL
-#    allDataReg$data <- strftime(allDataReg$data, format="%d-%m-%Y")
-#    setnames(allDataReg, old=c('denominazione_regione', 'totale_casi'), new=c('regione', 'casi totali'))
-#    datatable(allDataReg,
-#      selection = list(target = NULL),
-#      options= c(list(paging = T, searching = F, info=F, ordering=T, order=list(list(2, 'desc'))), DT_lang_opt),
-#      rownames=F)
-#  }
-#})
-
 
 output$selRegioni <- renderUI({
 	if(verbose) cat("\n renderUI:selRegioni")
@@ -855,6 +875,46 @@ output$lineProvince <- renderPlotly({
   #},value=0,message="Caricamento ",detail="")
 
 })
+
+
+
+reactiveProvTabMonitor <- reactive({
+
+		if(verbose) cat("\n reactive:reactiveProvTabMonitor")
+	  #dati <- copy(reacval$dataTables_reg)
+	  ndays <- 7
+	  dati <- copy(allData_prv)
+		dataMax <- max(reacval$dateRange_prv)
+		if(is.null(dati)) return(NULL)
+		if(is.null(dataMax)) return(NULL)
+		setDT(dati)
+		setnames(dati, old=c('denominazione_provincia'), new=c("provincia"))
+		dati <- dati[between(data,dataMax-ndays-1,dataMax),]
+		dati[, tot := shift(totale_casi, type="lag"), provincia ]
+		dati[, new := c(NA,diff(totale_casi)), provincia]
+		dati[, deltaPerc:=round(new / tot*100,2), by=.(data,provincia)]
+		dati[, perc_roll:=c(rep(NA,ndays-1), round(rollmean(deltaPerc, k=ndays),2)),]
+		out <- dati[(data==dataMax), .(data, provincia, new, totale_casi, deltaPerc, perc_roll)]
+	#	out[, deltaPerc:=paste0(deltaPerc, "%")]
+	#	out[, perc_roll:=paste0(perc_roll, "%")]
+		setnames(out, old=c('new', 'totale_casi', 'deltaPerc', 'perc_roll'), new=c('nuovi casi', 'totale casi', 'tasso crescita %', 'tasso crescita % (media sett.)'))
+		out
+})
+
+
+output$tabProvinceMonitor <- renderDT({
+	if(verbose) cat("\n renderDT:tabProvinceMonitor")
+
+  tabprv <- reactiveProvTabMonitor()
+	if (is.null(tabprv)) return(NULL)
+
+	datatable(tabprv,extensions = c('Scroller'),
+		selection = list(target = NULL),
+		options= c(list(dom = 't',scroller=T,scrollX="300",scrollY="300",paging = T,paging = F, searching = F, info=F, ordering=T, order=list(list(2, 'desc'))), DT_lang_opt),
+		rownames=F)
+
+})
+
 
 
 output$tabProvince <- renderDT({
@@ -1681,9 +1741,6 @@ output$nuoviPositiviStoricoReg<- renderPlotly({
 
 })
 
-
-
-
 output$nuoviPositiviStoricoRegPercentuale<- renderPlotly({
 	if(verbose) cat("\n renderPlotly:nuoviPositiviStoricoRegPercentuale")
 	selregione <- input$regionSelSerieStorichexRegPer
@@ -1706,14 +1763,7 @@ output$nuoviPositiviStoricoRegPercentuale<- renderPlotly({
 		res[, tot := shift(totale_casi, type="lag")]
 		res[, new := c(NA,diff(totale_casi))]
 		res[, deltaPerc:=new / tot*100, by=data]
-		res[, deltaPercDiff:=c(NA,diff(deltaPerc))]
 
-		ndays <- 7
-		res[, deltaPerc_roll:=c(rep(NA,ndays-1), rollmean(deltaPerc, k=ndays)),]
-
-		res[, deltaPerc_rollDiff:=c(NA,diff(deltaPerc_roll))]
-	#	res <- res[, deltaPerc2:=c(1,diff(totale_casi)) / shift(totale_casi, type="lag"), by=data]
-	#
 		if(all((regioniList %in% selregione))){
 			res$regione <- "Totale regioni selezionate"
 		} else res$regione <- paste(collapse="\n", selregione)
@@ -1811,7 +1861,6 @@ output$nuoviPositiviStoricoPrvPercentuale<- renderPlotly({
 		res[, tot := shift(totale_casi, type="lag")]
 		res[, new := c(NA,diff(totale_casi))]
 		res[, deltaPerc:=new / tot*100, by=data]
-		res[, deltaPercDiff:=c(NA,diff(deltaPerc))]
 
 		ndays <- 7
 		res[, deltaPerc_roll:=c(rep(NA,ndays-1), rollmean(deltaPerc, k=ndays)),]

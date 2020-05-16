@@ -202,6 +202,9 @@ nel territorio, mentre la colonna &quot;casi su 10mila abit.&quot; riporta il nu
 10mila abitanti cos&igrave; da contestualizzare la diffusione rispetto alla popolazione presente
 nel territorio.</div>")
 
+
+spiegaTabellaMonitor <- HTML("<div style='padding-top:10px;'>In questa tabella mostriamo alcune grandezze utili per monitorare l'andamento della diffusione dell'epidemia nelle diverse località italiane. Il tasso di crescita, ovvero la percentuale dei nuovi casi sui casi totali del giorno precedente, viene mostrata anche come media degli ultimi 7 giorni. È evidente come ci sia una certa periodicità settimanale nel numero di tamponi analizzati e quindi dei nuovi casi riscontrati, nel week end vengono analizzati meno tamponi.</div>")
+
 spiegaLinePlot <- HTML("<div style='padding-top:10px;'>In questo grafico mostriamo l'andamento del numero di casi confermati
 di CoVid19. <br>Ciascuna area territoriale
 &egrave; indicata con un colore diverso. &Egrave; possibile ingrandire aree specifiche del grafico

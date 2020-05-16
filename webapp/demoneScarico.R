@@ -21,6 +21,7 @@ readData<-function(file, popolazione) {
 	tmp[grep("note",names(tmp))]<-NULL
 	paTrentino <- grep('bolz|trent', tmp$denominazione_regione, ignore.case=T)
 	tmp$denominazione_regione[paTrentino] <- "Trentino - Alto Adige"
+	tmp$codice_regione[paTrentino] <- 4
 	paEmilia <- grep('Emilia', tmp$denominazione_regione, ignore.case=T)
 	tmp$denominazione_regione[paEmilia] <- "Emilia Romagna"
 	if ("codice_provincia" %in% names(tmp)) {
