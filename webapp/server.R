@@ -275,13 +275,14 @@ reactiveRegTabMonitor <- reactive({
 		dati <- dati[between(data,dataMax-ndays-1,dataMax),]
 		dati[, tot := shift(totale_casi, type="lag"), regione ]
 		dati[, new := c(NA,diff(totale_casi)), regione]
+		dati[, new_roll:=c(rep(NA,ndays-1), round(rollsum(new, k=ndays),2)),]
 		dati[, deltaPerc:=round(new / tot*100,2), by=.(data,regione)]
 		dati[, perc_roll:=c(rep(NA,ndays-1), round(rollmean(deltaPerc, k=ndays),2)),]
 		dati[, tamponiPop:=round(casi_testati/pop*100,2),]
-		out <- dati[(data==dataMax), .(data, regione, new, totale_casi, deltaPerc, perc_roll, tamponi, casi_testati, tamponiPop)]
+		out <- dati[(data==dataMax), .(regione, new,new_roll,totale_casi, deltaPerc, perc_roll, tamponi, casi_testati, tamponiPop)]
 		#out[, deltaPerc:=paste0(deltaPerc, "%")]
 		#out[, perc_roll:=paste0(perc_roll, "%")]
-		setnames(out, old=c('new', 'totale_casi', 'deltaPerc', 'perc_roll', 'tamponi', 'casi_testati', 'tamponiPop'),new=c('nuovi casi', 'totale casi', 'tasso crescita %', 'tasso crescita % (media sett)', 'tamponi totali', 'persone testate', 'persone testate %'))
+		setnames(out, old=c('new', 'new_roll', 'totale_casi', 'deltaPerc', 'perc_roll', 'tamponi', 'casi_testati', 'tamponiPop'),new=c('nuovi casi', 'nuovi casi (settimana)','totale casi', 'tasso crescita %', 'tasso crescita % (media sett)', 'tamponi totali', 'persone testate', 'persone testate %'))
 		out
 })
 
@@ -892,12 +893,13 @@ reactiveProvTabMonitor <- reactive({
 		dati <- dati[between(data,dataMax-ndays-1,dataMax),]
 		dati[, tot := shift(totale_casi, type="lag"), provincia ]
 		dati[, new := c(NA,diff(totale_casi)), provincia]
+		dati[, new_roll:=c(rep(NA,ndays-1), round(rollsum(new, k=ndays),2)),]
 		dati[, deltaPerc:=round(new / tot*100,2), by=.(data,provincia)]
 		dati[, perc_roll:=c(rep(NA,ndays-1), round(rollmean(deltaPerc, k=ndays),2)),]
 		out <- dati[(data==dataMax), .(data, provincia, new, totale_casi, deltaPerc, perc_roll)]
 	#	out[, deltaPerc:=paste0(deltaPerc, "%")]
 	#	out[, perc_roll:=paste0(perc_roll, "%")]
-		setnames(out, old=c('new', 'totale_casi', 'deltaPerc', 'perc_roll'), new=c('nuovi casi', 'totale casi', 'tasso crescita %', 'tasso crescita % (media sett.)'))
+		setnames(out, old=c('new', 'new_roll','totale_casi', 'deltaPerc', 'perc_roll'), new=c('nuovi casi', 'nuovi casi (settimana)', 'totale casi', 'tasso crescita %', 'tasso crescita % (media sett.)'))
 		out
 })
 
