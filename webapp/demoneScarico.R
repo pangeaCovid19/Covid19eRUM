@@ -45,7 +45,9 @@ readData<-function(file, popolazione) {
 		aprLomNew <- 282
 		aprLomInd <- which(res$denominazione_regione=="Lombardia" & month(res$data)==4)
 		aprLomTot <- sum(res$deceduti[aprLomInd])
-		res$deceduti[aprLomInd] <- res$deceduti[aprLomInd]+round(seq(from=1,to=aprLomNew, length.out= length(aprLomInd)))
+		res$deceduti[aprLomInd] <- res$deceduti[aprLomInd] + round(seq(from=1,to=aprLomNew, length.out= length(aprLomInd)))
+		res$deceduti[res$denominazione_regione=="Lombardia" & res$data=="2020-05-01"] <- aprLomNew + res$deceduti[res$denominazione_regione=="Lombardia" & res$data=="2020-05-01"]
+
 		#res$deceduti[aprLomInd] <- round(res$deceduti[aprLomInd]*(1+aprLomNew/aprLomTot))
 		#res$deceduti[res$denominazione_regione=="Lombardia" & res$data=="2020-05-02"] <- res$deceduti[res$denominazione_regione=="Lombardia" & res$data=="2020-05-02"]
 		aprLazNew <- 33
