@@ -32,12 +32,8 @@ shinyServer(function(input, output, session) {
             mobile=F
 					)
 
-
-
 observe({
-
 		if (!is.null(input$GetNavUserAgent)){
-
 			if (grepl("mobile",tolower(input$GetNavUserAgent)) || grepl("android",tolower(input$GetNavUserAgent)))
 			reacval$mobile<-T
 		}
@@ -84,14 +80,6 @@ observe({
 			reacval$dateRange_reg <- max(regData$data)
 
 			tsReg <- getTimeSeries(regData)
-#			modelliIta <- list()
-#			for(i in  1:length(campiPrevisioni)){
-#				modelliIta<-loglinmodel2(tsReg$Italia, var="totale_casi", rangepesi=c(0,1))
-#			}
-#			names(modelliIta) <- campiPrevisioni
-#			modelliReg <-lapply( tsReg[which(names(tsReg)!='Italia')], loglinmodel2)
-
-#################
 
 			modelliIta <- list()
 			modelliItaExp <- list()
@@ -106,7 +94,7 @@ observe({
 
 			modelliReg <-lapply( tsReg[which(names(tsReg)!='Italia')], loglinmodel3, quadratico=TRUE)
 			modelliRegExp <-lapply( tsReg[which(names(tsReg)!='Italia')], loglinmodel3, quadratico=FALSE)
-#################
+
 			reacval$modelliIta 	<- modelliIta
 			reacval$modelliReg 	<- modelliReg
 			reacval$modelliItaExp 	<- modelliItaExp
@@ -158,7 +146,7 @@ output$lineRegioni <- renderPlotly({
 
 
   if (!is.null(allDataReg)) {
-#		allDataReg <- copy(res)
+
     setnames(allDataReg, old=c('denominazione_regione',var2plot), new=c('regione', 'VAR2PLOT'))
     p <- ggplot(allDataReg) + my_ggtheme() +
           suppressWarnings(geom_line(group=1, # group=1 serve per aggirare un bug di ggplotly con tooltip = c("text")
@@ -200,12 +188,11 @@ output$confrontoGiornoUI <- renderUI({
 output$puntiRegioni <- renderPlotly({
 	if(verbose) cat("\n renderPlotly:lineRegioni")
   allDataReg <- copy(reacval$dataTables_reg)
-	xVar <- input$confrontox #input$variabileLineRegioni
-	yVar <- input$confrontoy #input$variabileLineRegioni
+	xVar <- input$confrontox
+	yVar <- input$confrontoy
 	assiGraph <- input$confrontoTipoGratico
 	giorno <- input$confrontoGiorno
 
-	#	allDataReg <- copy(allData_reg)
 
 	if(is.null(xVar)) return(NULL)
 	if(is.null(yVar)) return(NULL)
@@ -213,24 +200,18 @@ output$puntiRegioni <- renderPlotly({
 	if (is.null(assiGraph)) assiGraph <- "Lineari"
 	if (is.null(giorno)) return(NULL)
 
-#	validate((need("Selezionari assi co, nomi diversi")))
-
 	xVarNew <- gsub("_", " ", xVar)
 	yVarNew <- gsub("_", " ", yVar)
-
 
 	if(xVar == yVar) {
 		setnames(allDataReg, old=c('denominazione_regione',xVar), new=c('regione','XVAR'))
 		allDataReg$YVAR <- allDataReg$XVAR
 	} else setnames(allDataReg, old=c('denominazione_regione',xVar, yVar), new=c('regione','XVAR', 'YVAR'))
 
-	#setnames(allDataReg, old=c('denominazione_regione',xVar, yVar), new=c('regione','XVAR', 'YVAR'))
-
 	tmp <- allDataReg[which(allDataReg$data==giorno),]
 
 	dfplot <- data.frame( XVAR= pmax(log10(tmp$XVAR), 0), YVAR=pmax(0, log10(tmp$YVAR)), regione=tmp[,'regione' ])
 	dfplot <- data.frame( XVAR= pmax((tmp$XVAR), 0), YVAR=pmax(0, (tmp$YVAR)), regione=tmp[,'regione' ])
-	#dfplot[as.data.frame(lapply(dfplot, is.infinite))] <- 0
 
 	p <- ggplot(dfplot) + my_ggtheme() +
 		suppressWarnings(
@@ -263,7 +244,6 @@ output$puntiRegioni <- renderPlotly({
 reactiveRegTabMonitor <- reactive({
 
 		if(verbose) cat("\n reactive:reactiveRegTab")
-	  #dati <- copy(reacval$dataTables_reg)
 	  ndays <- 7
 	  dati <- copy(allData_reg)
 		dataMax <- max(reacval$dateRange_reg)
@@ -280,8 +260,6 @@ reactiveRegTabMonitor <- reactive({
 		dati[, perc_roll:=c(rep(NA,ndays-1), round(rollmean(deltaPerc, k=ndays),2)),]
 		dati[, tamponiPop:=round(casi_testati/pop*100,2),]
 		out <- dati[(data==dataMax), .(regione, new,new_roll,totale_casi, deltaPerc, perc_roll, tamponi, casi_testati, tamponiPop)]
-		#out[, deltaPerc:=paste0(deltaPerc, "%")]
-		#out[, perc_roll:=paste0(perc_roll, "%")]
 		setnames(out, old=c('new', 'new_roll', 'totale_casi', 'deltaPerc', 'perc_roll', 'tamponi', 'casi_testati', 'tamponiPop'),new=c('nuovi casi', 'nuovi casi (settimana)','totale casi', 'tasso crescita %', 'tasso crescita % (media sett)', 'tamponi totali', 'persone testate', 'persone testate %'))
 		out
 })
@@ -348,7 +326,6 @@ observe({
     allDataReg <- allDataReg[allDataReg$data==myGiorno,]
     allDataReg$totale_casi[allDataReg$totale_casi==0] <- NA_integer_
     pltRegioni <- merge(regioni, allDataReg[,c("codice_regione", "totale_casi")], by.x="COD_REG", by.y="codice_regione")
-    #pal <- colorNumeric("YlOrRd", domain = log10(pltRegioni$totale_casi))
 		pal <- palRegioni()
     leafletProxy(mapId="mapRegioni", data=pltRegioni) %>% clearShapes() %>%
         addPolygons(fillColor = ~pal(log10(totale_casi)), weight = 1, stroke = TRUE, color="lightgrey", fillOpacity = .7,
@@ -370,8 +347,6 @@ output$mapRegioni <- renderLeaflet({
   if (!is.null(allDataReg)) {
     allDataReg <- allDataReg[allDataReg$data==max(allDataReg$data),]
     pltRegioni <- merge(regioni, allDataReg[,c("codice_regione", "totale_casi")], by.x="COD_REG", by.y="codice_regione")
-		#pltRegioni$prova <- 10^log10(pltRegioni$totale_casi)
-    #pal <- colorNumeric("YlOrRd", domain = log10(pltRegioni$totale_casi))
 		pal <- palRegioni()
 
 		if(animazione){
@@ -420,30 +395,6 @@ output$mapRegioniGG <- renderPlot({
 })
 
 
-# output$selLagRegione1 <- renderUI ({
-# 	if (verbose) cat("\nrenderUI-selLagRegione1")
-# 	myDate <- isolate(reacval$dateRange_reg)
-# 	regione1 	<- input$serieStoricheRegion1
-# 	if(is.null(regione1))return(NULL)
-# 	if(is.null(myDate))return(NULL)
-# 	dg <- ceiling(as.numeric(myDate[2]-myDate[1])/2)
-# 	sliderInput("lagRegione1", paste0("Lag ",regione1), min = -dg , max = dg, value = 0)
-# })
-#
-#
-# output$selLagRegione2 <- renderUI ({
-# 	if (verbose) cat("\nrenderUI-selLagRegione2")
-# 	regione2 	<- input$serieStoricheRegion2
-# 	myDate <- isolate(reacval$dateRange_reg)
-# 	if(is.null(regione2))return(NULL)
-# 	if(is.null(myDate))return(NULL)
-# 	dg <- ceiling(as.numeric(myDate[2]-myDate[1])/2)
-# 	sliderInput("lagRegione2", paste0("Lag ",regione2), min = -dg , max = dg, value = 0)
-# 	noUiSliderInput( "lagRegione2", paste0("Lag ",regione2), min = -dg , max = dg, value = 0, step=1, orientation="vertical", height=100)
-#
-# })
-
-#######################################################################
 
 output$selLagProvince <- renderUI ({
 	if (verbose) cat("\nrenderUI-selLagProvince")
@@ -453,8 +404,7 @@ output$selLagProvince <- renderUI ({
 	if(is.null(myDate))return(NULL)
 	dg <- ceiling(as.numeric(myDate[2]-myDate[1])/2)
 
-	 #sliderInput("lagRegione2", paste0("Lag ",regione2), min = -dg , max = dg, value = 0)
-	 res <- lapply(province, function(x) {
+	res <- lapply(province, function(x) {
  	 initval<-0
 
 	 #perché non prendo direttamente l'input?
@@ -464,8 +414,7 @@ output$selLagProvince <- renderUI ({
  		 initval<-isolate(input[[paste0("selLag_",x)]])
  	 } else if(verbose)
    { cat("\n\t OUT if",paste0("selLag_",x), "->", initval)}
- 	 #sliderInput(paste0("iOraUtilizzoBuffer_",x), label = paste("Orario Utilizzo Buffer",x), min = minOra, max = maxOra,	value = valori2)
-   #sliderInput(paste0("selLag_",x), paste0("Lag ",x), min = -dg , max = dg, value = initval, step=1)
+
    if(reacval$mobile){
      noUiSliderInput( paste0("selLag_",x), x, min = -dg , max = dg, value = initval, step=1, orientation="horizontal",inline=T,width='140px', color=color_province[x],
      format=wNumbFormat(decimals = 0,prefix = 'giorno '))
@@ -473,14 +422,8 @@ output$selLagProvince <- renderUI ({
      noUiSliderInput( paste0("selLag_",x), x, min = -dg , max = dg, value = initval, step=1, orientation="vertical",height='120px',inline=T,width='140px', color=color_province[x],
      format=wNumbFormat(decimals = 0,prefix = 'giorno '))
    }
-
 	})
-
 })
-
-
-#
-#
 
 output$lineProvinceConfronto <- renderPlotly({
 	if(verbose) cat("\n renderPlotly:lineProvinceConfronto")
@@ -505,7 +448,7 @@ output$lineProvinceConfronto <- renderPlotly({
 	names(lagProvince) <- selprov
 
 	var2plot <- "totale_casi"
-	if(is.null(var2plot)) var2plot <- "totale_casi"#return(NULL)
+	if(is.null(var2plot)) var2plot <- "totale_casi"
 	if (is.null(allDataPrv)) return(NULL)
 
 	var2plotNew <- gsub("_", " ", var2plot)
@@ -542,16 +485,11 @@ output$lineProvinceConfronto <- renderPlotly({
     plot<-plot%>%layout(legend=list(orientation='h',x=-0,y=-0.3))%>%
           layout(legend=list(font=list(size=12)),dragmode=F,autosize = T,heigth=3000,width = 600)
   }
-  # else{
-  #   plot<-plot%>%layout(legend=list(orientation='h',x=-0,y=-0.3))
-  # }
   plot
 
 })
 #######################################################################
 
-#reacCompare$listaRegioniCompare
-#reacCompare$listRegioni
 output$selLagRegioni <- renderUI ({
 	if (verbose) cat("\nrenderUI-selLagRegioni")
 	regioni <- input$regionSelSerieStoriche
@@ -560,9 +498,7 @@ output$selLagRegioni <- renderUI ({
 	if(is.null(myDate))return(NULL)
 	dg <- ceiling(as.numeric(myDate[2]-myDate[1])/2)
 
-
-	 #sliderInput("lagRegione2", paste0("Lag ",regione2), min = -dg , max = dg, value = 0)
-	 res <- lapply(regioni, function(x) {
+	res <- lapply(regioni, function(x) {
  	 initval<-0
 
 	 #perché non prendo direttamente l'input?
@@ -587,15 +523,10 @@ output$selLagRegioni <- renderUI ({
 })
 
 
-#
-#
 
 output$lineRegioniConfronto <- renderPlotly({
 	if(verbose) cat("\n renderPlotly:lineRegioniConfronto")
   allDataReg <- copy(reacval$dataTables_reg)
-
-
-
 	regioni <- input$regionSelSerieStoriche
 
 	if(verbose) cat("\t -> regioni:", regioni)
@@ -623,10 +554,6 @@ output$lineRegioniConfronto <- renderPlotly({
 	var2plotNew <- gsub("_", " ", var2plot)
 
   setnames(allDataReg, old=c('denominazione_regione',var2plot), new=c('regione', 'VAR2PLOT'))
-
-#		assign("regioni", regioni, envir=.GlobalEnv)
-#			assign("lagRegioni", lagRegioni, envir=.GlobalEnv)
-#				assign("allDataReg1", allDataReg, envir=.GlobalEnv)
 
 	dataReg <- allDataReg[allDataReg$regione %in% regioni]
 	setDT(dataReg)
@@ -658,14 +585,9 @@ output$lineRegioniConfronto <- renderPlotly({
     plot<-plot%>%layout(legend=list(orientation='h',x=-0,y=-0.3))%>%
           layout(legend=list(font=list(size=12)),dragmode=F,autosize = T,heigth=3000,width = 600)
   }
-  # else{
-  #   plot<-plot%>%layout(legend=list(orientation='h',x=-0,y=-0.3))
-  # }
   plot
-
 })
 
-#-----------------------------------------------------
 output$inputRegioniCasiVsNuovicasi <- renderUI ({
 	if(verbose) cat("\n renderUI:inputRegioniCasiVsNuovicasi")
 	dataRange <- reacval$dateRange_reg
@@ -689,23 +611,19 @@ output$inputRegioniCasiVsNuovicasi <- renderUI ({
 output$lineRegioniCasiVsNuovicasi <- renderPlotly({
 	if(verbose) cat("\n renderPlotly:lineRegioniCasiVsNuovicasi")
   allDataReg 		<- copy(reacval$dataTables_reg)
-#	allDataReg <- copy(res)
 	regioni2plot 	<- input$selezionaRegioniCasiVsNuoviCasi
 	dataMax 			<- input$dataRegioniCasiVsNuoviCasi
 	var2plot 			<- input$variabileRegioniCasiVsNuoviCasi
 
-	cat("0")
 	if(is.null(var2plot)) return(NULL)
 	var2plotNew <- gsub("_", " ", var2plot)
 	ndays <- 7
 
-	cat("1")
 	if (is.null(allDataReg)) return(NULL)
 	if (is.null(var2plot)) return(NULL)
 	if (is.null(dataMax)) dataMax <- max(allDataReg)
 	if (is.null(regioni2plot)) return(NULL)
 
-		cat("2")
 	setDT(allDataReg)
 	allDataReg <- allDataReg[ denominazione_regione %in% regioni2plot, ]
 	setorder(allDataReg, denominazione_regione, data)
@@ -743,11 +661,9 @@ output$lineRegioniCasiVsNuovicasi <- renderPlotly({
 				plot
 
 })
-#-----------------------------------------------------
 
 
 ## PROVINCE
-## #-----------------------------------------------------
 output$inputProvinceCasiVsNuovicasi <- renderUI ({
 	if(verbose) cat("\n renderUI:inputProvinceCasiVsNuovicasi")
 	if(!exists('provinceList')) provinceList <- sort(unique(allData_prv$denominazione_provincia))
@@ -760,9 +676,6 @@ output$inputProvinceCasiVsNuovicasi <- renderUI ({
 		column(width=4,
 			pickerInput(inputId = "selezionaProvinceCasiVsNuoviCasi", label = "Seleziona province", choices = provinceList, selected=province2fit, options = pickerOptions(size=10,actionsBox = TRUE,maxOptionsText=HTML('') ,selectedTextFormat = "count >20", deselectAllText='Deseleziona tutto',selectAllText='Seleziona tutto'), multiple = TRUE)
 		),
-#		column(width=3, non ci sono i deceduti
-#			selectizeInput("variabileProvinceCasiVsNuoviCasi", label="Variabile da analizzare"	, choices=c("totale_casi", "deceduti"), selected = "totale_casi", multiple=FALSE)
-#		),
 		column(width=4,
 			sliderInput("dataProvinceCasiVsNuoviCasi", "Giorno:",
 			min = min(dataRange) +ndays+ 1, max = max(dataRange),
@@ -841,8 +754,6 @@ output$updatePrvUI <- renderUI({
 
 
 output$lineProvince <- renderPlotly({
-#  withProgress({
-
 
 	if(verbose) cat("\n renderPlotly:lineProvince")
   myReg <- input$regionSel
@@ -873,7 +784,6 @@ output$lineProvince <- renderPlotly({
 
     plot
   }
-  #},value=0,message="Caricamento ",detail="")
 
 })
 
@@ -882,7 +792,6 @@ output$lineProvince <- renderPlotly({
 reactiveProvTabMonitor <- reactive({
 
 		if(verbose) cat("\n reactive:reactiveProvTabMonitor")
-	  #dati <- copy(reacval$dataTables_reg)
 	  ndays <- 7
 	  dati <- copy(allData_prv)
 		dataMax <- max(reacval$dateRange_prv)
@@ -896,9 +805,7 @@ reactiveProvTabMonitor <- reactive({
 		dati[, new_roll:=c(rep(NA,ndays-1), round(rollsum(new, k=ndays),2)),]
 		dati[, deltaPerc:=round(new / tot*100,2), by=.(data,provincia)]
 		dati[, perc_roll:=c(rep(NA,ndays-1), round(rollmean(deltaPerc, k=ndays),2)),]
-		out <- dati[(data==dataMax), .(data, provincia, new, totale_casi, deltaPerc, perc_roll)]
-	#	out[, deltaPerc:=paste0(deltaPerc, "%")]
-	#	out[, perc_roll:=paste0(perc_roll, "%")]
+		out <- dati[(data==dataMax), .(data, provincia, new, new_roll, totale_casi, deltaPerc, perc_roll)]
 		setnames(out, old=c('new', 'new_roll','totale_casi', 'deltaPerc', 'perc_roll'), new=c('nuovi casi', 'nuovi casi (settimana)', 'totale casi', 'tasso crescita %', 'tasso crescita % (media sett.)'))
 		out
 })
@@ -1178,13 +1085,6 @@ output$fitRegion <- renderPlotly({
     if(reacval$mobile){
         plot<-plot%>%layout(dragmode=F,legend=list(orientation='h',x=0,y=-0.4))
     }
-  #   else{
-  #     plot<-plot%>%
-  # add_annotations( text="<b>Regioni </b>", xref="paper", yref="paper",
-  #                 x=1.02, xanchor="left",
-  #                 y=0.8, yanchor="bottom",    # Same y as legend below
-  #                 legendtitle=TRUE, showarrow=FALSE )%>%layout( legend=list(y=0.8, yanchor="top" ) )
-  #   }
     plot
   }
 })
@@ -1326,7 +1226,6 @@ prevItaLongTerm <- reactive({
     setnames(prevDT, old=c("outName"), new=c("variabilePrevista"))
 
     setDF(prevDT)
-		#prevDT[prevDT$variabilePrevista == "totale_casi",]
   }
 })
 
@@ -1431,10 +1330,6 @@ output$percDeltaTot <- renderPlotly({
   subdf<-df[which(df$variabilePrevista==varInput),]
 
   subdf$deltaPerc<-c(NA,diff(subdf$totale_casi))/c(NA,subdf$totale_casi[1:(nrow(subdf)-1)])*100
-
-  # subdf$UpperRangePerc<-(c(NA,subdf$UpperRange[2:nrow(subdf)])-subdf$totale_casi)/c(NA,subdf$totale_casi[1:(nrow(subdf)-1)])*100
-  #
-  # subdf$LowerRangePerc<- -(c(NA,subdf$LowerRange[2:nrow(subdf)])-subdf$totale_casi)/c(NA,subdf$totale_casi[1:(nrow(subdf)-1)])*100
 
   subdf$UpperRangePerc<-c(NA,diff(subdf$UpperRange))/c(NA,subdf$totale_casi[1:(nrow(subdf)-1)])*100
 
@@ -1594,70 +1489,6 @@ output$plotAsintoto <- renderPlotly({
 
 })
 
-
-# output$percDeltaTot <- renderPlotly({
-#   if(verbose) cat("\n renderPlotly:percDeltaTot")
-#   prevItaDT <- copy(prevItaLongTerm())
-#   tsIta <- copy(getTimeSeriesReact()[["Italia"]])
-#   df<-creaDFossEprev()
-#     tsIta$deltaPerc<-c(NA,diff(tsIta$totale_casi))/c(NA,tsIta$totale_casi[1:(nrow(tsIta)-1)])*100
-#     assign("tsItaprova",tsIta, envir=.GlobalEnv)
-#
-#     prevItaDT <-copy(prevIta())
-#     setnames(prevItaDT, old=c('Attesi'), new=c('totale_casi'))
-#     prevItaDT$deltaPerc<-c(NA,diff(prevItaDT$totale_casi))/c(NA,prevItaDT$totale_casi[1:(nrow(prevItaDT)-1)])*100
-#
-#     prevItaDT$UpperRangePerc<-c(NA,diff(prevItaDT$UpperRange))/c(NA,prevItaDT$totale_casi[1:(nrow(prevItaDT)-1)])*100
-#
-#     prevItaDT$LowerRangePerc<-c(NA,diff(prevItaDT$LowerRange))/c(NA,prevItaDT$totale_casi[1:(nrow(prevItaDT)-1)])*100
-#
-#     assign("prevItaDTprova",prevItaDT, envir=.GlobalEnv)
-#
-#   datamax<-max(tsIta$data)
-#   tmp<-rbind(tsIta[,c("data","totale_casi","deltaPerc")],prevItaDT[which(prevItaDT$variabilePrevista=="totale_casi" & prevItaDT$data>datamax),c("data","totale_casi","deltaPerc")])
-#
-#   tmp$tipo<-NA
-#   tmp$tipo[which(tmp$data<=datamax)]<-'osservata'
-#   tmp$tipo[which(tmp$data>datamax)]<-'predetta'
-#   assign("tmpprova",tmp, envir=.GlobalEnv)
-#
-#   p <- ggplot() + my_ggtheme() +
-#           suppressWarnings(geom_bar(data=tmp, aes(x=data, y=deltaPerc,
-#           fill=tipo,
-#           text = paste('Data:', strftime(data, format="%d-%m-%Y"),
-#           '<br>Variazione: ', paste(round(deltaPerc,1),'%'))), stat="identity", width = 0.8))+
-#    				# suppressWarnings(geom_bar(data=tsIta, aes(x=data, y=deltaPerc, #fill=tipo,
-#           # text = paste('Data:', strftime(data, format="%d-%m-%Y"),
-#           # '<br>Variazione: ', paste(round(deltaPerc,2),'%'))), stat="identity", width = 0.8, fill="steelblue"))+
-#           # suppressWarnings(geom_bar(data=prevItaDT[which(prevItaDT$data>datamax & prevItaDT$variabilePrevista=="totale_casi"),], aes(x=data, y=deltaPerc, #fill=tipo,
-#           # text = paste('Data:', strftime(data, format="%d-%m-%Y"),
-#           # '<br>Variazione prevista: ', paste0(round(deltaPerc,2),'%'))), stat="identity", width = 0.8, fill="orange"))+
-#           geom_crossbar(data=prevItaDT[which(prevItaDT$data>datamax & prevItaDT$variabilePrevista=="totale_casi"),],
-#             aes(x=data,
-#               y=deltaPerc,
-#               ymin=LowerRangePerc, ymax=UpperRangePerc,
-#             text = paste('Data:', strftime(data, format="%d-%m-%Y"),
-#           #'<br>Variabile: ', variabilePrevista,
-#           '<br>Variazione prevista: ', paste0(round(deltaPerc,1),'%'),
-#           '<br>Intervallo previsione:', paste0('[', round(LowerRangePerc,1), '%, ', round(UpperRangePerc,1),'%]')
-#         )),width=0.7,
-#             colour="orange",
-#             #alpha=0.6, size=1,
-#             position=position_dodge(.9)
-#           )+
-#           scale_fill_manual(values=d3hexcols)+
-#           scale_x_date(date_breaks="2 day",date_labels="%b %d")+
-#           theme(axis.text.x=element_text(angle=45,hjust=1),legend.title = element_blank())+
-#           labs(x="", y="Variazione %")
-#
-#   plot<-ggplotly(p, tooltip = c("text")) %>% config(locale = 'it')
-#   #     if(reacval$mobile){
-#   #       plot<-plot%>%layout(legend=list(orientation='h',x=0,y=-0.2))
-#   #     }
-#        plot
-#   # }
-# })
-
 output$terapiaIntStoricoTot<- renderPlotly({
 	if(verbose) cat("\n renderPlotly:terapiaIntStoricoTot")
 	selregione <- input$regionSelSerieStoricheTI
@@ -1779,11 +1610,8 @@ output$nuoviPositiviStoricoRegPercentuale<- renderPlotly({
 					'<br>Percentuale: ', paste0(round(deltaPerc,2), "%"))
 				), stat="identity") +
 				geom_line(group=1, aes(y = log10(deltaPerc), x = data, color=regione), stat="identity") +
-			#	guides(fill=guide_legend(title="regione")) +
 				theme(axis.text.x=element_text(angle=45, hjust=1)) +scale_y_continuous(breaks=c(-0.3,0,0.7,1,1.7),labels=paste(c(0.5,1,5,10,50),"%"))+
-				#scale_y_log10()+
 				ylab("")
-				#if(tipoplot!="nazionale") p <- p + scale_fill_manual(values=color_regioni)
 		p
 	} else{
 
@@ -1808,9 +1636,7 @@ output$nuoviPositiviStoricoRegPercentuale<- renderPlotly({
 				scale_color_manual(values=color_regioni) +
 				theme(axis.text.x=element_text(angle=45, hjust=1)) +
 				scale_y_continuous(breaks=c(-1,-0.3,0,0.7,1,1.7, 2),labels=paste(c(0.1, 0.5,1,5,10,50, 100),"%"))+
-				#scale_y_log10()+
 				ylab("")
-				#if(tipoplot!="nazionale") p <- p + scale_fill_manual(values=color_regioni)
 		p
 
 	}
@@ -1882,11 +1708,8 @@ output$nuoviPositiviStoricoPrvPercentuale<- renderPlotly({
 					'<br>Percentuale: ', paste0(round(deltaPerc,2), "%"))
 				), stat="identity") +
 				geom_line(group=1, aes(y = log10(deltaPerc), x = data, color=provincia), stat="identity") +
-			#	guides(fill=guide_legend(title="provincia")) +
 				theme(axis.text.x=element_text(angle=45, hjust=1)) +scale_y_continuous(breaks=c(-0.3,0,0.7,1,1.7),labels=paste(c(0.5,1,5,10,50),"%"))+
-				#scale_y_log10()+
 				ylab("")
-				#if(tipoplot!="nazionale") p <- p + scale_fill_manual(values=color_regioni)
 		p
 	} else{
 
@@ -1899,7 +1722,6 @@ output$nuoviPositiviStoricoPrvPercentuale<- renderPlotly({
 		dati <- dati[deltaPerc!=0,]
 
 		p <- 	ggplot(dati) + my_ggtheme() +
-				#geom_bar(aes(y = log(deltaPerc), x = data, fill=provincia), stat="identity") +
 				geom_point(group=1, aes(y = log10(deltaPerc), x = data, color=provincia,
 				text = paste('data:', data,
 					'<br>Percentuale: ', paste0(round(deltaPerc,2), "%"),
@@ -1910,9 +1732,7 @@ output$nuoviPositiviStoricoPrvPercentuale<- renderPlotly({
 				scale_color_manual(values=color_province) +
 				theme(axis.text.x=element_text(angle=45, hjust=1)) +
 				scale_y_continuous(breaks=c(-1,-0.3,0,0.7,1,1.7, 2),labels=paste(c(0.1, 0.5,1,5,10,50, 100),"%"))+
-				#scale_y_log10()+
 				ylab("")
-				#if(tipoplot!="nazionale") p <- p + scale_fill_manual(values=color_regioni)
 		p
 
 	}
@@ -1924,8 +1744,6 @@ output$nuoviPositiviStoricoPrvPercentuale<- renderPlotly({
               layout(legend=list(font=list(size=12)),dragmode=F,autosize = T,heigth=3000,width = 600)
       }
       plot
-
-
 })
 
 
@@ -1945,10 +1763,8 @@ output$uiProvSelSerieStoricheProv <- renderUI({
 
 output$nuoviPositiviStoricoProv<- renderPlotly({
 	if(verbose) cat("\n renderPlotly:nuoviPositiviStoricoProv")
-#	selregione <- input$regionSelSerieStorichexProv
 	selprov <- input$provSelSerieStoricheProv
 	tipoplot <- input$tipoPlotSerieStorichePrev
-#	if(is.null(selregione)) return(NULL)
 	if(is.null(tipoplot)) return(NULL)
 	if(is.null(selprov)) return(NULL)
 
@@ -1957,7 +1773,6 @@ output$nuoviPositiviStoricoProv<- renderPlotly({
 	setDT(dati)
 	setnames(dati, old=c('denominazione_regione', 'denominazione_provincia'), new=c("regione", "provincia"))
 
-#	dati <-dati[regione %in% selregione]
 	dati <-dati[provincia %in% selprov]
 
 	setorder(dati, provincia, data)
@@ -1984,8 +1799,6 @@ output$nuoviPositiviStoricoProv<- renderPlotly({
               layout(legend=list(font=list(size=12)),dragmode=F,autosize = T,heigth=3000,width = 600)
       }
       plot
-
-
 })
 
 terapiaInt <- reactive({
@@ -2042,9 +1855,6 @@ output$terapiaIntPlotNow<- renderPlotly({
 
   }
   plot
-  # if(reacval$mobile){
-  #   p<- p+coord_flip()
-  # }
 
 })
 
@@ -2354,13 +2164,6 @@ output$tab_desktop<-renderUI({
             pickerInput(inputId = "varSel", label = "Seleziona variabile", choices = c("deceduti","totale contagiati"),selected="totale contagiati",options = list(size=10,`actions-box` = TRUE, `selected-text-format` = "count >20"), multiple = FALSE))),
         fluidRow(style="padding:10px;background-color:#ffffff",addSpinner(plotlyOutput(outputId="percDeltaTot"), spin = "fading-circle", color = "#009933"),spiegaVariazionePercentuale),
       br(),br(),
-  #    br(),br(),
-  #    fluidRow(style="background-color:#ffffff",
-  #      column(10,offset=1,align="center", h3("Previsione del numero di casi a medio termine con modello esponenziale quadratico")),
-  #      fluidRow(style="padding-left:50px;",
-  #        pickerInput(inputId = "varSel2", label = "Seleziona variabile", choices = c("deceduti","totale contagiati"),selected="totale contagiati",options = list(size=10,`actions-box` = TRUE, `selected-text-format` = "count >20"), multiple = FALSE))),
-   #     fluidRow(style="padding:10px;background-color:#ffffff",addSpinner(plotlyOutput(outputId="fitCasesIta"), spin = "fading-circle", color = "#009933"), spiegaFitMedioTermine)
-   #   ,br(),
 		 fluidRow(style="padding:30px;background-color:#ffffff",
 			 h3("Andamento dei valori asintotici (massimi raggiunti) ipotizzando un evoluzione di tipo Gompertz"),
 				 addSpinner(DTOutput("tabAsintoto"), spin = "fading-circle", color = "#009933"),

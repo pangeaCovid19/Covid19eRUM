@@ -5,17 +5,11 @@ includeCSS("style.css")
 url_tweet <- "https://twitter.com/intent/tweet?text=CoVid19&url=https://www.pangeadds.eu/demos/CoVid19/"
 url_link <- "https://www.linkedin.com/shareArticle?mini=true&url=https://www.pangeadds.eu/demos/CoVid19/"
 url_fb<-"https://www.facebook.com/sharer/sharer.php?u=#url=https://www.pangeadds.eu/demos/CoVid19/"
-#HTML(readChar("../docs/intro.html",file.info("../docs/intro.html")$size))
-# dashboardBody(
-# 		tags$style(".fa-users color: #ff00ff ; }"
-# 	)
 chisiamotab<-tabItem(tabName="chisiamo",
 
 				uiOutput("spaces_mobile_chisiamo"),
 
 							fluidRow(style="padding:30px;border-style: solid;border-color: rgb(37,117,173);",
-										#	h1("Quanto veloce si diffonde il Coronavirus in Italia "),
-
 											fluidRow(style="padding:30px;background-color:#ffffff;",
 											HTML(readChar("../docs/chisiamo.html",file.info("../docs/chisiamo.html")$size)),
 											fluidRow(style='padding:30',align='center',br(),br(),
@@ -37,24 +31,16 @@ diariotab<-tabItem(tabName="diario",
 											fluidRow(style="padding:30px;background-color:#ffffff;",
 											h2("Report"),br(),
 											h4("Clicca sui link per i report aggiornati:"),
-											#a(uiOutput("data_report"),href="tabReport.html",target="_blank",rel="noopener noreferrer"),
 											uiOutput('storico_report')
 										  )
-											# ,br(),
-											# fluidRow(style="padding:20px;background-color:#ffffff",
-											# 	column(width=12, h3("Tabella letalità per fascia di età"),DTOutput(outputId="letality"), spiegaTabella
-											# )
 							)
 						)
-
 
 introTab<-tabItem(tabName="intro",
 
 				uiOutput("spaces_mobile_intro"),
 
 							fluidRow(style="padding:30px;border-style: solid;border-color:#85ede1;",
-										#	h1("Quanto veloce si diffonde il Coronavirus in Italia "),
-
 											fluidRow(style="padding:30px;background-color:#ffffff;",
 											HTML(readChar("../docs/intro.html",file.info("../docs/intro.html")$size)))))
 
@@ -174,14 +160,10 @@ regTab <- tabItem(tabName = "regPlots",
 							h3("Confronto tra serie storiche"),
 							fluidRow(style="padding:10px;",
 								column(width=3,
-#										selectizeInput("serieStoricheRegion1", label="Regione 1", 	, choices=regioniList, selected = "Lombardia", multiple=FALSE),
-#										selectizeInput("serieStoricheRegion2", label="Regione 2", 	, choices=regioniList, selected = "Lazio", multiple=FALSE),
 									pickerInput(inputId = "regionSelSerieStoriche", label = "Seleziona regioni", choices = regioniList,selected=regioni2fit, options = pickerOptions(size=10,actionsBox = F,maxOptionsText=HTML('<font color=#ad0000>È possibile confrontare al più 6 regioni!</font>') ,selectedTextFormat = "count >20",maxOptions = 6), multiple = TRUE),
 									selectizeInput("variabileCompare", label="Variabile da confrontare", 	, choices=c("totale_casi", "deceduti"), selected = "Lazio", multiple=FALSE)
 								),
 								column(width=9,
-#										uiOutput('selLagRegione1'),
-#										uiOutput('selLagRegione2'),
 									uiOutput('selLagRegioni')
 								)
 							),
@@ -193,7 +175,6 @@ regTab <- tabItem(tabName = "regPlots",
 						#style="background-color :#add437;",
 							 uiOutput("selRegioni"),
 							 h3("Mappa dei casi confermati"),
-									#plotOutput(outputId="mapRegioniGG", height = 800),
 									addSpinner(leafletOutput(outputId="mapRegioni"), spin = "fading-circle", color = "#add437"),
 									spiegaMappa
 							),br(),
@@ -277,8 +258,7 @@ prvTab <- tabItem(tabName = "prvPlots",
 								h3("Confronto tra serie storiche"),
 								fluidRow(style="padding:20px;",
 									column(width=3,
-										pickerInput(inputId = "provSelSerieStoriche", label = "Seleziona province", choices = provinceList,selected=province2fit, options = pickerOptions(size=10,actionsBox = F,maxOptionsText=HTML('<font color=#ad0000>È possibile confrontare al più 6 province!</font>') ,selectedTextFormat = "count >20",maxOptions = 6), multiple = TRUE)#,
-										#selectizeInput("variabileCompareProvince", label="Variabile da confrontare", 	, choices=c("totale_casi", "deceduti"), selected = "Lazio", multiple=FALSE)
+										pickerInput(inputId = "provSelSerieStoriche", label = "Seleziona province", choices = provinceList,selected=province2fit, options = pickerOptions(size=10,actionsBox = F,maxOptionsText=HTML('<font color=#ad0000>È possibile confrontare al più 6 province!</font>') ,selectedTextFormat = "count >20",maxOptions = 6), multiple = TRUE)
 									),
 									column(width=9,
 										uiOutput('selLagProvince')
@@ -293,7 +273,6 @@ prvTab <- tabItem(tabName = "prvPlots",
 							fluidRow(style='padding:30px;',
 								uiOutput("selProvince")),
 								h3("Mappa dei casi confermati"),
-										#plotOutput(outputId="mapProvinceGG", height = 800),
 										addSpinner(leafletOutput(outputId="mapProvince"), spin = "fading-circle", color = "#add437"),
 										spiegaMappa
 								),br(),
@@ -306,10 +285,6 @@ prvTab <- tabItem(tabName = "prvPlots",
 								column(width=12, h3("Tabella con casi confermati"),DTOutput(outputId="tabProvince"), spiegaTabella
 								)
 							),
-
-							##################################################
-
-
 							br()),br(),
               fluidRow(
                 box(width=12, uiOutput("updatePrvUI"), fontiDati
@@ -319,22 +294,17 @@ prvTab <- tabItem(tabName = "prvPlots",
 
 
 worldtab <- tabItem(tabName = "world",
-					#uiOutput("spaces_mobile_ti"),
 							fluidRow(style="padding-left:30px;padding-right:30px;border-style: solid;border-color:#33ccff;",#style="background-color :#cc0000;",
 							h1("Nel mondo"),
-
 									h4("Spiegazione blablabla"),
 									 br(),
 									 fluidRow(style="padding:20px;background-color:#ffffff",
 										 fluidRow(style="padding:20px;background-color:#ffffff",
 											 column( 6, h3("Spazio per plot")),
 											 column(1),
-
-
 										 )
 										# fluidRow(style='padding:30px;overflow-x:scroll',addSpinner(plotlyOutput("terapiaIntStoricoTot"), spin = "fading-circle", color = "#cc0000"))
 									 ),br(),
-
 	                	fluidRow(style="padding:10px;background-color:#ffffff",
 											h3( "Titolo plot")
 											#addSpinner(plotlyOutput("terapiaIntPlotPercNow"), spin = "fading-circle", color = "#cc0000"),
@@ -382,9 +352,6 @@ dashboardPage(title="CoVid-19 in Italia",
 			      sidebarMenu(id='prvCFG',
 			        menuItem2("Per Provincia", tabName = "prvPlots", icon = icon("far fa-chart-bar"))#("vials"))
 			      ),
-						# sidebarMenu(id='mondo',
-			      #   menuItem2("Nel mondo", tabName = "world", icon = icon("fas fa-globe-africa"))
-			      # ),
 			sidebarMenu(id='spiegazione',
 				menuItem2("Matematica della diffusione", tabName = "intro", icon = icon("fas fa-square-root-alt"))
 			),
@@ -395,7 +362,6 @@ dashboardPage(title="CoVid-19 in Italia",
 				menuItem2("Chi Siamo", tabName = "chisiamo", icon = icon("fas fa-users"))
 			),
 			uiOutput('tasti_social')
-		 #selectInput("regionSel", label="Regione", choices=regioniList, selected = "Lombardia")
 	),
 
 	dashboardBody(
