@@ -78,14 +78,20 @@ tiTab <- tabItem(tabName = "tiPlots",
 										 ),
 										 fluidRow(style='padding:30px;overflow-x:scroll',addSpinner(plotlyOutput("terapiaIntStoricoTot"), spin = "fading-circle", color = "#cc0000"))
 									 ),br(),
-
-	                	fluidRow(style="padding:10px;background-color:#ffffff",
-											h3( "Percentuale in terapia intensiva occupati da pazienti con CoVid19 (posti letto aggiornati al 2018)"),
+									 fluidRow(style="padding:10px;background-color:#ffffff",
+										 column( 6, h3( "Percentuale in terapia intensiva occupati da pazienti con CoVid19 (posti letto aggiornati al 2018)")),
+										 column(1),
+										 column(5, uiOutput("UIgiornoTI"))
+									 ),fluidRow(style="padding:10px;background-color:#ffffff",
 											addSpinner(plotlyOutput("terapiaIntPlotPercNow"), spin = "fading-circle", color = "#cc0000"),
 											spiegaTerIntPercentuale
 										),br(),
 										fluidRow(style="padding:10px;background-color:#ffffff",
-											h3("Diponibilità di letti in terapia intensiva e numero di occupanti con CoVid19 (posti letto aggiornati al 2018)"),
+											column( 6, h3("Diponibilità di letti in terapia intensiva e numero di occupanti con CoVid19 (posti letto aggiornati al 2018)")),
+ 										 	column(1),
+ 										 	column(5, uiOutput("UIgiornoTI2"))
+										),
+										fluidRow(style="padding:10px;background-color:#ffffff",
 											addSpinner(plotlyOutput("terapiaIntPlotNow"), spin = "fading-circle", color = "#cc0000"),
 											spiegaTerIntAttuale
 										),br(),

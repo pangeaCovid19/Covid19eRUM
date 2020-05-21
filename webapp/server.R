@@ -9,8 +9,6 @@ shinyServer(function(input, output, session) {
 
 ## AGGIORNAMENTI
 
-  autoInvalidate <- reactiveTimer(3600000)
-
   reacval<-reactiveValues(
 						fileList=list.files(dir_prov, full.names=T),
             oldList=NULL,
@@ -40,6 +38,9 @@ observe({
 	})
 
 
+
+
+	  autoInvalidate <- reactiveTimer(3600000)
   observe({
 		if(verbose) cat("\n OBSERVE:leggiDati")
     autoInvalidate()
@@ -179,7 +180,7 @@ output$confrontoGiornoUI <- renderUI({
 	allDataReg <- copy(reacval$dataTables_reg)
 	if (is.null(allDataReg))retunr(NULL)
 
-	sliderInput("confrontoGiorno", "Giorno:", min = min(allDataReg$data) + 1, max = max(allDataReg$data), value = max(allDataReg$data), animate = animationOptions(interval = 1500), timeFormat="%b %d",width='90%')
+	sliderInput("confrontoGiorno", "Giorno:", min = min(allDataReg$data) + 1, max = max(allDataReg$data), value = max(allDataReg$data), animate = animationOptions(interval = 1000), timeFormat="%b %d",width='90%')
 
 })
 
@@ -306,7 +307,7 @@ output$selRegioni <- renderUI({
 		if(verbose) cat("\t animazione: ", animazione)
     fluidRow(sliderInput("giornoReg", "Giorno:",
               min = min(allDataReg$data) + 1, max = max(allDataReg$data),
-              value = max(allDataReg$data), animate = animationOptions(interval = 1500), timeFormat="%b %d")
+              value = max(allDataReg$data), animate = animationOptions(interval = 1000), timeFormat="%b %d")
     )
   }
 })
@@ -603,7 +604,7 @@ output$inputRegioniCasiVsNuovicasi <- renderUI ({
 		column(width=4,
 			sliderInput("dataRegioniCasiVsNuoviCasi", "Giorno:",
 			min = min(dataRange) +ndays+ 1, max = max(dataRange),
-			value = max(dataRange), animate = animationOptions(interval = 500), timeFormat="%b %d")
+			value = max(dataRange), animate = animationOptions(interval = 150), timeFormat="%b %d")
 		),
 	)
 })
@@ -679,7 +680,7 @@ output$inputProvinceCasiVsNuovicasi <- renderUI ({
 		column(width=4,
 			sliderInput("dataProvinceCasiVsNuoviCasi", "Giorno:",
 			min = min(dataRange) +ndays+ 1, max = max(dataRange),
-			value = max(dataRange), animate = animationOptions(interval = 500), timeFormat="%b %d")
+			value = max(dataRange), animate = animationOptions(interval = 150), timeFormat="%b %d")
 		),
 	)
 })
@@ -856,7 +857,7 @@ output$selProvince <- renderUI({
 				selectInput("regionSel", label="Seleziona regione", choices=regioniList, selected = "Lombardia"),
 	      sliderInput("giornoPrv", "Giorno:",
         min = min(allDataPrv$data) + 1, max = max(allDataPrv$data),
-        value = max(allDataPrv$data), animate = animationOptions(interval = 1500), timeFormat="%b %d")
+        value = max(allDataPrv$data), animate = animationOptions(interval = 1000), timeFormat="%b %d")
     	)
 		} else {
 			fluidRow(
@@ -1801,20 +1802,37 @@ output$nuoviPositiviStoricoProv<- renderPlotly({
       plot
 })
 
+
+
+output$UIgiornoTI <- renderUI({
+	allDataReg <- copy(reacval$dataTables_reg)
+	if (is.null(allDataReg))retunr(NULL)
+	sliderInput("giornoTI", "Giorno:", min = min(allDataReg$data) + 1, max = max(allDataReg$data), value = max(allDataReg$data), animate = animationOptions(interval = 500), timeFormat="%b %d",width=300)
+
+})
+
+
 terapiaInt <- reactive({
 	if(verbose) cat("\n reactive:terapiaInt")
 	datamax <- isolate(reacval$dateRange_reg[2])
   allDataReg <- copy(reacval$dataTables_reg)
-	tint <- merge(allDataReg[(allDataReg$data==datamax), c('denominazione_regione', 'terapia_intensiva')], Tintensiva, by="denominazione_regione")
+
+	#tint <- merge(allDataReg[(allDataReg$data==datamax), c('denominazione_regione', 'terapia_intensiva')], Tintensiva, by="denominazione_regione")
+	tint <- merge(allDataReg[, c('data', 'denominazione_regione', 'terapia_intensiva')], Tintensiva, by="denominazione_regione")
 	tint$percTI <- round(tint$terapia_intensiva/tint$lettiTI*100)
 	tint
 })
+
+
 
 output$terapiaIntPlotPercNow<- renderPlotly({
 	if(verbose) cat("\n renderPlotly:terapiaIntPlot")
 
 	tint <- terapiaInt()
+	giorno <- input$giornoTI
 	if(is.null(tint)) return(NULL)
+	if(is.null(giorno)) return(NULL)
+	tint<-tint[data==giorno, ]
 	p <- ggplot(data=tint, aes(x=denominazione_regione, y=percTI,
                 text = paste('Regione:', denominazione_regione,
                   '<br>Percentuale: ', round(percTI)))) +
@@ -1831,11 +1849,24 @@ output$terapiaIntPlotPercNow<- renderPlotly({
 
 })
 
+
+
+output$UIgiornoTI2 <- renderUI({
+	allDataReg <- copy(reacval$dataTables_reg)
+	if (is.null(allDataReg))retunr(NULL)
+	sliderInput("giornoTI2", "Giorno:", min = min(allDataReg$data) + 1, max = max(allDataReg$data), value = max(allDataReg$data), animate = animationOptions(interval = 500), timeFormat="%b %d",width=300)
+
+})
+
 output$terapiaIntPlotNow<- renderPlotly({
 	if(verbose) cat("\n renderPlotly:terapiaIntPlot")
 
 	tint <- terapiaInt()
+	giorno <- input$giornoTI2
 	if(is.null(tint)) return(NULL)
+	if(is.null(giorno)) return(NULL)
+
+	tint <- tint[data==giorno,]
 
 	tintLong <- data.frame(rep(tint$denominazione_regione, 2), c(tint$terapia_intensiva,tint$lettiTI) )
 	names(tintLong) <- c("regione", "numero")
@@ -1858,10 +1889,14 @@ output$terapiaIntPlotNow<- renderPlotly({
 
 })
 
+
 output$terapiaIntPlotPercPrev<- renderPlotly({
 	if(verbose) cat("\n renderPlotly:terapiaIntPlotPercPrev")
 
 	tint <- terapiaInt()
+	giorno <- isolate(reacval$dateRange_reg[2])
+	tint <- tint[data==giorno,]
+
 	allDataReg <- copy(reacval$dataTables_reg)
 	prevDT <-copy(prevRegion())
 	if(is.null(tint)) return(NULL)
