@@ -209,12 +209,12 @@ prvTab <- tabItem(tabName = "prvPlots",
 							#  NUOVI CASI
 							fluidRow(style="padding:30px;background-color:#ffffff",
 								fluidRow(style="padding:20px;background-color:#ffffff",
-									column(4, h3("Numero casi giornalieri")),
+									column(3, h3("Numero casi giornalieri")),
 									column(1),
 									column(2,
 										pickerInput(inputId = "tipoPlotSerieStorichePrev", label = "Tipo Grafico", choices = c("provinciale","totale"),selected="provinciale",options = list(size=10,`actions-box` = TRUE, `selected-text-format` = "count >20"), multiple = FALSE)
 									),
-									column(3,
+									column(2,
 										pickerInput(inputId = "regionSelSerieStorichexProv", label = "Seleziona regioni", choices = regioniList,selected="Lombardia", options = pickerOptions(size=10,actionsBox = T ,selectedTextFormat = "count >20",deselectAllText='Deseleziona tutto',selectAllText='Seleziona tutto'), multiple = TRUE)
 									),
 									column(3,
