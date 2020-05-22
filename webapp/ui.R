@@ -63,7 +63,7 @@ tiTab <- tabItem(tabName = "tiPlots",
 							fluidRow(style="padding-left:30px;padding-right:30px;border-style: solid;border-color:#cc0000;",#style="background-color :#cc0000;",
 							h1("Terapia Intensiva"),
 
-									h4("I dati relativi al numero di posti letto in terapia intensiva per regione sono aggiornati al 2018 e non vengono riaggiornati in base agli sforzi che il sistema sanitario ha sostenuto dall'inizio dell'emergenza."),
+#									h4("I dati relativi al numero di posti letto in terapia intensiva per regione sono aggiornati al 2018 e non vengono riaggiornati in base agli sforzi che il sistema sanitario ha sostenuto dall'inizio dell'emergenza."),
 									 br(),
 									 fluidRow(style="padding:20px;background-color:#ffffff",
 										 fluidRow(style="padding:20px;background-color:#ffffff",
@@ -73,10 +73,12 @@ tiTab <- tabItem(tabName = "tiPlots",
 												 pickerInput(inputId = "varSelTI", label = "Select variable", choices = c("intensive care","Hospitalized patients"),selected="terapia intensiva",options = list(size=10,`actions-box` = TRUE, `selected-text-format` = "count >20"), multiple = FALSE)
 											 ),
 											 column(3,
-												 pickerInput(inputId = "regionSelSerieStoricheTI", label = "Select regions", choices = regioniList,selected=regioniList, options = pickerOptions(size=10,actionsBox = T ,selectedTextFormat = "count >20",deselectAllText='Deseleziona tutto',selectAllText='Seleziona tutto'), multiple = TRUE)
+												 pickerInput(inputId = "regionSelSerieStoricheTI", label = "Select regions", choices = regioniList,selected=regioniList, options = pickerOptions(size=10,actionsBox = T ,selectedTextFormat = "count >20",deselectAllText='uncheck all ',selectAllText='check all'), multiple = TRUE)
 											 )
 										 ),
-										 fluidRow(style='padding:30px;overflow-x:scroll',addSpinner(plotlyOutput("terapiaIntStoricoTot"), spin = "fading-circle", color = "#cc0000"))
+										 fluidRow(style='padding:30px;overflow-x:scroll',
+										 	addSpinner(plotlyOutput("terapiaIntStoricoTot"), spin = "fading-circle", color = "#cc0000"),
+									 		spiegaTerIntNuoviCasi)
 									 ),br(),
 									 fluidRow(style="padding:10px;background-color:#ffffff",
 										 column( 6, h3( "Fraction of intensive care beds occupied by patients with CoVid19 (intensive care beds updated to 2018)")),
@@ -112,7 +114,7 @@ regTab <- tabItem(tabName = "regPlots",
 					#  NUOVI CASI
 					fluidRow(style="padding:20px;background-color:#ffffff",
 						fluidRow(style="padding:20px;background-color:#ffffff",
-							column(4, h3("New infected daily")),
+							column(4, h3("Daily cases")),
 							column(1),
 							column(2,
 								pickerInput(inputId = "tipoPlotSerieStoricheReg", label = "Graph type", choices = c("Regional","Overall"),selected="Regional",options = list(size=10,`actions-box` = TRUE, `selected-text-format` = "count >20"), multiple = FALSE)
@@ -121,7 +123,7 @@ regTab <- tabItem(tabName = "regPlots",
 								pickerInput(inputId = "varSelSerieStoricheReg", label = "Select Variable", choices = c("new cases","deaths"),selected="new cases",options = list(size=10,`actions-box` = TRUE, `selected-text-format` = "count >20"), multiple = FALSE)
 							),
 							column(2,
-								pickerInput(inputId = "regionSelSerieStorichexReg", label = "Seleziona regioni", choices = regioniList,selected=regioniList, options = pickerOptions(size=10,actionsBox = T ,selectedTextFormat = "count >20",deselectAllText='Deseleziona tutto',selectAllText='Seleziona tutto'), multiple = TRUE)
+								pickerInput(inputId = "regionSelSerieStorichexReg", label = "Select region", choices = regioniList,selected=regioniList, options = pickerOptions(size=10,actionsBox = T ,selectedTextFormat = "count >20",deselectAllText='uncheck all',selectAllText='check all'), multiple = TRUE)
 							)
 						),
 						fluidRow(style='padding:10px;overflow-x:scroll;',addSpinner(plotlyOutput('nuoviPositiviStoricoReg'), spin = "fading-circle", color = "#add437")),
@@ -129,19 +131,19 @@ regTab <- tabItem(tabName = "regPlots",
 					),br(),
 					##################################################
 					fluidRow(style="padding:20px;background-color:#ffffff",
-						h3("Tabella monitoraggio confermati"),DTOutput(outputId="tabRegioniMonitor"), spiegaTabellaMonitor
+						h3("Confirmed cases, monitornig table"), DTOutput(outputId="tabRegioniMonitor"), spiegaTabellaMonitor
 					),br(),
 						##################################################
 						# Tasso crescila logaritmico Regionale
 						fluidRow(style="padding:20px;background-color:#ffffff",
 							fluidRow(style="padding:20px;background-color:#ffffff",
-								column(4, h3("Tasso di crescita giornaliero")),
+								column(4, h3("Daily growth rate")),
 								column(1),
 								column(2,
-									pickerInput(inputId = "tipoPlotSerieStoricheRegPer", label = "Tipo Grafico", choices = c("regionale","globale"),selected="globale",options = list(size=10,`actions-box` = TRUE, `selected-text-format` = "count >20"), multiple = FALSE)
+									pickerInput(inputId = "tipoPlotSerieStoricheRegPer", label = "Graph type", choices = c("Regional","Overall"),selected="Overall",options = list(size=10,`actions-box` = TRUE, `selected-text-format` = "count >20"), multiple = FALSE)
 								),
 								column(3,
-									pickerInput(inputId = "regionSelSerieStorichexRegPer", label = "Seleziona regioni", choices = regioniList,selected=regioniList, options = pickerOptions(size=10,actionsBox = T ,selectedTextFormat = "count >20",deselectAllText='Deseleziona tutto',selectAllText='Seleziona tutto'), multiple = TRUE)
+									pickerInput(inputId = "regionSelSerieStorichexRegPer", label = "Select regions", choices = regioniList,selected=regioniList, options = pickerOptions(size=10,actionsBox = T ,selectedTextFormat = "count >20",deselectAllText='uncheck all',selectAllText='check all'), multiple = TRUE)
 								)
 							),
 							fluidRow(style='padding:10px;overflow-x:scroll',addSpinner(plotlyOutput('nuoviPositiviStoricoRegPercentuale'), spin = "fading-circle", color = "#add437")),
@@ -153,9 +155,10 @@ regTab <- tabItem(tabName = "regPlots",
 						##################################################
 						# CASI VS NUOVI CASI
 						fluidRow(style="padding:20px;background-color:#ffffff",
-							h3("Nuovi casi in funzione del numero totale di casi"),
+							h3("New cases versus total cases"),
 								uiOutput('inputRegioniCasiVsNuovicasi'),
-								fluidRow(style="overflow-x:scroll;padding:20px;",addSpinner(plotlyOutput('lineRegioniCasiVsNuovicasi'), spin = "fading-circle", color = "#add437")),
+								fluidRow(style="overflow-x:scroll;padding:20px;",
+								addSpinner(plotlyOutput('lineRegioniCasiVsNuovicasi'), spin = "fading-circle", color = "#add437")),
 								spiegaGraficoCasiVsCasiNuovi
 						)
 
@@ -163,11 +166,11 @@ regTab <- tabItem(tabName = "regPlots",
 
 					,br(),
 						fluidRow(style="padding:10px;background-color:#ffffff",
-							h3("Confronto tra serie storiche"),
+							h3("Timeseries comparison"),
 							fluidRow(style="padding:10px;",
 								column(width=3,
-									pickerInput(inputId = "regionSelSerieStoriche", label = "Seleziona regioni", choices = regioniList,selected=regioni2fit, options = pickerOptions(size=10,actionsBox = F,maxOptionsText=HTML('<font color=#ad0000>È possibile confrontare al più 6 regioni!</font>') ,selectedTextFormat = "count >20",maxOptions = 6), multiple = TRUE),
-									selectizeInput("variabileCompare", label="Variabile da confrontare", 	, choices=c("totale_casi", "deceduti"), selected = "Lazio", multiple=FALSE)
+									pickerInput(inputId = "regionSelSerieStoriche", label = "Select segions", choices = regioniList,selected=regioni2fit, options = pickerOptions(size=10,actionsBox = F,maxOptionsText=HTML('<font color=#ad0000>You can compare 6 regions!</font>') ,selectedTextFormat = "count >20",maxOptions = 6), multiple = TRUE),
+									selectizeInput("variabileCompare", label="Comparing variable", 	, choices=c("Infected", "Deaths"), selected = "Lazio", multiple=FALSE)
 								),
 								column(width=9,
 									uiOutput('selLagRegioni')
@@ -180,18 +183,17 @@ regTab <- tabItem(tabName = "regPlots",
 						fluidRow(style="padding:20px;background-color:#ffffff",
 						#style="background-color :#add437;",
 							 uiOutput("selRegioni"),
-							 h3("Mappa dei casi confermati"),
+							 h3("Diffusion map"),
 									addSpinner(leafletOutput(outputId="mapRegioni"), spin = "fading-circle", color = "#add437"),
 									spiegaMappa
 							),br(),
-						fluidRow(style="padding:30px;background-color:#ffffff",
-							h3("Andamento dei casi confermati"),
-							selectizeInput("variabileLineRegioni", label="Variabile da mostrare", 	choices=campiTotali , selected = "totale_casi", multiple=FALSE),
-							fluidRow(style="overflow-x:scroll;padding:20px;",addSpinner(plotlyOutput(outputId="lineRegioni"), spin = "fading-circle", color = "#add437")),
-							#uiOutput('legenda_regioni'),
-							spiegaLinePlot),br(),br(),
+#						fluidRow(style="padding:30px;background-color:#ffffff",
+#							h3("Andamento dei casi confermati"),
+#							selectizeInput("variabileLineRegioni", label="Variabile da mostrare", 	choices=campiTotali , selected = "totale_casi", multiple=FALSE),
+#							fluidRow(style="overflow-x:scroll;padding:20px;",addSpinner(plotlyOutput(outputId="lineRegioni"), spin = "fading-circle", color = "#add437")),
+#							spiegaLinePlot),br(),br(),
 							fluidRow(style="padding:20px;background-color:#ffffff",
-								h3("Tabella con casi confermati"),DTOutput(outputId="tabRegioni"), spiegaTabella
+								h3("Resume table"),DTOutput(outputId="tabRegioni"), spiegaTabella
 							),
 
 							br()),br(),fluidRow(
@@ -203,19 +205,19 @@ regTab <- tabItem(tabName = "regPlots",
 prvTab <- tabItem(tabName = "prvPlots",
 					uiOutput("spaces_mobile_prov"),
 					fluidRow(style="padding-left:30px;padding-right:30px;border-style: solid;border-color:#add437;",
-							h1("Diffusione nelle province e nelle città metropolitane italiane"), br(),
+							h1("Focus on Italian Districts"), br(),
 							#
 							##################################################
 							#  NUOVI CASI
 							fluidRow(style="padding:30px;background-color:#ffffff",
 								fluidRow(style="padding:20px;background-color:#ffffff",
-									column(3, h3("Numero casi giornalieri")),
+									column(3, h3("Daily cases")),
 									column(1),
 									column(2,
-										pickerInput(inputId = "tipoPlotSerieStorichePrev", label = "Tipo Grafico", choices = c("provinciale","totale"),selected="provinciale",options = list(size=10,`actions-box` = TRUE, `selected-text-format` = "count >20"), multiple = FALSE)
+										pickerInput(inputId = "tipoPlotSerieStorichePrev", label = "Graph type", choices = c("Districts","Overall"),selected="Districts",options = list(size=10,`actions-box` = TRUE, `selected-text-format` = "count >20"), multiple = FALSE)
 									),
 									column(2,
-										pickerInput(inputId = "regionSelSerieStorichexProv", label = "Seleziona regioni", choices = regioniList,selected="Lombardia", options = pickerOptions(size=10,actionsBox = T ,selectedTextFormat = "count >20",deselectAllText='Deseleziona tutto',selectAllText='Seleziona tutto'), multiple = TRUE)
+										pickerInput(inputId = "regionSelSerieStorichexProv", label = "Select segions", choices = regioniList,selected="Lombardia", options = pickerOptions(size=10,actionsBox = T ,selectedTextFormat = "count >20",deselectAllText='uncheck all',selectAllText='check all'), multiple = TRUE)
 									),
 									column(3,
 										uiOutput("uiProvSelSerieStoricheProv")
@@ -236,10 +238,10 @@ prvTab <- tabItem(tabName = "prvPlots",
 									column(3, h3("Tasso di crescita giornaliero")),
 									column(1),
 									column(2,
-										pickerInput(inputId = "tipoPlotSerieStorichePrvPer", label = "Tipo Grafico", choices = c("regionale","globale"),selected="globale",options = list(size=10,`actions-box` = TRUE, `selected-text-format` = "count >20"), multiple = FALSE)
+										pickerInput(inputId = "tipoPlotSerieStorichePrvPer", label = "Graph type", choices = c("regionale","globale"),selected="globale",options = list(size=10,`actions-box` = TRUE, `selected-text-format` = "count >20"), multiple = FALSE)
 									),
 									column(3,
-										pickerInput(inputId = "regionSelSerieStorichexPrvPer", label = "Seleziona regione", choices = regioniList, selected=regioniList, options = pickerOptions(size=10,actionsBox = T ,selectedTextFormat = "count >20",deselectAllText='Deseleziona tutto',selectAllText='Seleziona tutto'), multiple = TRUE)
+										pickerInput(inputId = "regionSelSerieStorichexPrvPer", label = "Seleziona regione", choices = regioniList, selected=regioniList, options = pickerOptions(size=10,actionsBox = T ,selectedTextFormat = "count >20",deselectAllText='uncheck all',selectAllText='check all'), multiple = TRUE)
 									),
 									column(3,
 										uiOutput('inpProvincePositiviStoricoPrvPercentuale')
@@ -282,13 +284,12 @@ prvTab <- tabItem(tabName = "prvPlots",
 										addSpinner(leafletOutput(outputId="mapProvince"), spin = "fading-circle", color = "#add437"),
 										spiegaMappa
 								),br(),
-								fluidRow(style="padding:40px;background-color:#ffffff",
-								h3("Andamento dei casi confermati"),
-
-								fluidRow(style="overflow-x:scroll;",align='center',addSpinner(plotlyOutput(outputId="lineProvince"), spin = "fading-circle", color = "#add437")), spiegaLinePlot
-							),br(),
+#								fluidRow(style="padding:40px;background-color:#ffffff",
+#									h3("Andamento dei casi confermati"),
+#									fluidRow(style="overflow-x:scroll;",align='center',addSpinner(plotlyOutput(outputId="lineProvince"), spin = "fading-circle", color = "#add437")), spiegaLinePlot
+#							),br(),
 							fluidRow(style="padding:20px;background-color:#ffffff",
-								column(width=12, h3("Tabella con casi confermati"),DTOutput(outputId="tabProvince"), spiegaTabella
+								column(width=12, h3("Resume table"),DTOutput(outputId="tabProvince"), spiegaTabella
 								)
 							),
 							br()),br(),

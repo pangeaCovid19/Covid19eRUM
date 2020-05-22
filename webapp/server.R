@@ -182,7 +182,7 @@ output$confrontoGiornoUI <- renderUI({
 	allDataReg <- copy(reacval$dataTables_reg)
 	if (is.null(allDataReg))retunr(NULL)
 
-	sliderInput("confrontoGiorno", "Giorno:", min = min(allDataReg$data) + 1, max = max(allDataReg$data), value = max(allDataReg$data), animate = animationOptions(interval = 1000), timeFormat="%b %d",width='90%')
+	sliderInput("confrontoGiorno", "Day:", min = min(allDataReg$data) + 1, max = max(allDataReg$data), value = max(allDataReg$data), animate = animationOptions(interval = 1000), timeFormat="%b %d",width='90%')
 
 })
 
@@ -307,7 +307,7 @@ output$selRegioni <- renderUI({
 	}
   if (animazione) {
 		if(verbose) cat("\t animazione: ", animazione)
-    fluidRow(sliderInput("giornoReg", "Giorno:",
+    fluidRow(sliderInput("giornoReg", "Day:",
               min = min(allDataReg$data) + 1, max = max(allDataReg$data),
               value = max(allDataReg$data), animate = animationOptions(interval = 1000), timeFormat="%b %d")
     )
@@ -332,7 +332,7 @@ observe({
 		pal <- palRegioni()
     leafletProxy(mapId="mapRegioni", data=pltRegioni) %>% clearShapes() %>%
         addPolygons(fillColor = ~pal(log10(totale_casi)), weight = 1, stroke = TRUE, color="lightgrey", fillOpacity = .7,
-             label = ~paste(DEN_REG, "- casi:", totale_casi))
+             label = ~paste(DEN_REG, "- cases:", totale_casi))
   }
 })
 
@@ -371,7 +371,7 @@ output$mapRegioni <- renderLeaflet({
 				addTiles()%>%
 				addProviderTiles("CartoDB.Positron") %>% setView(lng=12.5, lat=41.3, zoom=5)  %>%
 				# i poligoni li mette l'observe sopra... se li mettiamo anche qui, sfarfalla all'avvio
-				addPolygons(fillColor = ~pal(log10(totale_casi)), weight = 1, stroke = TRUE, color="lightgrey", fillOpacity=.7,          label = ~paste(DEN_REG, "- casi:", totale_casi)) %>%
+				addPolygons(fillColor = ~pal(log10(totale_casi)), weight = 1, stroke = TRUE, color="lightgrey", fillOpacity=.7,          label = ~paste(DEN_REG, "- cases:", totale_casi)) %>%
 				addLegend(pal = pal, values = ~log10(10^(1:4)), opacity = 0.7,
 									labFormat = labelFormat(transform = function(x) round(10^x), big.mark = "."),
 									position = 'bottomleft',
@@ -423,7 +423,7 @@ output$selLagProvince <- renderUI ({
      format=wNumbFormat(decimals = 0,prefix = 'giorno '))
    }else{
      noUiSliderInput( paste0("selLag_",x), x, min = -dg , max = dg, value = initval, step=1, orientation="vertical",height='120px',inline=T,width='140px', color=color_province[x],
-     format=wNumbFormat(decimals = 0,prefix = 'giorno '))
+     format=wNumbFormat(decimals = 0,prefix = 'day '))
    }
 	})
 })
@@ -550,9 +550,11 @@ output$lineRegioniConfronto <- renderPlotly({
 
 	names(lagRegioni) <- regioni
 
-	var2plot <- input$variabileCompare
-	if(is.null(var2plot)) var2plot <- "totale_casi"#return(NULL)
+	varComp <- input$variabileCompare
+	if(is.null(varComp)) varComp <- "Infected"#return(NULL)
 	if (is.null(allDataReg)) return(NULL)
+
+	var2plot <- ifelse(varComp=="Infected", yes="totale_casi", no="deceduti")
 
 	var2plotNew <- gsub("_", " ", var2plot)
 
@@ -574,8 +576,8 @@ output$lineRegioniConfronto <- renderPlotly({
 				geom_point( aes(x=datanew, y=VAR2PLOT, color=regione)) +
         scale_color_manual(values=color_regioni) +
         theme(legend.title=element_blank())+theme(axis.text.x=element_text(angle=45, hjust=1)) +
-				guides(fill=guide_legend(title="regione")) +
-        xlab("")+ylab(var2plotNew)
+				guides(fill=guide_legend(title="region")) +
+        xlab("")+ylab(varComp)
   if(reacval$mobile){
     p<-p+scale_x_date(date_breaks="6 day",date_labels="%b %d")}
   else{
@@ -592,19 +594,22 @@ output$lineRegioniConfronto <- renderPlotly({
 })
 
 output$inputRegioniCasiVsNuovicasi <- renderUI ({
+	var2analyze <- c("totale_casi", "deceduti")
+	names(var2analyze) <- c("Infected", "Deaths")
+
 	if(verbose) cat("\n renderUI:inputRegioniCasiVsNuovicasi")
 	dataRange <- reacval$dateRange_reg
 		ndays <- 7
 	if(is.null(dataRange)) return(NULL)
 	fluidRow(style="padding:20px;background-color:#ffffff",
 		column(width=4,
-			pickerInput(inputId = "selezionaRegioniCasiVsNuoviCasi", label = "Seleziona regioni", choices = regioniList, selected=regioni2fit, options = pickerOptions(size=10,actionsBox = TRUE,maxOptionsText=HTML('') ,selectedTextFormat = "count >20", deselectAllText='Deseleziona tutto',selectAllText='Seleziona tutto'), multiple = TRUE)
+			pickerInput(inputId = "selezionaRegioniCasiVsNuoviCasi", label = "Select regions", choices = regioniList, selected=regioni2fit, options = pickerOptions(size=10,actionsBox = TRUE,maxOptionsText=HTML('') ,selectedTextFormat = "count >20", deselectAllText='uncheck all',selectAllText='check all'), multiple = TRUE)
 		),
 		column(width=3,
-			selectizeInput("variabileRegioniCasiVsNuoviCasi", label="Variabile da analizzare"	, choices=c("totale_casi", "deceduti"), selected = "totale_casi", multiple=FALSE)
+			selectizeInput("variabileRegioniCasiVsNuoviCasi", label="Select Variable"	, choices=var2analyze, selected = "Infected", multiple=FALSE)
 		),
 		column(width=4,
-			sliderInput("dataRegioniCasiVsNuoviCasi", "Giorno:",
+			sliderInput("dataRegioniCasiVsNuoviCasi", "Day:",
 			min = min(dataRange) +ndays+ 1, max = max(dataRange),
 			value = max(dataRange), animate = animationOptions(interval = 150), timeFormat="%b %d")
 		),
@@ -641,18 +646,18 @@ output$lineRegioniCasiVsNuovicasi <- renderPlotly({
 	yra <- range(allDataReg$casi_roll)
 	allDataReg <- allDataReg[ data <= dataMax, ]
 
-	validate(need(nrow(allDataReg)>0,paste0("Nessun dato corrispondente alla selezione")))
+	validate(need(nrow(allDataReg)>0,paste0("no data selected")))
 
 	p <- ggplot(allDataReg[ !is.na(casi_roll)]) + my_ggtheme() +
 					geom_point( aes(x=VAR2PLOT, y=casi_roll, color=denominazione_regione)) +
 					geom_line(group=1, # group=1 serve per aggirare un bug di ggplotly con tooltip = c("text")
 					aes(x=VAR2PLOT, y=casi_roll,color=denominazione_regione,
-					text = paste('Regione:', denominazione_regione, '<br>Totali:', VAR2PLOT,
-					paste0("<br>Casi ultimi ",ndays," giorni"), casi_roll)))+
+					text = paste('Region:', denominazione_regione, '<br>Totali:', VAR2PLOT,
+					paste0("<br>Cases last ",ndays," days"), casi_roll)))+
 				scale_color_manual(values=color_regioni) +
 				theme(legend.title=element_blank())+#theme(axis.text.x=element_text(angle=45, hjust=1)) +
-				guides(fill=guide_legend(title="regione")) +
-				xlab("Totali")+ylab(paste0("ultimi ",ndays," giorni"))+
+				guides(fill=guide_legend(title="region")) +
+				xlab("Total Cases")+ylab(paste0("last ",ndays," days"))+
 				coord_cartesian(xlim =xra, ylim = yra)+
 				scale_y_log10() + scale_x_log10()
         plot<-ggplotly(p)
@@ -677,10 +682,10 @@ output$inputProvinceCasiVsNuovicasi <- renderUI ({
 	if(is.null(dataRange)) return(NULL)
 	fluidRow(style="padding:20px;background-color:#ffffff",
 		column(width=4,
-			pickerInput(inputId = "selezionaProvinceCasiVsNuoviCasi", label = "Seleziona province", choices = provinceList, selected=province2fit, options = pickerOptions(size=10,actionsBox = TRUE,maxOptionsText=HTML('') ,selectedTextFormat = "count >20", deselectAllText='Deseleziona tutto',selectAllText='Seleziona tutto'), multiple = TRUE)
+			pickerInput(inputId = "selezionaProvinceCasiVsNuoviCasi", label = "Select Districts", choices = provinceList, selected=province2fit, options = pickerOptions(size=10,actionsBox = TRUE,maxOptionsText=HTML('') ,selectedTextFormat = "count >20", deselectAllText='uncheck all',selectAllText='check all'), multiple = TRUE)
 		),
 		column(width=4,
-			sliderInput("dataProvinceCasiVsNuoviCasi", "Giorno:",
+			sliderInput("dataProvinceCasiVsNuoviCasi", "Day:",
 			min = min(dataRange) +ndays+ 1, max = max(dataRange),
 			value = max(dataRange), animate = animationOptions(interval = 150), timeFormat="%b %d")
 		),
@@ -857,7 +862,7 @@ output$selProvince <- renderUI({
 		if(animazione){
 			fluidRow(
 				selectInput("regionSel", label="Seleziona regione", choices=regioniList, selected = "Lombardia"),
-	      sliderInput("giornoPrv", "Giorno:",
+	      sliderInput("giornoPrv", "Day:",
         min = min(allDataPrv$data) + 1, max = max(allDataPrv$data),
         value = max(allDataPrv$data), animate = animationOptions(interval = 1000), timeFormat="%b %d")
     	)
@@ -892,7 +897,7 @@ observe({
 			#pal <- colorNumeric("YlOrRd", domain = log10(pmax(1,allDataPrv$totale_casi)))
 	    leafletProxy(mapId="mapProvince", data=pltProvince) %>% clearShapes() %>%
 	        addPolygons(fillColor = ~pal(log10(totale_casi)), weight = 1, stroke = TRUE, color="lightgrey", fillOpacity = .7,
-	             label = ~paste(DEN_UTS, "- casi:", totale_casi))
+	             label = ~paste(DEN_UTS, "- cases:", totale_casi))
   		}
 		} else if(verbose) cat("\t non eseguito")
 })
@@ -927,7 +932,7 @@ output$mapProvince <- renderLeaflet({
         addProviderTiles("CartoDB.Positron") %>% setView(lng=my_frame$reg_long, lat=my_frame$reg_lat, zoom=7)  %>%
         # i poligoni li mette l'observe sopra... se li mettiamo anche qui, sfarfalla all'avvio
         addPolygons(fillColor = ~pal(log10(totale_casi)), weight = 1, stroke = TRUE, color="lightgrey", fillOpacity = .7,
-                 label = ~paste(DEN_UTS, "- casi:", totale_casi)) %>%
+                 label = ~paste(DEN_UTS, "- cases:", totale_casi)) %>%
         addLegend(pal = pal, values = ~log10(pmax(1,allDataPrv$totale_casi)), opacity = 0.7,
                 labFormat = labelFormat(transform = function(x) round(10^x), big.mark = "."),
                 position = 'bottomright',
@@ -1563,7 +1568,7 @@ output$nuoviPositiviStoricoReg<- renderPlotly({
 			geom_bar(aes(y = num, x = data, fill=regione), stat="identity") +
 			guides(fill=guide_legend(title="region")) +
 			theme(axis.text.x=element_text(angle=45, hjust=1)) +
-			ylab("")+
+			ylab("Total cases")+
 			xlab("Date")
 
 
@@ -1598,27 +1603,27 @@ output$nuoviPositiviStoricoRegPercentuale<- renderPlotly({
 	dati <-dati[regione %in% selregione]
 	setorder(dati, regione, data)
 
- 	if(tipoplot=="globale"){
+ 	if(tipoplot=="Overall"){
 		res <- dati[, .(totale_casi=sum(totale_casi)), by=data]
 		res[, tot := shift(totale_casi, type="lag")]
 		res[, new := c(NA,diff(totale_casi))]
 		res[, deltaPerc:=new / tot*100, by=data]
 
 		if(all((regioniList %in% selregione))){
-			res$regione <- "Totale regioni selezionate"
+			res$regione <- "Selected regions"
 		} else res$regione <- paste(collapse="\n", selregione)
 
 		res <- res[!is.na(deltaPerc) & deltaPerc!=0]
 
 		p <- 	ggplot(res) + my_ggtheme() +
-				#geom_bar(aes(y = log(deltaPerc), x = data, fill=regione), stat="identity") +
 				geom_point(group=1, aes(y = log10(deltaPerc), x = data, color=regione,
 				text = paste('data:', data,
 					'<br>Percentuale: ', paste0(round(deltaPerc,2), "%"))
 				), stat="identity") +
 				geom_line(group=1, aes(y = log10(deltaPerc), x = data, color=regione), stat="identity") +
 				theme(axis.text.x=element_text(angle=45, hjust=1)) +scale_y_continuous(breaks=c(-0.3,0,0.7,1,1.7),labels=paste(c(0.5,1,5,10,50),"%"))+
-				ylab("")
+				ylab("")+
+				xlab("Date")
 		p
 	} else{
 
@@ -1639,11 +1644,12 @@ output$nuoviPositiviStoricoRegPercentuale<- renderPlotly({
 				), stat="identity") +
 				scale_color_manual(values=color_regioni) +
 				geom_line(group=1, aes(y = log10(deltaPerc), x = data, color=regione), stat="identity") +
-				guides(fill=guide_legend(title="regione")) +
+				guides(fill=guide_legend(title="region")) +
 				scale_color_manual(values=color_regioni) +
 				theme(axis.text.x=element_text(angle=45, hjust=1)) +
 				scale_y_continuous(breaks=c(-1,-0.3,0,0.7,1,1.7, 2),labels=paste(c(0.1, 0.5,1,5,10,50, 100),"%"))+
-				ylab("")
+				ylab("")+
+				xlab("Date")
 		p
 
 	}
@@ -1670,7 +1676,7 @@ output$inpProvincePositiviStoricoPrvPercentuale <- renderUI({
 	}
 
 	provSelList <- prvReg[denominazione_regione %in% selregione, denominazione_provincia]
-	pickerInput(inputId = "provSelSerieStorichexPrvPer", label = "Seleziona provincia", choices = provSelList, selected=provSelList, options = pickerOptions(size=10,actionsBox = T ,selectedTextFormat = "count >20",deselectAllText='Deseleziona tutto',selectAllText='Seleziona tutto'), multiple = TRUE)
+	pickerInput(inputId = "provSelSerieStorichexPrvPer", label = "Seleziona provincia", choices = provSelList, selected=provSelList, options = pickerOptions(size=10,actionsBox = T ,selectedTextFormat = "count >20",deselectAllText='uncheck all',selectAllText='check all'), multiple = TRUE)
 
 })
 
@@ -1704,7 +1710,7 @@ output$nuoviPositiviStoricoPrvPercentuale<- renderPlotly({
 	#	res <- res[, deltaPerc2:=c(1,diff(totale_casi)) / shift(totale_casi, type="lag"), by=data]
 	#
 		if(all((selprov %in% provinceList))){
-			res$provincia <- "Totale province selezionate"
+			res$provincia <- "Selected districts"
 		} else res$provincia <- paste(collapse="\n", selprov)
 		res <- res[!is.na(deltaPerc) & deltaPerc!=0]
 
@@ -1763,7 +1769,7 @@ output$uiProvSelSerieStoricheProv <- renderUI({
 	prov <- unique(allData_prv[allData_prv$denominazione_regione %in% selregione, "denominazione_provincia"])
 	prov <- sort(prov)
 
-	pickerInput(inputId = "provSelSerieStoricheProv", label = "Seleziona province", choices = prov,selected=prov, options = pickerOptions(size=10,actionsBox = T ,selectedTextFormat = "count >20",deselectAllText='Deseleziona tutto',selectAllText='Seleziona tutto'), multiple = TRUE)
+	pickerInput(inputId = "provSelSerieStoricheProv", label = "Select Districts", choices = prov,selected=prov, options = pickerOptions(size=10,actionsBox = T ,selectedTextFormat = "count >20",deselectAllText='uncheck all',selectAllText='check all'), multiple = TRUE)
 
 })
 
@@ -1785,18 +1791,19 @@ output$nuoviPositiviStoricoProv<- renderPlotly({
 	setorder(dati, provincia, data)
 	dati[, casi_nuovi:= c(0,diff(totale_casi)),provincia]
 
-	if(tipoplot=="totale") {
+	if(tipoplot=="Overall") {
 		dati <- dati[, .(casi_nuovi=sum(casi_nuovi, na.rm=T)),data]
-		dati <- dati[, provincia:="Totale province selezionate"]
+		dati <- dati[, provincia:="Selected districts"]
 	}
 
 	p <- 	ggplot(dati) + my_ggtheme() +
 				geom_bar(aes(y = casi_nuovi, x = data, fill=provincia), stat="identity") +
-			guides(fill=guide_legend(title="provincia")) +
+			guides(fill=guide_legend(title="Districts")) +
 			theme(axis.text.x=element_text(angle=45, hjust=1)) +
-			ylab("Casi Totali")
+			ylab("Total cases")+
+			xlab("Date")
 
-	if(tipoplot!="totale")	p <- p + scale_fill_manual(values=color_province)
+	if(tipoplot!="Overall")	p <- p + scale_fill_manual(values=color_province)
 	p
   plot<-ggplotly(p)
 
@@ -1845,7 +1852,7 @@ output$terapiaIntPlotPercNow<- renderPlotly({
           geom_bar(stat="identity", fill="steelblue") + my_ggtheme() +
 	        theme(axis.text.x=element_text(angle=45,hjust=1))+
 					geom_hline(yintercept=100, linetype="dashed", color = "lightgrey")+
-          labs(x="", y="% TI occupancy by CoVid19")
+          labs(x="", y="% ICU occupancy by CoVid19")
 	p<-ggplotly(p, tooltip = c("text")) %>% config(locale = 'it')
 
   if(reacval$mobile){
@@ -1885,7 +1892,7 @@ output$terapiaIntPlotNow<- renderPlotly({
         geom_bar(stat="identity", position=position_dodge())+my_ggtheme() +
 	      theme(axis.text.x=element_text(angle=45,hjust=1))+
         scale_fill_manual(values=d3hexcols) +
-        labs(x="", y="Covid19 occupancy")
+        labs(x="", y="ICU occupancy by Covid19")
   plot<- ggplotly(p, tooltip = c("text")) %>% config(locale = 'it')
   if(reacval$mobile){
     plot<-plot%>%layout(dragmode=F,legend=list(orientation='h',x=0.6,y=-0.4))
@@ -2137,7 +2144,7 @@ output$tab_desktop<-renderUI({
 
         fluidRow(align="center",h3("Regional trend and short term forecast (3 days)")),
         fluidRow(style='padding-left:30px',
-					pickerInput(inputId = "regionSelFit", label = "Select regions", choices = regioniList,selected=regioni2fit, options = pickerOptions(size=10,actionsBox = T ,selectedTextFormat = "count >20",deselectAllText='Deseleziona tutto',selectAllText='Seleziona tutto'), multiple = TRUE)
+					pickerInput(inputId = "regionSelFit", label = "Select regions", choices = regioniList,selected=regioni2fit, options = pickerOptions(size=10,actionsBox = T ,selectedTextFormat = "count >20",deselectAllText='uncheck all',selectAllText='check all'), multiple = TRUE)
 				),
        	addSpinner(plotlyOutput(outputId="fitRegion"), spin = "fading-circle", color = "#009933"),
 			 	spiegaFitPos
@@ -2213,7 +2220,7 @@ output$tab_mobile<-renderUI({
 				h4("Andamento casi positivi per regione con previsione a 3 giorni"))),
 
         fluidRow(style="padding-left:30px;",
-				pickerInput(inputId = "regionSelFit", label = "Seleziona regioni", choices = regioniList,selected=regioni2fit, options = pickerOptions(size=10,actionsBox = T ,selectedTextFormat = "count >20",deselectAllText='Deseleziona tutto',selectAllText='Seleziona tutto',mobile=T), multiple = TRUE)),
+				pickerInput(inputId = "regionSelFit", label = "Select regions", choices = regioniList,selected=regioni2fit, options = pickerOptions(size=10,actionsBox = T ,selectedTextFormat = "count >20",deselectAllText='uncheck all',selectAllText='check all',mobile=T), multiple = TRUE)),
 
 
          fluidRow(style="padding:10px;background-color:#ffffff;overflow-x:scroll",align='center',

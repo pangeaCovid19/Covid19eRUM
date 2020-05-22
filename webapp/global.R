@@ -161,7 +161,7 @@ risultatiFit <- HTML("<div style='padding-top:10px;'></div>")
 prvReg <- unique(allData_prv[, c('denominazione_regione', 'denominazione_provincia')])
 setDT(prvReg)
 
-spiegaFitMedioTermine <- HTML("<div style='padding-top:10px;'>This graph shows the total number of positive (or deceased) cases with a forecast which extends up to 10 days: the time series is blue, while the forecasted values for the next days is orange.</div>")
+spiegaFitMedioTermine<- HTML("<div style='padding-top:10px;'>In questo grafico viene mostrato il numero di cati totali (deceduti) con una previsione che si estende fino a 10 giorni: in blu la serie storica, in arancione i valori previsti per i prossimi giorni.</div>")
 
 spiegaVariazionePercentuale<- HTML("<div style='padding-top:10px;'>This graph shows the percentage increase of total cases compared to the previous day. In case of an exponential increase this value would be exponential on average, while in case of a quadratical exponential increase we'd see a downward straight line The decrease of percentage variation of total cases means that the virus' expansion rate is decreasing. This could be either due to the fact that the number of infected has grown up to a point so critical as to make further virus propagations slower, or it could be a result of containment measures. We are convinced this decrease is in fact due to an effective containment.</div>")
 
@@ -202,7 +202,13 @@ spiegaTerIntPrevisione <- HTML("<div style='padding-top:10px;'>This graph shows 
 spiegaTerIntPercentuale <- HTML("<div style='padding-top:10px;'>This graph shows the percentage of occupied ICUs over the total number of available beds, updated to 2018.</div>")
 
 
-spiegaTerIntAttuale <- HTML("<div style='padding-top:10px;'>In questo grafico vengono rappresentati il numero di posti letto in terapia intensiva, aggiornati al 2018, ed il numero di pazienti in terapia intensiva con CoVid19 per ogni regione.</div>")
+spiegaTerIntAttuale <-  HTML("<div style='padding-top:10px;'>This graph displays the number of ICU beds, updated to 2018, and the number of ICU patients with CoVid19 for each region.</div>")
+
+
+spiegaTerIntNuoviCasi <-  HTML("<div style='padding-top:10px;'>This graph shows the number of patients that need to be hospitalized.</div>")
+
+
+
 
 
 #########################
