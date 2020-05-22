@@ -63,6 +63,7 @@ readData<-function(file, popolazione) {
 
 
 
+if(dir.exists("logs/")) dir.create("logs/")
 logdemone<-"logs/demone.log"
 writeLog("Aggiorno dati mondo\n",logdemone)
 checkAndInitializeFolder()
