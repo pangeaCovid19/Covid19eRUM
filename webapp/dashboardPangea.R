@@ -41,6 +41,37 @@ logo_img,link="http://www.pangeaformazione.it/",width,m_up=0,m_dx=0,m_dw=0,m_sx=
        )
 }
 
+
+dashboardHeader3b<-function(..., title = NULL, disable = FALSE, pagename, .list = NULL,
+logo_img,link="http://www.pangeaformazione.it/",width,m_up=0,m_dx=0,m_dw=0,m_sx=0,other_items=NULL)
+{
+    items <- c(list(...), .list)
+    lapply(items, shinydashboard:::tagAssert, type = "li", class = "dropdown")
+    tags$header(class = "main-header", style = if (disable) "display: none;",
+        tags$li(class="logo",
+					tags$a(href=link,target="_blank",(img(src=logo_img,class="img",width=width,border="0", style=paste("margin:",m_up,"px ",m_dx,"px ",m_dw,"px ",m_sx,"px;",sep="")))
+					#))
+				)
+			),
+		tags$nav(class = "navbar navbar-static-top",
+        	role = "navigation",
+        	span(shiny::icon("bars"),style = "display:none;"),
+        	a(href = "#", class = "sidebar-toggle", `data-toggle` = "offcanvas",
+            	role = "button", span(class = "sr-only", "Toggle navigation")),
+            tags$span(class="navbar-text",pagename),
+        tags$nav(class = "navbar-right",
+				column(2,
+					other_items
+				),
+				column(10,
+	        tags$ul(class = "nav navbar-nav",
+	        	items
+	        )
+				)
+        ))
+       )
+}
+
 menuItem2<-function (text, ..., icon = NULL, badgeLabel = NULL, badgeColor = "green",
     tabName = NULL, href = NULL, newtab = TRUE, selected = NULL)
 {

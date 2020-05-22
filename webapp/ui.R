@@ -336,9 +336,14 @@ worldtab <- tabItem(tabName = "world",
 
 dashboardPage(title="CoVid-19 in Italia",
 	skin = "black",
-	dashboardHeader3( pagename="CoVid-19 in Italia", logo_img = "logo_pangea_esteso.png", width = 200,
+	dashboardHeader3b( pagename="CoVid-19 in Italia", logo_img = "logo_pangea_esteso.png", width = 200,
+	other_items=uiOutput('selLingua') ,
 
-		tags$li(uiOutput('data_agg') ,class='dropdown', style="color:#0b4975;font-weight: bold;margin-top:40px;margin-right: 40px;margin-left: 60px;")
+
+		tags$li(uiOutput('data_agg') ,#uiOutput('selLingua'),
+		class='dropdown', style="color:#0b4975;font-weight: bold;margin-top:40px;margin-right: 40px;margin-left: 60px;")
+
+
 
 
 												 ),

@@ -11,6 +11,7 @@ options(bitmapType="cairo")
 
 animazione <- FALSE
 scalaSingolaProvincia <-FALSE
+lingua <- "en"
 
 verbose <- TRUE
 assignout <- TRUE

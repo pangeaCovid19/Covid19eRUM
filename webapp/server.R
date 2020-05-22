@@ -7,6 +7,8 @@ shinyServer(function(input, output, session) {
                 infoFiltered="(filtrati da _MAX_ elementi totali)",
                 paginate=list(previous="Precedente",`next`="Successivo")))
 
+
+
 ## AGGIORNAMENTI
 
   reacval<-reactiveValues(
@@ -37,7 +39,9 @@ observe({
 		}
 	})
 
-
+	output$selLingua <- renderUI({
+		prettyRadioButtons('lingua',"",choices = c("It", "En"), selected = "It",status = "success",shape = 'round',inline = T,animation = 'jelly',icon = icon('check'))
+	})
 
 
 	  autoInvalidate <- reactiveTimer(3600000)
