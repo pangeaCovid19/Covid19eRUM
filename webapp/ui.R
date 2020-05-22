@@ -11,7 +11,7 @@ chisiamotab<-tabItem(tabName="chisiamo",
 
 							fluidRow(style="padding:30px;border-style: solid;border-color: rgb(37,117,173);",
 											fluidRow(style="padding:30px;background-color:#ffffff;",
-											HTML(readChar("../docs/chisiamo.html",file.info("../docs/chisiamo.html")$size)),
+											HTML(readChar("../docs/chisiamo_en.html",file.info("../docs/chisiamo_en.html")$size)),
 											fluidRow(style='padding:30',align='center',br(),br(),
 											 #uiOutput('video')
 											 ))))
@@ -42,7 +42,7 @@ introTab<-tabItem(tabName="intro",
 
 							fluidRow(style="padding:30px;border-style: solid;border-color:#85ede1;",
 											fluidRow(style="padding:30px;background-color:#ffffff;",
-											HTML(readChar("../docs/intro.html",file.info("../docs/intro.html")$size)))))
+											HTML(readChar("../docs/intro_en.html",file.info("../docs/intro_en.html")$size)))))
 
 fitTab <- tabItem(tabName = "fitPlots",#style="background-color:#ffc2b3",
 							uiOutput("spaces_mobile_prev"),

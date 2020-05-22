@@ -263,7 +263,10 @@ reactiveRegTabMonitor <- reactive({
 		dati[, perc_roll:=c(rep(NA,ndays-1), round(rollmean(deltaPerc, k=ndays),2)),]
 		dati[, tamponiPop:=round(casi_testati/pop*100,2),]
 		out <- dati[(data==dataMax), .(regione, new,new_roll,totale_casi, deltaPerc, perc_roll, tamponi, casi_testati, tamponiPop)]
-		setnames(out, old=c('new', 'new_roll', 'totale_casi', 'deltaPerc', 'perc_roll', 'tamponi', 'casi_testati', 'tamponiPop'),new=c('nuovi casi', 'nuovi casi (settimana)','totale casi', 'tasso crescita %', 'tasso crescita % (media sett)', 'tamponi totali', 'persone testate', 'persone testate %'))
+		setnames(out,
+			old=c('new', 'new_roll', 'totale_casi', 'deltaPerc', 'perc_roll', 'tamponi', 'casi_testati', 'tamponiPop'),
+			new=c('new cases', 'new cases (week)','total case', 'growth rate %', 'growth rate % (weekly)', 'total swabs', 'tested people', 'tested people %')
+		)
 		out
 })
 
@@ -271,6 +274,8 @@ output$tabRegioniMonitor <- renderDT({
 	if(verbose) cat("\n renderDT:tabRegioniMonitor")
 	tabreg <- reactiveRegTabMonitor()
 	if(is.null(tabreg)) return(NULL)
+
+
 
 	datatable(tabreg,extensions = c('Scroller'),
 		selection = list(target = NULL),
@@ -288,8 +293,9 @@ output$tabRegioni <- renderDT({
 		regrdx$casiTampone <- round(regrdx$totale_casi / regrdx$tamponi , 2)
 
 		out <- regrdx[, c('denominazione_regione', 'tamponi', 'totale_casi','casiTampone', 'totale_ospedalizzati','terapia_intensiva','deceduti','dimessi_guariti','casi10k')]
-		names(out) <- c('regione', 'tamponi', 'casi', 'casi x tampone', 'ospedalizzati', 'Terapia intensiva','deceduti','guariti', 'casi su 10mila abit.')
- #   out$`casi su 10mila abit` <- round(out$totale_casi / out$pop * 10000, 3)
+#		names(out) <- c('regione', 'tamponi', 'casi', 'casi x tampone', 'ospedalizzati', 'Terapia intensiva','deceduti','guariti', 'casi su 10mila abit.')
+
+		names(out) <- c('region', 'swabs', 'cases', 'cases x swab', 'hospitalized', 'ICU','deaths','recovered', 'cases per 10k residents')
 
     datatable(out,extensions = c('Scroller'),
       selection = list(target = NULL),
@@ -814,7 +820,10 @@ reactiveProvTabMonitor <- reactive({
 		dati[, deltaPerc:=round(new / tot*100,2), by=.(data,provincia)]
 		dati[, perc_roll:=c(rep(NA,ndays-1), round(rollmean(deltaPerc, k=ndays),2)),]
 		out <- dati[(data==dataMax), .(data, provincia, new, new_roll, totale_casi, deltaPerc, perc_roll)]
-		setnames(out, old=c('new', 'new_roll','totale_casi', 'deltaPerc', 'perc_roll'), new=c('nuovi casi', 'nuovi casi (settimana)', 'totale casi', 'tasso crescita %', 'tasso crescita % (media sett.)'))
+		setnames(out,
+			old=c('new', 'new_roll','totale_casi', 'deltaPerc', 'perc_roll'),
+			new=c('new cases', 'new cases (week)','total case', 'growth rate %', 'growth rate % (weekly)')
+		)
 		out
 })
 
@@ -847,14 +856,15 @@ output$tabProvince <- renderDT({
     allDataPrv$data <- strftime(allDataPrv$data, format="%d-%m-%Y")
 		allDataPrv$`casi su 10mila abit` <- round(allDataPrv$`casi su 10mila abit`,2)
 
+		names(allDataPrv) <- c('date', 'region', 'districts', 'districts code', 'total cases', 'cases per 10k residents')
+
+
     datatable(allDataPrv,extensions = c('Scroller'),
       selection = list(target = NULL),
       options= c(list(dom = 't',scroller=T,scrollX="300",scrollY="300",paging = T,paging = F, searching = F, info=F, ordering=T, order=list(list(2, 'desc'))), DT_lang_opt),
       rownames=F)
   }
 })
-
-
 
 output$selProvince <- renderUI({
   allDataPrv <- reacval$dataTables_prv
@@ -1439,26 +1449,29 @@ output$tabAsintoto <- renderDT({
 	asintotout[, percTot:=paste0(round(totale_casiVeri/totale_casi*100,1), "%")]
 
 
-	asintotout$'Variazione Decessi' <- paste0(round(c(NA,diff(asintotout$deceduti))/asintotout$deceduti*100, 2), "%")
-	asintotout$'Variazione Totale Casi' <- paste0(round(c(NA,diff(asintotout$totale_casi))/asintotout$totale_casi*100, 2), "%")
+	asintotout$'Deaths variation' <- paste0(round(c(NA,diff(asintotout$deceduti))/asintotout$deceduti*100, 2), "%")
+	asintotout$'Total cases varation' <- paste0(round(c(NA,diff(asintotout$totale_casi))/asintotout$totale_casi*100, 2), "%")
 
 
 
 	asintotout$deceduti <- format(round(asintotout$deceduti), big.mark="'")
 	asintotout$totale_casi <- format(round(asintotout$totale_casi), big.mark="'")
 
-	setnames(asintotout, old=c( 'totale_casi', 'deceduti', 'percTot', "percDec"), new=c("Totale Casi", "Decessi"   , "% Casi osservati", "% Deceduti osservati"))
+#	setnames(asintotout, old=c( 'totale_casi', 'deceduti', 'percTot', "percDec"), new=c("Totale Casi", "Decessi"   , "% Casi osservati", "% Deceduti osservati"))
+
+	setnames(asintotout,
+		old=c('totale_casi', 'deceduti', 'percTot', "percDec"),
+		new=c("Total cases", "Deaths"   , "% Observed cases", "% Observed deaths")
+	)
 
 	setorder(asintotout, -data)
 
 
 
- 	datatable(asintotout[, c('data', "Totale Casi", 'Variazione Totale Casi',"% Casi osservati",  "Decessi", 'Variazione Decessi',"% Deceduti osservati" )],extensions = c('Scroller'),
+ 	datatable(asintotout[, c("Total cases", 'Total cases varation',"% Observed cases",  "Deaths", 'Deaths variation',"% Observed deaths" )],extensions = c('Scroller'),
       selection = list(target = NULL),
       options= c(list(dom = 't',scroller=T,scrollX="300",scrollY="300",paging = T, searching = F),
       rownames=F))
-
-		#asintoto[, c('data', "Totale Casi", 'Variazione Totale Casi', "Deceduti", 'Variazione Totale Casi' )]
 
 })
 
@@ -1933,7 +1946,7 @@ output$dateCompare <- renderUI({
 	dateTmp <- gsub("modelliIta_|modelliItaExp_|.RDS|modelliReg_|modelliRegExp_", "", files)
 	date <- as.Date(unique(dateTmp))
 	date <- sort(date[-which.max(date)], decreasing=T)
-	selectizeInput("dataComparazione", label="Data Modello da comparare", choices=date, selected = max(date))
+	selectizeInput("dataComparazione", label="Date to compare", choices=date, selected = max(date))
 
 })
 
@@ -2101,8 +2114,15 @@ output$tabCompare <- renderDT({
 	var2Keep <- c("deceduti", "totale_casi")
 	out <- out[(out$Variabile%in%var2Keep),]
 
+
   if (!is.null(out)) {
-		out <- out[order(out$Variabile),]
+
+		setnames(out,
+			old=c('data', 'Modello', 'Variabile', 'Osservato', 'Valore atteso +- incertezza standard', 'Valore atteso', 'Variazione'),
+			new=c('date', 'Model', 'Variable', 'Observed Value', 'Expected value +- standard deviation', 'Expected value', 'Variation')
+		)
+
+		out <- out[order(out$Variable),]
     datatable(out,extensions = c('Scroller'),
       selection = list(target = NULL),
       options= c(list(dom = 't',scroller=T,scrollX="300",scrollY="250",paging = T, searching = F, info=F, ordering=F, order=list(list(2, 'desc'))), DT_lang_opt),
@@ -2166,6 +2186,7 @@ output$tab_desktop<-renderUI({
 			 #	addSpinner(DTOutput("plotAsintoto"), spin = "fading-circle", color = "#009933"),
 
 		 ),fluidRow(style="padding:30px;background-color:#ffffff",
+		  	h3("Models comparison"),
           column(width=4,
             selectizeInput("tipoCompare", label="Coparison type", choices=c("Overall", "Daily"),
 						#choices=c("Totale", "Incremento Giornaliero"),
