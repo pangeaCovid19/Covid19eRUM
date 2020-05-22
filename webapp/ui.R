@@ -13,7 +13,7 @@ chisiamotab<-tabItem(tabName="chisiamo",
 											fluidRow(style="padding:30px;background-color:#ffffff;",
 											HTML(readChar("../docs/chisiamo.html",file.info("../docs/chisiamo.html")$size)),
 											fluidRow(style='padding:30',align='center',br(),br(),
-											 uiOutput('video')
+											 #uiOutput('video')
 											 ))))
 
 diariotab<-tabItem(tabName="diario",
@@ -67,19 +67,19 @@ tiTab <- tabItem(tabName = "tiPlots",
 									 br(),
 									 fluidRow(style="padding:20px;background-color:#ffffff",
 										 fluidRow(style="padding:20px;background-color:#ffffff",
-											 column( 6, h3("Numero dei pazienti ospedalizzati per regione")),
+											 column( 6, h3("Hospitalized patients")),
 											 column(1),
 											 column(2,
-												 pickerInput(inputId = "varSelTI", label = "Seleziona variabile", choices = c("terapia intensiva","pazienti ospedalizzati"),selected="terapia intensiva",options = list(size=10,`actions-box` = TRUE, `selected-text-format` = "count >20"), multiple = FALSE)
+												 pickerInput(inputId = "varSelTI", label = "Select variable", choices = c("intensive care","Hospitalized patients"),selected="terapia intensiva",options = list(size=10,`actions-box` = TRUE, `selected-text-format` = "count >20"), multiple = FALSE)
 											 ),
 											 column(3,
-												 pickerInput(inputId = "regionSelSerieStoricheTI", label = "Seleziona regioni", choices = regioniList,selected=regioniList, options = pickerOptions(size=10,actionsBox = T ,selectedTextFormat = "count >20",deselectAllText='Deseleziona tutto',selectAllText='Seleziona tutto'), multiple = TRUE)
+												 pickerInput(inputId = "regionSelSerieStoricheTI", label = "Select regions", choices = regioniList,selected=regioniList, options = pickerOptions(size=10,actionsBox = T ,selectedTextFormat = "count >20",deselectAllText='Deseleziona tutto',selectAllText='Seleziona tutto'), multiple = TRUE)
 											 )
 										 ),
 										 fluidRow(style='padding:30px;overflow-x:scroll',addSpinner(plotlyOutput("terapiaIntStoricoTot"), spin = "fading-circle", color = "#cc0000"))
 									 ),br(),
 									 fluidRow(style="padding:10px;background-color:#ffffff",
-										 column( 6, h3( "Percentuale in terapia intensiva occupati da pazienti con CoVid19 (posti letto aggiornati al 2018)")),
+										 column( 6, h3( "Fraction of intensive care beds occupied by patients with CoVid19 (intensive care beds updated to 2018)")),
 										 column(1),
 										 column(5, uiOutput("UIgiornoTI"))
 									 ),fluidRow(style="padding:10px;background-color:#ffffff",
@@ -87,7 +87,7 @@ tiTab <- tabItem(tabName = "tiPlots",
 											spiegaTerIntPercentuale
 										),br(),
 										fluidRow(style="padding:10px;background-color:#ffffff",
-											column( 6, h3("Diponibilità di letti in terapia intensiva e numero di occupanti con CoVid19 (posti letto aggiornati al 2018)")),
+											column( 6, h3("Intensive care beds occupied by patients with CoVid19 (intensive care beds updated to 2018)")),
  										 	column(1),
  										 	column(5, uiOutput("UIgiornoTI2"))
 										),
@@ -107,18 +107,18 @@ tiTab <- tabItem(tabName = "tiPlots",
 regTab <- tabItem(tabName = "regPlots",
 					uiOutput("spaces_mobile_reg"),
 					fluidRow(style="padding-left:30px;padding-right:30px;border-style: solid;border-color:#add437;",
-					h1("Diffusione nelle regioni italiane"),br(),
+					h1("Focus on italian Regions"),br(),
 					##################################################
 					#  NUOVI CASI
 					fluidRow(style="padding:20px;background-color:#ffffff",
 						fluidRow(style="padding:20px;background-color:#ffffff",
-							column(4, h3("Numero casi giornalieri")),
+							column(4, h3("New infected daily")),
 							column(1),
 							column(2,
-								pickerInput(inputId = "tipoPlotSerieStoricheReg", label = "Tipo Grafico", choices = c("regionale","totale"),selected="regionale",options = list(size=10,`actions-box` = TRUE, `selected-text-format` = "count >20"), multiple = FALSE)
+								pickerInput(inputId = "tipoPlotSerieStoricheReg", label = "Graph type", choices = c("Regional","Overall"),selected="Regional",options = list(size=10,`actions-box` = TRUE, `selected-text-format` = "count >20"), multiple = FALSE)
 							),
 							column(2,
-								pickerInput(inputId = "varSelSerieStoricheReg", label = "Seleziona variabile", choices = c("nuovi casi","decessi"),selected="terapia intensiva",options = list(size=10,`actions-box` = TRUE, `selected-text-format` = "count >20"), multiple = FALSE)
+								pickerInput(inputId = "varSelSerieStoricheReg", label = "Select Variable", choices = c("new cases","deaths"),selected="new cases",options = list(size=10,`actions-box` = TRUE, `selected-text-format` = "count >20"), multiple = FALSE)
 							),
 							column(2,
 								pickerInput(inputId = "regionSelSerieStorichexReg", label = "Seleziona regioni", choices = regioniList,selected=regioniList, options = pickerOptions(size=10,actionsBox = T ,selectedTextFormat = "count >20",deselectAllText='Deseleziona tutto',selectAllText='Seleziona tutto'), multiple = TRUE)
@@ -334,16 +334,11 @@ worldtab <- tabItem(tabName = "world",
 #
 ######################################################
 
-dashboardPage(title="CoVid-19 in Italia",
+dashboardPage(title="CoVid-19 in Italy",
 	skin = "black",
-	dashboardHeader3b( pagename="CoVid-19 in Italia", logo_img = "logo_pangea_esteso.png", width = 200,
-	other_items=uiOutput('selLingua') ,
+	dashboardHeader3( pagename="CoVid-19 in Italy", logo_img = "logo_pangea_esteso.png", width = 200,
 
-
-		tags$li(uiOutput('data_agg') ,#uiOutput('selLingua'),
-		class='dropdown', style="color:#0b4975;font-weight: bold;margin-top:40px;margin-right: 40px;margin-left: 60px;")
-
-
+		tags$li(uiOutput('data_agg') ,class='dropdown', style="color:#0b4975;font-weight: bold;margin-top:40px;margin-right: 40px;margin-left: 60px;")
 
 
 												 ),
@@ -352,25 +347,25 @@ dashboardPage(title="CoVid-19 in Italia",
 ## bbar content
 	dashboardSidebar(uiOutput('sidebar'),
 						sidebarMenu(id='fitCFG',
-							menuItem2("Previsioni", tabName = "fitPlots", icon = icon("fas fa-chart-line"))
+							menuItem2("Forecast", tabName = "fitPlots", icon = icon("fas fa-chart-line"))
 						),
 			      sidebarMenu(id='tiCFG',
-			        menuItem2("Terapia Intensiva", tabName = "tiPlots", icon = icon("fas fa-heartbeat"))
+			        menuItem2("Intensive Care", tabName = "tiPlots", icon = icon("fas fa-heartbeat"))
 			      ),
 			      sidebarMenu(id='regCFG',
-			        menuItem2('Per Regione', tabName = "regPlots", icon = icon("far fa-chart-bar"))
+			        menuItem2('Regions', tabName = "regPlots", icon = icon("far fa-chart-bar"))
 			      ),#HTML('<font color="#0086b3">Per regione</font>')
 			      sidebarMenu(id='prvCFG',
-			        menuItem2("Per Provincia", tabName = "prvPlots", icon = icon("far fa-chart-bar"))#("vials"))
+			        menuItem2("Districts", tabName = "prvPlots", icon = icon("far fa-chart-bar"))#("vials"))
 			      ),
 			sidebarMenu(id='spiegazione',
-				menuItem2("Matematica della diffusione", tabName = "intro", icon = icon("fas fa-square-root-alt"))
+				menuItem2("Spred math", tabName = "intro", icon = icon("fas fa-square-root-alt"))
 			),
-			sidebarMenu(id='diariodibordo',
-				menuItem2("Diario ", tabName = "diario", icon = icon("fas fa-book-open"))
-			),
+#			sidebarMenu(id='diariodibordo',
+#				menuItem2("Diario ", tabName = "diario", icon = icon("fas fa-book-open"))
+#			),
 			sidebarMenu(id='presentazione',
-				menuItem2("Chi Siamo", tabName = "chisiamo", icon = icon("fas fa-users"))
+				menuItem2("Pangea", tabName = "chisiamo", icon = icon("fas fa-users"))
 			),
 			uiOutput('tasti_social')
 	),
@@ -382,7 +377,7 @@ dashboardPage(title="CoVid-19 in Italia",
 					 Shiny.onInputChange("GetNavUserAgent",jsAgt);
 				 });</script>'),
 	    tags$head(tags$link(rel = "stylesheet", type = "text/css", href = "pangea.css"),
-			tags$meta(property="og:title", content="CoVid-19 in Italia"),
+			tags$meta(property="og:title", content="CoVid-19 in Italy"),
 			tags$meta(property="og:image",content="plot.png"),
 			tags$meta(name="twitter:card",content="summary_large_image"),
 			tags$link(rel = "icon",href ="logo_piccolo.png",type = "image/x-icon")
@@ -397,7 +392,7 @@ dashboardPage(title="CoVid-19 in Italia",
         prvTab,
 			#	worldtab,
 		    introTab
-		    ,diariotab
+	#	    ,diariotab
 		    ,chisiamotab
 	))
 

@@ -39,10 +39,6 @@ observe({
 		}
 	})
 
-	output$selLingua <- renderUI({
-		prettyRadioButtons('lingua',"",choices = c("It", "En"), selected = "It",status = "success",shape = 'round',inline = T,animation = 'jelly',icon = icon('check'))
-	})
-
 
 	  autoInvalidate <- reactiveTimer(3600000)
   observe({
@@ -130,11 +126,7 @@ observe({
 output$data_agg<-renderText({
   str<-get_last_date()
 
-	lingua <- input$lingua
-	if(is.null(lingua)) return(NULL)
-
-	#str<-paste("Dati aggiornati al:",str)
-	titoloPagina <- ifelse(lingua=="It", yes=paste("Dati aggiornati al:",str), no=paste("Update:",str))
+	paste("Update:",str)
 
   })
 
@@ -143,7 +135,7 @@ output$data_agg<-renderText({
 output$updateRegUI <- renderUI({
 
 	if(verbose) cat("\n renderUI:updateRegUI")
-  h4(paste("Dati aggiornati al giorno:", get_last_date()))
+  h4(paste("Update:", get_last_date()))
 })
 
 
@@ -760,7 +752,7 @@ output$lineProvinceCasiVsNuovicasi <- renderPlotly({
 
 output$updatePrvUI <- renderUI({
 	if(verbose) cat("\n renderUI:updatePrvUI")
-  h3(paste("Dati aggiornati al giorno:", get_last_date()))
+  h3(paste("Update:", get_last_date()))
 })
 
 
@@ -979,13 +971,13 @@ getTimeSeriesReact <- reactive({
 
 output$updatePrevisioniUI <- renderUI({
 	if(verbose) cat("\n renderUI:updatePrevisioniUI")
-  h3(paste("Dati aggiornati al giorno:", get_last_date()))
+  h3(paste("Update:", get_last_date()))
 })
 
 
 output$updateTIUI <- renderUI({
 	if(verbose) cat("\n renderUI:updateTIUI")
-  h3(paste("Dati aggiornati al giorno:", get_last_date()))
+  h3(paste("Update:", get_last_date()))
 })
 
 
@@ -1514,18 +1506,20 @@ output$terapiaIntStoricoTot<- renderPlotly({
 	dati <-dati[regione %in% selregione]
 	setorder(dati, regione, data)
 #dati[, casi_nuovi:= c(0,diff(totale_casi)),regione]
-	if(tipoplot=="terapia intensiva"){
+	if(tipoplot=="intensive care"){
 		dati[, numero_pazienti:= terapia_intensiva,regione]
 	} else {
 		dati[, numero_pazienti:= totale_ospedalizzati,regione]
 	}
 
+
 	p <- 	ggplot(dati) + my_ggtheme() +
 				geom_bar(aes(y = numero_pazienti, x = data, fill=regione), stat="identity") +
 		 	scale_fill_manual(values=color_regioni) +
-			guides(fill=guide_legend(title="regione")) +
+			guides(fill=guide_legend(title="regions")) +
 			theme(axis.text.x=element_text(angle=45, hjust=1)) +
-			ylab("Casi Totali")
+			ylab("Number of patients")+
+			ylab("Date")
       plot<-ggplotly(p)
       if(reacval$mobile){
 
@@ -1555,23 +1549,25 @@ output$nuoviPositiviStoricoReg<- renderPlotly({
 
 
 	setorder(dati, regione, data)
-	if(varplot=="nuovi casi") {
-		dati[, casi_nuovi:= c(0,diff(totale_casi)),regione]
-	} else dati[, casi_nuovi:= c(0,diff(deceduti)),regione]
+	if(varplot=="new cases") {
+		dati[, num:= c(0,diff(totale_casi)),regione]
+	} else dati[, num:= c(0,diff(deceduti)),regione]
 
-	if(tipoplot=="totale") {
-		dati <- dati[, .(casi_nuovi=sum(casi_nuovi, na.rm=T)),data]
-		dati <- dati[, regione:="Totale regioni selezionate"]
+	if(tipoplot=="Overall") {
+		dati <- dati[, .(num=sum(num, na.rm=T)),data]
+		dati <- dati[, regione:="All selected regions"]
 	}
 
+
 	p <- 	ggplot(dati) + my_ggtheme() +
-			geom_bar(aes(y = casi_nuovi, x = data, fill=regione), stat="identity") +
-			guides(fill=guide_legend(title="regione")) +
+			geom_bar(aes(y = num, x = data, fill=regione), stat="identity") +
+			guides(fill=guide_legend(title="region")) +
 			theme(axis.text.x=element_text(angle=45, hjust=1)) +
-			ylab("")
+			ylab("")+
+			xlab("Date")
 
 
-			if(tipoplot!="totale") p <- p + scale_fill_manual(values=color_regioni)
+			if(tipoplot!="Overall") p <- p + scale_fill_manual(values=color_regioni)
 
       plot<-ggplotly(p)
 
@@ -1817,7 +1813,7 @@ output$nuoviPositiviStoricoProv<- renderPlotly({
 output$UIgiornoTI <- renderUI({
 	allDataReg <- copy(reacval$dataTables_reg)
 	if (is.null(allDataReg))retunr(NULL)
-	sliderInput("giornoTI", "Giorno:", min = min(allDataReg$data) + 1, max = max(allDataReg$data), value = max(allDataReg$data), animate = animationOptions(interval = 500), timeFormat="%b %d",width=300)
+	sliderInput("giornoTI", "Date:", min = min(allDataReg$data) + 1, max = max(allDataReg$data), value = max(allDataReg$data), animate = animationOptions(interval = 500), timeFormat="%b %d",width=300)
 
 })
 
@@ -1849,7 +1845,7 @@ output$terapiaIntPlotPercNow<- renderPlotly({
           geom_bar(stat="identity", fill="steelblue") + my_ggtheme() +
 	        theme(axis.text.x=element_text(angle=45,hjust=1))+
 					geom_hline(yintercept=100, linetype="dashed", color = "lightgrey")+
-          labs(x="", y="% letti occupati per CoVid19")
+          labs(x="", y="% TI occupancy by CoVid19")
 	p<-ggplotly(p, tooltip = c("text")) %>% config(locale = 'it')
 
   if(reacval$mobile){
@@ -1864,7 +1860,7 @@ output$terapiaIntPlotPercNow<- renderPlotly({
 output$UIgiornoTI2 <- renderUI({
 	allDataReg <- copy(reacval$dataTables_reg)
 	if (is.null(allDataReg))retunr(NULL)
-	sliderInput("giornoTI2", "Giorno:", min = min(allDataReg$data) + 1, max = max(allDataReg$data), value = max(allDataReg$data), animate = animationOptions(interval = 500), timeFormat="%b %d",width=300)
+	sliderInput("giornoTI2", "Date:", min = min(allDataReg$data) + 1, max = max(allDataReg$data), value = max(allDataReg$data), animate = animationOptions(interval = 500), timeFormat="%b %d",width=300)
 
 })
 
@@ -1889,68 +1885,8 @@ output$terapiaIntPlotNow<- renderPlotly({
         geom_bar(stat="identity", position=position_dodge())+my_ggtheme() +
 	      theme(axis.text.x=element_text(angle=45,hjust=1))+
         scale_fill_manual(values=d3hexcols) +
-        labs(x="", y="numero letti")
+        labs(x="", y="Covid19 occupancy")
   plot<- ggplotly(p, tooltip = c("text")) %>% config(locale = 'it')
-  if(reacval$mobile){
-    plot<-plot%>%layout(dragmode=F,legend=list(orientation='h',x=0.6,y=-0.4))
-
-  }
-  plot
-
-})
-
-
-output$terapiaIntPlotPercPrev<- renderPlotly({
-	if(verbose) cat("\n renderPlotly:terapiaIntPlotPercPrev")
-
-	tint <- terapiaInt()
-	giorno <- isolate(reacval$dateRange_reg[2])
-	tint <- tint[data==giorno,]
-
-	allDataReg <- copy(reacval$dataTables_reg)
-	prevDT <-copy(prevRegion())
-	if(is.null(tint)) return(NULL)
-	if(is.null(allDataReg)) return(NULL)
-	if(is.null(prevDT)) return(NULL)
-
-	totitalia<-aggregate( allDataReg[,c('totale_casi', 'terapia_intensiva')],by=list(data=allDataReg$data), sum)
-	totitalia$perc <-totitalia$terapia_intensiva/totitalia$totale_casi
-	percTI <-totitalia[which.max(totitalia$data), 'perc']
-
-	nahead <-3
-	oggi <- isolate(reacval$dateRange_reg)[2]
-
-  prevFin <- prevDT[between(prevDT$data,oggi+1,oggi+nahead),]
-	prevFin$Attesi 		<-round(prevFin$Attesi*percTI)
-
-	prevFin$UpperRange	<-prevFin$UpperRange*percTI
-	prevFin$LowerRange	<-prevFin$LowerRange*percTI
-	prevFin$data <- strftime(prevFin$data, format="%d-%m-%Y")
-  prevFin[,c("dataind","data2")]<-NULL
-  prevFin$ttip <- paste('Data:', prevFin$data,
-          '<br>Regione:', prevFin$regione,
-          '<br>Ricover attesi:', round(prevFin$Attesi),
-          '<br>Intervallo previsione:', paste0('[', round(prevFin$LowerRange,2), ', ', round(prevFin$UpperRange,2),']')
-        )
-
-	Ntint <- nrow(tint)
-  postiLetto <- data.frame(data=rep("posti disponibili", Ntint), Attesi= tint$lettiTI,
-                UpperRange=rep(0,Ntint), LowerRange=rep(0,Ntint),
-                regione=tint$denominazione_regione, stringsAsFactors=F)
-  postiLetto$ttip <- paste0('Regione: ', postiLetto$regione,
-          '<br>Posti disponibili: ', round(postiLetto$Attesi))
-
-	out <- rbind(prevFin, postiLetto)
-  out$data <- factor(out$data, levels=c(unique(prevFin$data[order(strptime(prevFin$data, format="%d-%m-%Y"))]), "posti disponibili"))
-	p <-ggplot(data=out, aes(x=regione, y=Attesi, fill=data,
-                text = ttip)) +
-        geom_bar(stat="identity", position=position_dodge()) + my_ggtheme() +
-	      theme(axis.text.x=element_text(angle=45,hjust=1)) +
-	      geom_errorbar(aes(ymin=LowerRange, ymax=UpperRange), width=.2, position=position_dodge(.9))+
-        scale_fill_manual(values=d3hexcols) +
-        labs(x="", y="numero letti", fill="")
-  plot<-ggplotly(p, tooltip = c("text")) %>% config(locale = 'it')
-
   if(reacval$mobile){
     plot<-plot%>%layout(dragmode=F,legend=list(orientation='h',x=0.6,y=-0.4))
 
@@ -2027,7 +1963,7 @@ prevItaCompare <- reactive({
 		err <- 1
 	}
 
-	if(tipoVariazione=='Totale'){
+	if(tipoVariazione=='Overall'){
 
 		vero <-tsIta$Italia[tsIta$Italia$data==(dataMod+1), c('totale_casi', 'deceduti', 'totale_ospedalizzati', 'terapia_intensiva')]
 
@@ -2169,35 +2105,39 @@ output$tabCompare <- renderDT({
 
 
 output$tab_desktop<-renderUI({
-	lingua <- input$lingua
-	if(is.null(lingua)) return(NULL)
-	titoloPagina <- ifelse(lingua=="It", yes="Previsioni", no="Forecast")
+
+	titoloPagina <- "Forecast"
+	descPagina <- "On this page we offer a comparison between observed data and two growth models: the exponential one describes a diffusion whose increase rate is constant, which is what happens when an epidemic's spread is out of control; the quadratic exponential takes a decrease of the growth rate over time into account. This decrease can either be due to containment measures or to the running out of infectable population."
+	typeChoises <- c("Lineare", "Logaritmico")
+	names(typeChoises) <- c("Linear", "Logarithmic")
+	fitChoises <- c("Gompertz", "Esp. quadratico", "Esponenziale" )
+	names(fitChoises) <- c("Gompertz", "Quadratic Exp", "Exponential" )
 
   fluidRow(style="padding-left:30px;padding-right:30px;border-style: solid;border-color:#009933;",#" border-color :#009933;",
     h1(titoloPagina),
     fluidRow(
-      column(12,h4("In questa pagina proponiamo il confronto tra i dati osservati e due modelli di crescita: il modello esponenziale descrive una diffusione in cui il tasso di crescita è costante, questo accade quando l'epidemia si diffonde senza controllo; il modello esponenziale quadratico tiene in conto di una diminuzione del tasso di crescita con l'avanzare del tempo. Questa diminuzione può essere dovuta a misure contenitive o all'esaurimento della popolazione contagiabile."))
+      column(12,h4(descPagina))
 
     ),
        br(),
       fluidRow(style="padding:30px;background-color:#ffffff",
 	      fluidRow(
 	        column(4,
-	          prettyRadioButtons('regionLinLogFit',"Tipo Grafico",choices = c("Lineare", "Logaritmico"), selected = "Lineare",status = "success",shape = 'round',inline = T,animation = 'jelly',icon = icon('check'))
+	          prettyRadioButtons('regionLinLogFit',"Graph type",choices = typeChoises, selected = "Lineare",status = "success",shape = 'round',inline = T,animation = 'jelly',icon = icon('check'))
 	          ),
 	        column(3,
-	          prettyRadioButtons('modelloFit',"Tipologia Modello",choices = c("Gompertz", "Esp. quadratico", "Esponenziale" ), selected="Gompertz",status = "success",shape = 'round',inline = T,animation = 'jelly',icon = icon('check'))
+	          prettyRadioButtons('modelloFit',"Fit model",choices = fitChoises, selected="Gompertz",status = "success",shape = 'round',inline = T,animation = 'jelly',icon = icon('check'))
 	          )
 				),
  			 fluidRow(style="padding:30px;background-color:#ffffff",
-           fluidRow(align="center",h3("Andamenti globali in Italia con previsione a 3 giorni")),
+           fluidRow(align="center",h3("Trends and short term forecast (3 days)")),
            addSpinner(plotlyOutput(outputId="fitIta"), spin = "fading-circle", color = "#009933"),
  					spiegaFitTot
  			 ),
 
-        fluidRow(align="center",h3("Andamento casi positivi per regione con previsione a 3 giorni")),
+        fluidRow(align="center",h3("Regional trend and short term forecast (3 days)")),
         fluidRow(style='padding-left:30px',
-					pickerInput(inputId = "regionSelFit", label = "Seleziona regioni", choices = regioniList,selected=regioni2fit, options = pickerOptions(size=10,actionsBox = T ,selectedTextFormat = "count >20",deselectAllText='Deseleziona tutto',selectAllText='Seleziona tutto'), multiple = TRUE)
+					pickerInput(inputId = "regionSelFit", label = "Select regions", choices = regioniList,selected=regioni2fit, options = pickerOptions(size=10,actionsBox = T ,selectedTextFormat = "count >20",deselectAllText='Deseleziona tutto',selectAllText='Seleziona tutto'), multiple = TRUE)
 				),
        	addSpinner(plotlyOutput(outputId="fitRegion"), spin = "fading-circle", color = "#009933"),
 			 	spiegaFitPos
@@ -2207,20 +2147,22 @@ output$tab_desktop<-renderUI({
 
       fluidRow(style="background-color:#ffffff",
 
-          column(10,offset=1,align="center",h3("Variazione percentuale giorno per giorno")),
+          column(10,offset=1,align="center",h3("New infected rate (daily)")),
           fluidRow(style="padding-left:50px;",
-            pickerInput(inputId = "varSel", label = "Seleziona variabile", choices = c("deceduti","totale contagiati"),selected="totale contagiati",options = list(size=10,`actions-box` = TRUE, `selected-text-format` = "count >20"), multiple = FALSE))),
+            pickerInput(inputId = "varSel", label = "Select variable", choices = c("deceduti","totale contagiati"),selected="totale contagiati",options = list(size=10,`actions-box` = TRUE, `selected-text-format` = "count >20"), multiple = FALSE))),
         fluidRow(style="padding:10px;background-color:#ffffff",addSpinner(plotlyOutput(outputId="percDeltaTot"), spin = "fading-circle", color = "#009933"),spiegaVariazionePercentuale),
       br(),br(),
 		 fluidRow(style="padding:30px;background-color:#ffffff",
-			 h3("Andamento dei valori asintotici (massimi raggiunti) ipotizzando un evoluzione di tipo Gompertz"),
+			 h3("Asymptotic values with Gompertz fit"),
 				 addSpinner(DTOutput("tabAsintoto"), spin = "fading-circle", color = "#009933"),
 				 spiegaTabellaGompertz
 			 #	addSpinner(DTOutput("plotAsintoto"), spin = "fading-circle", color = "#009933"),
 
 		 ),fluidRow(style="padding:30px;background-color:#ffffff",
           column(width=4,
-            selectizeInput("tipoCompare", label="Tipo Comparazione", choices=c("Totale", "Incremento Giornaliero"), selected = "Lineare")
+            selectizeInput("tipoCompare", label="Coparison type", choices=c("Overall", "Daily"),
+						#choices=c("Totale", "Incremento Giornaliero"),
+						selected = "Overall")
           ),
           column(width=4,
             uiOutput("dateCompare")
@@ -2234,15 +2176,19 @@ output$tab_desktop<-renderUI({
   })
 
 output$tab_mobile<-renderUI({
-	lingua <- input$lingua
-	if(is.null(lingua)) return(NULL)
-	titoloPagina <- ifelse(lingua=="It", yes="Previsioni", no="Forecast")
+
+	titoloPagina <- "Forecast"
+	descPagina <-"On this page we offer a comparison between observed data and two growth models: the exponential one describes a diffusion whose increase rate is constant, which is what happens when an epidemic's spread is out of control; the quadratic exponential takes a decrease of the growth rate over time into account. This decrease can either be due to containment measures or to the running out of infectable population."
+	typeChoises <- c("Lineare", "Logaritmico")
+	names(typeChoises) <- c("Linear", "Logarithmic")
+	fitChoises <- c("Gompertz", "Esp. quadratico", "Esponenziale" )
+	names(fitChoises) <- c("Gompertz", "Quadratic Exp", "Exponential" )
 
 
   fluidRow(style="padding-left:30px;padding-right:30px;border-style: solid;border-color:#009933;",#" border-color :#009933;",
   	h1(titoloPagina),
   	fluidRow(
-  		column(12,h4("In questa pagina proponiamo il confronto tra i dati osservati e due modelli di crescita: il modello esponenziale descrive una diffusione in cui il tasso di crescita è costante, questo accade quando l'epidemia si diffonde senza controllo; il modello esponenziale quadratico tiene in conto di una diminuzione del tasso di crescita con l'avanzare del tempo. Questa diminuzione può essere dovuta a misure contenitive o all'esaurimento della popolazione contagiabile."))
+  		column(12,h4(descPagina))
 
   	),
   		 br(),
@@ -2252,10 +2198,10 @@ output$tab_mobile<-renderUI({
 
         fluidRow(style="padding-left:30px;",
         column(4,
-          prettyRadioButtons('regionLinLogFit',"Tipo Grafico",choices = c("Lineare", "Logaritmico"), selected = "Lineare",status = "success",shape = 'round',inline = T,animation = 'jelly',icon = icon('check'))
+          prettyRadioButtons('regionLinLogFit',"Graph type",choices = typeChoises, selected = "Lineare",status = "success",shape = 'round',inline = T,animation = 'jelly',icon = icon('check'))
           ),
         column(4,
-          prettyRadioButtons('modelloFit',"Tipologia Modello",choices = c("Gompertz", "Esp. quadratico", "Esponenziale" ), selected="Gompertz",status = "success",shape = 'round',inline = T,animation = 'jelly',icon = icon('check'))
+          prettyRadioButtons('modelloFit',"Fit model",choices = fitChoises, selected="Gompertz",status = "success",shape = 'round',inline = T,animation = 'jelly',icon = icon('check'))
           ))),
 
         fluidRow(style="background-color:#ffffff",column(10,offset=1,
@@ -2308,7 +2254,7 @@ output$tab_mobile<-renderUI({
       fluidRow(style="padding:30px;background-color:#ffffff",
 
           column(width=4,
-            selectizeInput("tipoCompare", label="Tipo Comparazione", choices=c("Totale", "Incremento Giornaliero"),  selected = "Lineare")
+            selectizeInput("tipoCompare", label="Tipo Comparazione", choices=c("Overall", "Daily"),  selected = "Overall")
           ),
           column(width=4,
             uiOutput("dateCompare")
@@ -2470,7 +2416,7 @@ output$video<-renderUI({
 
 output$updateworld <- renderUI({
 	if(verbose) cat("\n renderUI:updateworld")
-  h3(paste("Dati aggiornati al giorno:", get_last_date()))
+  h3(paste("Update:", get_last_date()))
 })
 
 
