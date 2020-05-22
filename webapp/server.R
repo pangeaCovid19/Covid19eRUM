@@ -129,7 +129,13 @@ observe({
 
 output$data_agg<-renderText({
   str<-get_last_date()
-  str<-paste("Dati aggiornati al:",str)
+
+	lingua <- input$lingua
+	if(is.null(lingua)) return(NULL)
+
+	#str<-paste("Dati aggiornati al:",str)
+	titoloPagina <- ifelse(lingua=="It", yes=paste("Dati aggiornati al:",str), no=paste("Update:",str))
+
   })
 
 
@@ -2163,9 +2169,12 @@ output$tabCompare <- renderDT({
 
 
 output$tab_desktop<-renderUI({
+	lingua <- input$lingua
+	if(is.null(lingua)) return(NULL)
+	titoloPagina <- ifelse(lingua=="It", yes="Previsioni", no="Forecast")
 
   fluidRow(style="padding-left:30px;padding-right:30px;border-style: solid;border-color:#009933;",#" border-color :#009933;",
-    h1("Previsioni"),
+    h1(titoloPagina),
     fluidRow(
       column(12,h4("In questa pagina proponiamo il confronto tra i dati osservati e due modelli di crescita: il modello esponenziale descrive una diffusione in cui il tasso di crescita è costante, questo accade quando l'epidemia si diffonde senza controllo; il modello esponenziale quadratico tiene in conto di una diminuzione del tasso di crescita con l'avanzare del tempo. Questa diminuzione può essere dovuta a misure contenitive o all'esaurimento della popolazione contagiabile."))
 
@@ -2225,9 +2234,13 @@ output$tab_desktop<-renderUI({
   })
 
 output$tab_mobile<-renderUI({
+	lingua <- input$lingua
+	if(is.null(lingua)) return(NULL)
+	titoloPagina <- ifelse(lingua=="It", yes="Previsioni", no="Forecast")
+
 
   fluidRow(style="padding-left:30px;padding-right:30px;border-style: solid;border-color:#009933;",#" border-color :#009933;",
-  	h1("Previsioni"),
+  	h1(titoloPagina),
   	fluidRow(
   		column(12,h4("In questa pagina proponiamo il confronto tra i dati osservati e due modelli di crescita: il modello esponenziale descrive una diffusione in cui il tasso di crescita è costante, questo accade quando l'epidemia si diffonde senza controllo; il modello esponenziale quadratico tiene in conto di una diminuzione del tasso di crescita con l'avanzare del tempo. Questa diminuzione può essere dovuta a misure contenitive o all'esaurimento della popolazione contagiabile."))
 

@@ -166,10 +166,19 @@ spiegaFitMedioTermine<- HTML("<div style='padding-top:10px;'>In questo grafico v
 
 spiegaVariazionePercentuale<- HTML("<div style='padding-top:10px;'>In questo grafico viene mostrato l'aumento percentuale dei casi totali rispetto al giorno precedente. Se l'aumento fosse esponenziale questo valore sarebbe costante in media, nel caso di andamento esponenziale quadratico avremmo una retta discendente. La diminuzione della variazione percentuale di casi totali indica che il rate di espansione del virus sta diminuendo. Questo potrebbe essere dovuto al raggiungimento di un numero di contagi così alto da rendere meno veloce un ulteriore propagazione del virus oppure essere il risultato delle misure di contenimento. Siamo convinti che questa diminutione sia il risultato del contenimento.</div>")
 
+
+spiegaVariazionePercentuale_en<- HTML("<div style='padding-top:10px;'>en</div>")
+
 spiegaConfrontoSerieRegioni<- HTML("<div style='padding-top:10px;'>In questo è possibile confrontare l'andamento temporale di contagi (deceduti) nelle diverse regioni di Italia. Grazie agli slider input è possibile spostare in avanti e indietro le diverse serie storiche.</div>")
 
 
 spiegaConfrontoSerieProvince<- HTML("<div style='padding-top:10px;'>In questo è possibile confrontare l'andamento temporale di contagi nelle diverse province italiane. Grazie agli slider input è possibile spostare in avanti e indietro le diverse serie storiche.</div>")
+
+
+spiegaConfrontoSerieRegioni_en<- HTML("<div style='padding-top:10px;'>spiegaConfrontoSerieRegioni_en</div>")
+
+
+spiegaConfrontoSerieProvince_en<- HTML("<div style='padding-top:10px;'>spiegaConfrontoSerieProvince_en.</div>")
 
 
 spiegaFitPos <- HTML("<div style='padding-top:10px;'>In questo grafico mostriamo la serie storica dei casi confermati di
