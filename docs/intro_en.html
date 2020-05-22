@@ -1,0 +1,87 @@
+<h1> How fast is Coronavirus spreading in Italy? </h1>
+
+<body>
+<p>
+The spread of Coronavirus, <a href="http://www.salute.gov.it/portale/nuovocoronavirus/dettaglioNotizieNuovoCoronavirus.jsp?lingua=italiano&menu=notizie&p=dalministero&id=4209"> which has been declared a pandemic by the WHO</a>, is currently causing global effects. Italy has quickly become <a href="https://experience.arcgis.com/experience/685d0ace521648f8a5beeeee1b9125cd">the second country in the world by diffusion</a>, forcing its government to issue a series of decrees <a href="https://www.gazzettaufficiale.it/eli/id/2020/03/01/20A01381/sg">ever </a> <a href="https://www.gazzettaufficiale.it/eli/id/2020/03/08/20A01522/sg">growing  </a> <a href="https://www.gazzettaufficiale.it/eli/id/2020/03/11/20A01605/sg">in restrictiveness</a>, in order to slow down the infection rate, which has caused and is still causing great difficulties to our National Healthcare System.
+</p>
+
+<h2>Diffusion Mathematics</h2>
+<p>
+Form a mathematical point of view, we may ask if said measures are actually effective. For a better understanding, we must confront the trends we have observed regarding new infection cases, new patients in need of intensive care and recently deceased, with a theoretical trend which can reproduce the aforementioned quantities <i>in the absence of containment measures</i>. The data we have analyzed is official data which has been <a href="https://github.com/pcm-dpc/COVID-19">made public</a> by the Civil Protection.
+</p>
+
+<p>
+A virus spread mathematical model must take a few factors into account. First, the virus' ability to take root from an infected subject to another. Second, the immune system defenses: are subjects who have overcome the virus-generated pathologies now immune? Subsequently, how many, if any, naturally immune subjects are there?
+</p>
+<p>
+Qualitatively, what we expect is that if we were to monitor the number of infected cases over timie, it should have the following key features.
+<ul>
+<li>Initially, diffusion is very fast, even exponential. Indeed, the virus has the highest chance of taking root.</li>
+<li>At a certain point, the exponential growth interrupts. This is due to the fact that many subjects are already infected or immune. The number of infected people increases, but in a somewhat linear way.</li>
+<li>
+In the last phase, the virus has already infected almost all of those who could've been infected in the first place. The virus' spread reaches a <i>plateau value.</i></li>
+</ul>
+
+The described behaviour matches the trend of a <a href="https://it.wikipedia.org/wiki/Equazione_logistica">logistic function</a>. This is the solution of a differential equation, called <i>Verhulst equation</i>, which describes virus' (or other diffusion phenomena's) behaviour. For instance, the spreading of a new product is similar. Another function with this property is the <a href="https://it.wikipedia.org/wiki/Legge_di_Gompertz">Gomphertz function</a>. 
+</p>
+<p>
+Will Coronavirus inevitably follow this path? Yes and no; let's see why.
+<ul>
+<li>The logistic equation presupposes the transmission rate (the  <a href="https://www.iss.it/primo-piano/-/asset_publisher/o4oGR9qmvUz9/content/id/5268851">famous R parameter</a>) to be constant in time. This depends on how many interactions subjects have. If the population changes its behaviour, thus diminishing contacts, the R parameter will decrease.</li>
+<li>The <i>plateau</i> value isn't known. We don't know which percentage of the population could be infected.</li>
+<li>Despite the previous two points, it's reasonable to think that such a plateau value is still very far. Even viruses that are less infectious than CoVid19, such as normal seasonal flu, may get to infect millions of subjects in Italy alone. With the actual infection numbers we expect an exponential trend in the absence of measures.</i></li>
+</ul>
+</p>
+<p>
+Already-available analyses have shown the start of the infection has actually been exponential, although such a rhythm has subsequently decreased, hopefully because of a change in the population's behaviour. The question which arises now is when we will reach the "peak", i.e. the moment when the new daily infections will start to actually decrease. As we have seen, we don't have a theoretical model which can take unknown effects of undertaken measures into account. Scarcity of swabs and other factors may yield extimation mistakes.
+</p>
+<h2>Machine Learning</h2>
+
+<p>
+Nonetheless, we could try to find out what the infection trend is using <a href="https://it.wikipedia.org/wiki/Apprendimento_automatico">machine learning</a> techniques. Theoretically, there shouldn't be problems in rebuilding a function which effectively reproduces all data observed up to this point. Unfortunately, doing so would inevitably cause an <a href="https://it.wikipedia.org/wiki/Overfitting">overfitting</a> phenomenon - i.e., building a model which is infallible in describing what we already know, albeit incapable of telling what we don't know, such as forecasting future values.
+</p>
+<p>
+Another problem which is linked to machine learning techniques is the so-called <a href="https://medium.com/@ODSC/opening-the-black-box-interpretability-in-deep-learning-13ecc80ae34e">interpretability</a>. 
+Assuming our model is capable of predicting future data, the value often actually lies in understanding how said forecasts are carried out.
+</p>
+<h2>Implemented models</h2>
+<p>
+For these reasons, we chose to implement models that exclusively had the following properties.
+<ul>
+<li>Ability to rebuild past data.</li>
+<li>Simplicity. Our model must have few, easy-to-interpret parameters.</li>
+<li>Utility. We believe that in our case the usefulness of the model mainly lies in managing to monitor the current situation, rather than carrying out perfect forecasts.</li>
+</ul>
+</p>
+<p>
+The first model is a pure exponential. Its main utility is that of monitoring the existence (or non-existence) of an effect of containment measures. In the case in which these wouldn't work, we'd record data with a trend which would be fully accordant to the exponential growth. If the data stands below such a trend, we can infer that there are slowing down effects.
+
+The second model is a simple generalization of the exponential model, described by the following equation:
+<br>
+<img src="https://latex.codecogs.com/gif.latex?log(N) = a+bt+ct^2" border="0"/>
+<br>
+where N is the number of infected people and t is time. Such a trend implies the exponential growth rate decreases (or increases) linearly over time. Furthermore, such a model is also an approximation of the logistical trend occurring near the non-exponential regime. The c parameter tells us how much the exponential growth is slowing down. It also tells us, in this particular case, how well things are going. A value of 0 implies a pure exponential trend (things are going bad). A negative value means there is a slowing down, while a positive one implies an actual acceleration in the expansion. To date (16 March 2020), this second model describes observed data better than the first one.
+<br>
+Since the 4th of May (the start of Phase 2), we have also implemented the aforementioned Gompertz model, which allows us to readily have a plateau value, and describes available data even better.
+</p>
+<p>
+We must point out that forecasts carried out by these models are more somewhat of an <a href="https://it.wikipedia.org/wiki/Estrapolazione">extrapolation</a>. In particular, one must expect the second model to be imprecise both in the first phases of viral expansion, as it could not be able to forecast the interruption of the exponential trend, and in the next phases, as a quadratic trend could be too fast in the proximity of a hopeful pandemic peak. Last but not least, in the phase immediately following the peak, one witnesses a decrease of new infections which is slower than that one would expect from a quadratic exponential trend: in this regime, we expect our model to underestimate the number of new cases.
+</p>
+
+<h3>How to confront real data extrapolation</h3>
+
+Our app allows comparison between what our models forecasted on the previous day and actual observed data. Depending on the deviation between forecast and observed data, we can infer a few considerations. We'd like to point out that none of these can safely be labelled conclusive, due to the (non-total) reliability of available data, to the natural statistical obscillations, to model assumptions and so on.
+
+
+<ul>
+<li>A strict agreement between data and exponential model (or, even worse, data exceeding the exponential model) is a negative sign, suggesting the restrictive measures are late in yielding desired effects.</li>
+<li>If the Gompertz model consistently forecasts the same plateau, the virus diffusion is currently under control.
+</li>
+<li>Viceversa, an increase in the plateau value could mean the virus diffusion is getting back to a rhythm which is higher than the actual one.</li>
+</ul>
+
+If you have any questions, or would like to focus on something in particular, please feel free to contact <a href = "mailto: info.coronavirus@pangeaformazione.it">info.coronavirus@pangeaformazione.it</a>.
+
+
+<br><br><br><br><br><br><br><br><br><br><br><br><br>
+</body>
