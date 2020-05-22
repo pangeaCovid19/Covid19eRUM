@@ -475,7 +475,7 @@ output$lineProvinceConfronto <- renderPlotly({
         scale_color_manual(values=color_province) +
         theme(legend.title=element_blank())+theme(axis.text.x=element_text(angle=45, hjust=1)) +
 				guides(fill=guide_legend(title="provincia")) +
-        xlab("")+ylab(var2plotNew)
+        xlab("Date")+ylab("Total cases")
   if(reacval$mobile){
     p<-p+scale_x_date(date_breaks="6 day",date_labels="%b %d")}
   else{
@@ -736,16 +736,16 @@ output$lineProvinceCasiVsNuovicasi <- renderPlotly({
 					geom_point( aes(x=VAR2PLOT, y=casi_roll, color=denominazione_provincia)) +
 					geom_line(group=1, # group=1 serve per aggirare un bug di ggplotly con tooltip = c("text")
 					aes(x=VAR2PLOT, y=casi_roll,color=denominazione_provincia,
-					text = paste('Provincia:', denominazione_provincia, '<br>Totali:', VAR2PLOT,
-					paste0("<br>Casi ultimi ",ndays," giorni"), casi_roll)))+
+					text = paste('Districts:', denominazione_provincia, '<br>Total cases:', VAR2PLOT,
+					paste0("<br>Cases last ",ndays," days"), casi_roll)))+
 				scale_color_manual(values=color_province) +
 				theme(legend.title=element_blank())+#theme(axis.text.x=element_text(angle=45, hjust=1)) +
 				guides(fill=guide_legend(title="province")) +
 				coord_cartesian(xlim =xra, ylim = yra)+
-				xlab("Totali")+ylab(paste0("ultimi ",ndays," giorni"))+
+				xlab("Total cases")+ylab(paste0("last ",ndays," days"))+
 				scale_y_log10() + scale_x_log10()
 
-        plot<-ggplotly(p)
+        plot<-ggplotly(p, tooltip = c("text"))
             if(reacval$mobile){
 
               plot<-plot%>%layout(legend=list(orientation='h',x=-0,y=-0.3))%>%
@@ -861,14 +861,14 @@ output$selProvince <- renderUI({
   if (!is.null(allDataPrv)) {
 		if(animazione){
 			fluidRow(
-				selectInput("regionSel", label="Seleziona regione", choices=regioniList, selected = "Lombardia"),
+				selectInput("regionSel", label="Select regions", choices=regioniList, selected = "Lombardia"),
 	      sliderInput("giornoPrv", "Day:",
         min = min(allDataPrv$data) + 1, max = max(allDataPrv$data),
         value = max(allDataPrv$data), animate = animationOptions(interval = 1000), timeFormat="%b %d")
     	)
 		} else {
 			fluidRow(
-				selectInput("regionSel", label="Seleziona regione", choices=regioniList, selected = "Lombardia")
+				selectInput("regionSel", label="Select regions", choices=regioniList, selected = "Lombardia")
     	)
 		}
   }
@@ -926,7 +926,7 @@ output$mapProvince <- renderLeaflet({
         addLegend(pal = pal, values = ~log10(pmax(1,allDataPrv$totale_casi)), opacity = 0.7,
                 labFormat = labelFormat(transform = function(x) round(10^x), big.mark = "."),
                 position = 'bottomright',
-                title = paste0("casi"))
+                title = paste0("cases"))
 		)} else {suppressWarnings(
 			out <-leaflet(data = pltProvince, options = leafletOptions(zoomControl = FALSE,minZoom = 7, maxZoom = 7)) %>% addTiles() %>%
         addProviderTiles("CartoDB.Positron") %>% setView(lng=my_frame$reg_long, lat=my_frame$reg_lat, zoom=7)  %>%
@@ -936,7 +936,7 @@ output$mapProvince <- renderLeaflet({
         addLegend(pal = pal, values = ~log10(pmax(1,allDataPrv$totale_casi)), opacity = 0.7,
                 labFormat = labelFormat(transform = function(x) round(10^x), big.mark = "."),
                 position = 'bottomright',
-                title = paste0("casi"))
+                title = paste0("cases"))
 		)}
 		(out)
 
@@ -1617,8 +1617,8 @@ output$nuoviPositiviStoricoRegPercentuale<- renderPlotly({
 
 		p <- 	ggplot(res) + my_ggtheme() +
 				geom_point(group=1, aes(y = log10(deltaPerc), x = data, color=regione,
-				text = paste('data:', data,
-					'<br>Percentuale: ', paste0(round(deltaPerc,2), "%"))
+				text = paste('date:', data,
+					'<br>Percentage: ', paste0(round(deltaPerc,2), "%"))
 				), stat="identity") +
 				geom_line(group=1, aes(y = log10(deltaPerc), x = data, color=regione), stat="identity") +
 				theme(axis.text.x=element_text(angle=45, hjust=1)) +scale_y_continuous(breaks=c(-0.3,0,0.7,1,1.7),labels=paste(c(0.5,1,5,10,50),"%"))+
@@ -1638,8 +1638,8 @@ output$nuoviPositiviStoricoRegPercentuale<- renderPlotly({
 		p <- 	ggplot(dati) + my_ggtheme() +
 				#geom_bar(aes(y = log(deltaPerc), x = data, fill=regione), stat="identity") +
 				geom_point(group=1, aes(y = log10 (deltaPerc), x = data, color=regione,
-				text = paste('data:', data,
-					'<br>Percentuale: ', paste0(round(deltaPerc,2), "%"),
+				text = paste('date:', data,
+					'<br>Percentage: ', paste0(round(deltaPerc,2), "%"),
 					'<br>Regione: ', regione)
 				), stat="identity") +
 				scale_color_manual(values=color_regioni) +
@@ -1676,7 +1676,7 @@ output$inpProvincePositiviStoricoPrvPercentuale <- renderUI({
 	}
 
 	provSelList <- prvReg[denominazione_regione %in% selregione, denominazione_provincia]
-	pickerInput(inputId = "provSelSerieStorichexPrvPer", label = "Seleziona provincia", choices = provSelList, selected=provSelList, options = pickerOptions(size=10,actionsBox = T ,selectedTextFormat = "count >20",deselectAllText='uncheck all',selectAllText='check all'), multiple = TRUE)
+	pickerInput(inputId = "provSelSerieStorichexPrvPer", label = "Sellect Districts", choices = provSelList, selected=provSelList, options = pickerOptions(size=10,actionsBox = T ,selectedTextFormat = "count >20",deselectAllText='uncheck all',selectAllText='check all'), multiple = TRUE)
 
 })
 
@@ -1697,7 +1697,7 @@ output$nuoviPositiviStoricoPrvPercentuale<- renderPlotly({
 	dati <-dati[provincia %in% selprov]
 	setorder(dati, provincia, data)
 
- 	if(tipoplot=="globale"){
+ 	if(tipoplot=="Overall"){
 		res <- dati[, .(totale_casi=sum(totale_casi)), by=data]
 		res[, tot := shift(totale_casi, type="lag")]
 		res[, new := c(NA,diff(totale_casi))]
@@ -1717,8 +1717,8 @@ output$nuoviPositiviStoricoPrvPercentuale<- renderPlotly({
 		p <- 	ggplot(res) + my_ggtheme() +
 				#geom_bar(aes(y = log(deltaPerc), x = data, fill=provincia), stat="identity") +
 				geom_point(group=1, aes(y = log10(deltaPerc), x = data, color=provincia,
-				text = paste('data:', data,
-					'<br>Percentuale: ', paste0(round(deltaPerc,2), "%"))
+				text = paste('date:', data,
+					'<br>Percentage: ', paste0(round(deltaPerc,2), "%"))
 				), stat="identity") +
 				geom_line(group=1, aes(y = log10(deltaPerc), x = data, color=provincia), stat="identity") +
 				theme(axis.text.x=element_text(angle=45, hjust=1)) +scale_y_continuous(breaks=c(-0.3,0,0.7,1,1.7),labels=paste(c(0.5,1,5,10,50),"%"))+
@@ -1736,12 +1736,12 @@ output$nuoviPositiviStoricoPrvPercentuale<- renderPlotly({
 
 		p <- 	ggplot(dati) + my_ggtheme() +
 				geom_point(group=1, aes(y = log10(deltaPerc), x = data, color=provincia,
-				text = paste('data:', data,
-					'<br>Percentuale: ', paste0(round(deltaPerc,2), "%"),
-					'<br>Provincia: ', provincia)), stat="identity") +
+				text = paste('date:', data,
+					'<br>Percentage: ', paste0(round(deltaPerc,2), "%"),
+					'<br>district: ', provincia)), stat="identity") +
 				scale_color_manual(values=color_regioni) +
 				geom_line(group=1, aes(y = log10(deltaPerc), x = data, color=provincia), stat="identity") +
-				guides(fill=guide_legend(title="provincia")) +
+				guides(fill=guide_legend(title="districts")) +
 				scale_color_manual(values=color_province) +
 				theme(axis.text.x=element_text(angle=45, hjust=1)) +
 				scale_y_continuous(breaks=c(-1,-0.3,0,0.7,1,1.7, 2),labels=paste(c(0.1, 0.5,1,5,10,50, 100),"%"))+
@@ -1848,7 +1848,7 @@ output$terapiaIntPlotPercNow<- renderPlotly({
 	tint<-tint[data==giorno, ]
 	p <- ggplot(data=tint, aes(x=denominazione_regione, y=percTI,
                 text = paste('Regione:', denominazione_regione,
-                  '<br>Percentuale: ', round(percTI)))) +
+                  '<br>Percentage: ', round(percTI)))) +
           geom_bar(stat="identity", fill="steelblue") + my_ggtheme() +
 	        theme(axis.text.x=element_text(angle=45,hjust=1))+
 					geom_hline(yintercept=100, linetype="dashed", color = "lightgrey")+

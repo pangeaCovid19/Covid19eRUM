@@ -229,19 +229,19 @@ prvTab <- tabItem(tabName = "prvPlots",
 							##################################################
 							br(),
 							fluidRow(style="padding:20px;background-color:#ffffff",
-								column(width=12, h3("Tabella monitoraggio confermati"),DTOutput(outputId="tabProvinceMonitor"), spiegaTabellaMonitor
+								column(width=12, h3("Confirmed cases, monitornig table"),DTOutput(outputId="tabProvinceMonitor"), spiegaTabellaMonitor
 								)
 							),br(),
 							# Tasso crescila logaritmico provinciale
 							fluidRow(style="padding:30px;background-color:#ffffff",
 								fluidRow(style="padding:20px;background-color:#ffffff",
-									column(3, h3("Tasso di crescita giornaliero")),
+									column(3, h3("Daily growth rate")),
 									column(1),
 									column(2,
-										pickerInput(inputId = "tipoPlotSerieStorichePrvPer", label = "Graph type", choices = c("regionale","globale"),selected="globale",options = list(size=10,`actions-box` = TRUE, `selected-text-format` = "count >20"), multiple = FALSE)
+										pickerInput(inputId = "tipoPlotSerieStorichePrvPer", label = "Graph type", choices = c("Districts","Overall"),selected="Overall",options = list(size=10,`actions-box` = TRUE, `selected-text-format` = "count >20"), multiple = FALSE)
 									),
 									column(3,
-										pickerInput(inputId = "regionSelSerieStorichexPrvPer", label = "Seleziona regione", choices = regioniList, selected=regioniList, options = pickerOptions(size=10,actionsBox = T ,selectedTextFormat = "count >20",deselectAllText='uncheck all',selectAllText='check all'), multiple = TRUE)
+										pickerInput(inputId = "regionSelSerieStorichexPrvPer", label = "Select region", choices = regioniList, selected=regioniList, options = pickerOptions(size=10,actionsBox = T ,selectedTextFormat = "count >20",deselectAllText='uncheck all',selectAllText='check all'), multiple = TRUE)
 									),
 									column(3,
 										uiOutput('inpProvincePositiviStoricoPrvPercentuale')
@@ -254,7 +254,7 @@ prvTab <- tabItem(tabName = "prvPlots",
 							br(),
 							# CASI VS NUOVI CASI
 							fluidRow(style="padding:30px;background-color:#ffffff",
-								h3("Nuovi casi in funzione del numero totale di casi"),
+								h3("New cases versus total cases"),
 									uiOutput('inputProvinceCasiVsNuovicasi'),
 										fluidRow(style="overflow-x:scroll;",align='center',addSpinner(plotlyOutput('lineProvinceCasiVsNuovicasi'), spin = "fading-circle", color = "#add437")),
 									spiegaGraficoCasiVsCasiNuovi
@@ -263,10 +263,10 @@ prvTab <- tabItem(tabName = "prvPlots",
 							br(),
 							# confronto serie storiche
 							fluidRow(style="padding:30px;background-color:#ffffff",
-								h3("Confronto tra serie storiche"),
+								h3("Timeseries comparison"),
 								fluidRow(style="padding:20px;",
 									column(width=3,
-										pickerInput(inputId = "provSelSerieStoriche", label = "Seleziona province", choices = provinceList,selected=province2fit, options = pickerOptions(size=10,actionsBox = F,maxOptionsText=HTML('<font color=#ad0000>È possibile confrontare al più 6 province!</font>') ,selectedTextFormat = "count >20",maxOptions = 6), multiple = TRUE)
+										pickerInput(inputId = "provSelSerieStoriche", label = "Select districts", choices = provinceList,selected=province2fit, options = pickerOptions(size=10,actionsBox = F,maxOptionsText=HTML('<font color=#ad0000>You can compare 6 districts!</font>') ,selectedTextFormat = "count >20",maxOptions = 6), multiple = TRUE)
 									),
 									column(width=9,
 										uiOutput('selLagProvince')
@@ -280,7 +280,7 @@ prvTab <- tabItem(tabName = "prvPlots",
 							fluidRow(style="padding:20px;background-color:#ffffff",
 							fluidRow(style='padding:30px;',
 								uiOutput("selProvince")),
-								h3("Mappa dei casi confermati"),
+								h3("Diffusion map"),
 										addSpinner(leafletOutput(outputId="mapProvince"), spin = "fading-circle", color = "#add437"),
 										spiegaMappa
 								),br(),
